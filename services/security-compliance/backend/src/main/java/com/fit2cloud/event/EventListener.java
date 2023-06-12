@@ -6,7 +6,7 @@ import com.fit2cloud.service.IJobStepService;
 import com.fit2cloud.service.ISyncService;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * {@code @Author:张少虎}

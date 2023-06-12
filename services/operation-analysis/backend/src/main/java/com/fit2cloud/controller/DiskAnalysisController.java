@@ -10,8 +10,8 @@ import com.fit2cloud.controller.response.TreeNode;
 import com.fit2cloud.dto.AnalysisDiskDTO;
 import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.service.IDiskAnalysisService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -30,51 +30,51 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/disk_analysis")
 @Validated
-@Api("磁盘分析相关接口")
+@Tag(name = "磁盘分析相关接口")
 public class DiskAnalysisController {
     @Resource
     private IDiskAnalysisService iDiskAnalysisService;
 
-    @ApiOperation(value = "分页查询磁盘", notes = "分页查询磁盘")
+    @Operation(summary = "分页查询磁盘", description = "分页查询磁盘")
     @GetMapping("/disk/page")
-    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('DISK_ANALYSIS:READ')")
     public ResultHolder<IPage<AnalysisDiskDTO>> pageDiskList(@Validated PageDiskRequest request) {
         return ResultHolder.success(iDiskAnalysisService.pageDisk(request));
     }
 
-    @ApiOperation(value = "查询云账号", notes = "查询云账号")
+    @Operation(summary = "查询云账号", description = "查询云账号")
     @GetMapping("/cloud_accounts")
-    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ','OVERVIEW:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('DISK_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<List<CloudAccount>> listCloudAccount() {
         return ResultHolder.success(iDiskAnalysisService.getAllCloudAccount());
     }
 
-    @ApiOperation(value = "根据分布类型查询磁盘分布情况", notes = "根据分布类型查询磁盘分布情况")
+    @Operation(summary = "根据分布类型查询磁盘分布情况", description = "根据分布类型查询磁盘分布情况")
     @GetMapping("/spread")
-    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ','OVERVIEW:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('DISK_ANALYSIS:READ','OVERVIEW:READ')")
     public ResultHolder<Map<String, List<KeyValue>>> getDiskSpreadInfo(@Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iDiskAnalysisService.spread(request));
     }
 
-    @ApiOperation(value = "查询磁盘趋势", notes = "查询磁盘趋势")
+    @Operation(summary = "查询磁盘趋势", description = "查询磁盘趋势")
     @GetMapping("/increase_trend")
-    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('DISK_ANALYSIS:READ')")
     public ResultHolder<List<ChartData>> getDiskIncreaseTrendData(
             @Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iDiskAnalysisService.diskIncreaseTrend(request));
     }
 
-    @ApiOperation(value = "组织或工作空间磁盘分布", notes = "组织或工作空间磁盘分布")
+    @Operation(summary = "组织或工作空间磁盘分布", description = "组织或工作空间磁盘分布")
     @GetMapping("/org_workspace_disk_count_bar")
-    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('DISK_ANALYSIS:READ')")
     public ResultHolder<Map<String, List<TreeNode>>> analysisCloudDiskByOrgWorkspace(
             @Validated ResourceAnalysisRequest request) {
         return ResultHolder.success(iDiskAnalysisService.analysisCloudDiskByOrgWorkspace(request));
     }
 
-    @ApiOperation(value = "根据云账号查询云盘数量", notes = "根据云账号查询云盘数量")
+    @Operation(summary = "根据云账号查询云盘数量", description = "根据云账号查询云盘数量")
     @GetMapping("/cloud_account/disk/count")
-    @PreAuthorize("hasAnyCePermission('DISK_ANALYSIS:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('DISK_ANALYSIS:READ')")
     public ResultHolder<Long> countDiskByCloudAccountId(@RequestParam("cloudAccountId") String cloudAccountId) {
         return ResultHolder.success(iDiskAnalysisService.countDiskByCloudAccount(cloudAccountId));
     }

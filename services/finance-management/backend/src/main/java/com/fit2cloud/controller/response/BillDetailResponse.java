@@ -1,7 +1,7 @@
 package com.fit2cloud.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
@@ -13,87 +13,88 @@ import java.util.Map;
 public class BillDetailResponse {
     @Id
     private String id;
-    @ApiModelProperty(value = "组织层级树", notes = "组织层级树")
+
+    @Schema(title = "组织层级树", description = "组织层级树")
     private Map<String, Object> orgTree;
 
-    @ApiModelProperty(value = "工作空间id", notes = "工作空间id")
+    @Schema(title = "工作空间id", description = "工作空间id")
 
     private String workspaceId;
-    @ApiModelProperty(value = "工作空间名称", notes = "工作空间名称")
+    @Schema(title = "工作空间名称", description = "工作空间名称")
 
     private String workspaceName;
-    @ApiModelProperty(value = "组织id", notes = "组织id")
+    @Schema(title = "组织id", description = "组织id")
 
     private String organizationId;
-    @ApiModelProperty(value = "组织名称", notes = "组织名称")
+    @Schema(title = "组织名称", description = "组织名称")
 
     private String organizationName;
 
-    @ApiModelProperty(value = "资源id", notes = "资源id")
+    @Schema(title = "资源id", description = "资源id")
     private String resourceId;
 
-    @ApiModelProperty(value = "资源名称", notes = "资源名称")
+    @Schema(title = "资源名称", description = "资源名称")
     private String resourceName;
 
-    @ApiModelProperty(value = "企业项目id", notes = "企业项目id")
+    @Schema(title = "企业项目id", description = "企业项目id")
     private String projectId;
 
-    @ApiModelProperty(value = "企业项目名称", notes = "企业项目名称")
+    @Schema(title = "企业项目名称", description = "企业项目名称")
     private String projectName;
 
-    @ApiModelProperty(value = "付款账号", notes = "付款账号")
+    @Schema(title = "付款账号", description = "付款账号")
     private String payAccountId;
 
-    @ApiModelProperty(value = "账期", notes = "账期")
+    @Schema(title = "账期", description = "账期")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime billingCycle;
 
-    @ApiModelProperty(value = "账单开始时间", notes = "账单开始时间")
+    @Schema(title = "账单开始时间", description = "账单开始时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime usageStartDate;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @ApiModelProperty(value = "账单结束时间", notes = "账单结束时间")
+    @Schema(title = "账单结束时间", description = "账单结束时间")
     private LocalDateTime usageEndDate;
 
-    @ApiModelProperty(value = "云平台", notes = "云平台")
+    @Schema(title = "云平台", description = "云平台")
     private String provider;
 
 
-    @ApiModelProperty(value = "产品id", notes = "产品id")
+    @Schema(title = "产品id", description = "产品id")
     private String productId;
 
-    @ApiModelProperty(value = "产品名称", notes = "产品名称")
+    @Schema(title = "产品名称", description = "产品名称")
     private String productName;
 
-    @ApiModelProperty(value = "产品详情",notes = "产品详情")
+    @Schema(title = "产品详情", description = "产品详情")
     private String productDetail;
 
-    @ApiModelProperty(value = "计费模式", notes = "计费模式")
+    @Schema(title = "计费模式", description = "计费模式")
     private String billMode;
 
-    @ApiModelProperty(value = "区域id", notes = "区域id")
+    @Schema(title = "区域id", description = "区域id")
     private String regionId;
 
-    @ApiModelProperty(value = "区域名称", notes = "区域名称")
+    @Schema(title = "区域名称", description = "区域名称")
     private String regionName;
 
 
-    @ApiModelProperty(value = "可用区", notes = "可用区")
+    @Schema(title = "可用区", description = "可用区")
     private String zone;
 
-    @ApiModelProperty(value = "云账户id", notes = "云账户id")
+    @Schema(title = "云账户id", description = "云账户id")
     private String cloudAccountId;
 
-    @ApiModelProperty(value = "云账号名称", notes = "云账号名称")
+    @Schema(title = "云账号名称", description = "云账号名称")
     private String cloudAccountName;
 
-    @ApiModelProperty(value = "标签对象", notes = "标签对象")
+    @Schema(title = "标签对象", description = "标签对象")
     private Map<String, Object> tags;
 
-    @ApiModelProperty(value = "原价", notes = "原件")
+    @Schema(title = "原价", description = "原件")
     private BigDecimal totalCost;
 
-    @ApiModelProperty(value = "优惠后总价", notes = "优惠后总价")
+    @Schema(title = "优惠后总价", description = "优惠后总价")
     private BigDecimal realTotalCost;
 }

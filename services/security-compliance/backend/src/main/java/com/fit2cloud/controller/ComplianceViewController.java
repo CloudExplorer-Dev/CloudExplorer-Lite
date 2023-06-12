@@ -8,15 +8,15 @@ import com.fit2cloud.controller.response.view.ComplianceViewGroupResponse;
 import com.fit2cloud.controller.response.view.ComplianceViewRuleCountResponse;
 import com.fit2cloud.dao.constants.RiskLevel;
 import com.fit2cloud.service.IComplianceViewService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -29,30 +29,30 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/compliance_view")
 @Validated
-@Api(value = "合规总览相关接口", tags = "合规总览相关接口")
+@Tag(name = "合规总览相关接口", description = "合规总览相关接口")
 public class ComplianceViewController {
     @Resource
     private IComplianceViewService complianceViewService;
 
     @GetMapping("/resource/count")
-    @ApiOperation("获取资源统计数据")
-    @PreAuthorize("hasAnyCePermission('OVERVIEW:READ')")
+    @Operation(summary = "获取资源统计数据")
+    @PreAuthorize("@cepc.hasAnyCePermission('OVERVIEW:READ')")
     public ResultHolder<ComplianceViewCountResponse> resourceCount(ComplianceCountRequest request) {
         ComplianceViewCountResponse complianceViewCountResponse = complianceViewService.resourceCount(request);
         return ResultHolder.success(complianceViewCountResponse);
     }
 
     @GetMapping("/rule/count")
-    @ApiOperation("获取规则统计数据")
-    @PreAuthorize("hasAnyCePermission('OVERVIEW:READ')")
+    @Operation(summary = "获取规则统计数据")
+    @PreAuthorize("@cepc.hasAnyCePermission('OVERVIEW:READ')")
     public ResultHolder<Map<RiskLevel, ComplianceViewRuleCountResponse>> ruleCount(ComplianceCountRequest request) {
         Map<RiskLevel, ComplianceViewRuleCountResponse> riskLevelComplianceViewRuleCountResponseMap = complianceViewService.ruleCount(request);
         return ResultHolder.success(riskLevelComplianceViewRuleCountResponseMap);
     }
 
     @GetMapping("/resource/group")
-    @ApiOperation(value = "获取资源分组统计数据", notes = "获取资源分组统计数据")
-    @PreAuthorize("hasAnyCePermission('OVERVIEW:READ')")
+    @Operation(summary = "获取资源分组统计数据", description = "获取资源分组统计数据")
+    @PreAuthorize("@cepc.hasAnyCePermission('OVERVIEW:READ')")
     public ResultHolder<List<ComplianceViewGroupResponse>> group(ComplianceGroupRequest request) {
         List<ComplianceViewGroupResponse> res = complianceViewService.resourceGroup(request);
         return ResultHolder.success(res);

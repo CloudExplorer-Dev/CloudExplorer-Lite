@@ -1,0 +1,6 @@
+singleServerConfig:
+  password: ${CE_REDIS_PASSWORD}
+  address: "redis://${CE_REDIS_HOST}:${CE_REDIS_PORT}"
+  database: 2
+threads: 8
+nettyThreads: 32

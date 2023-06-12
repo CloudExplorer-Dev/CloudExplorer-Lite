@@ -12,7 +12,7 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.service.SyncService;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 /**

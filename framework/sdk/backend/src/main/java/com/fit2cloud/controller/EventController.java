@@ -2,10 +2,10 @@ package com.fit2cloud.controller;
 
 import com.fit2cloud.common.event.impl.EventListenerTemplate;
 import com.fit2cloud.controller.handler.ResultHolder;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * {@code @Author:张少虎}
@@ -20,7 +20,7 @@ public class EventController {
     private EventListenerTemplate eventListenerTemplate;
 
     @PostMapping("/on/{event}")
-    @ApiIgnore
+    @Hidden
     public ResultHolder<String> on(@PathVariable String event, @RequestBody Object[] args) {
         eventListenerTemplate.on(event, args);
         return ResultHolder.success("接收到事件");

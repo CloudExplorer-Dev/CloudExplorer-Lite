@@ -1,6 +1,6 @@
 package com.fit2cloud.dto;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -10,9 +10,10 @@ import lombok.Data;
 @Data
 public class AnalysisOptimizeDTO extends AnalysisServerDTO {
 
-    @ApiModelProperty("优化建议")
+    @Schema(title = "优化建议")
     private String optimizeSuggest;
-    @ApiModelProperty("建议原因")
+
+    @Schema(title = "建议原因")
     private String content;
 
 }

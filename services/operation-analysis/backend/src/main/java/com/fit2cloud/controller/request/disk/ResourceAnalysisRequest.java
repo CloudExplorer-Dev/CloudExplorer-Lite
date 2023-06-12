@@ -1,7 +1,7 @@
 package com.fit2cloud.controller.request.disk;
 
 import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -12,20 +12,28 @@ import java.util.List;
  **/
 @Data
 public class ResourceAnalysisRequest {
-    @ApiModelProperty("云账号ID")
+
+    @Schema(title = "云账号ID")
     private List<String> accountIds;
-    @ApiModelProperty("统计块")
+
+    @Schema(title = "统计块")
     private boolean statisticalBlock;
-    @ApiModelProperty("天数")
+
+    @Schema(title = "天数")
     private Long dayNumber;
-    @ApiModelProperty("分布类型")
+
+    @Schema(title = "分布类型")
     private String spreadType;
-    @ApiModelProperty("TOP类型")
+
+    @Schema(title = "TOP类型")
     private String topType;
-    @ApiModelProperty("工作空间统计")
+
+    @Schema(title = "工作空间统计")
     private boolean analysisWorkspace;
+
     private CalendarInterval intervalPosition;
-    @ApiModelProperty("组织或者工作空间 ID 集合")
+
+    @Schema(title = "组织或者工作空间 ID 集合")
     private List<String> sourceIds;
 
 

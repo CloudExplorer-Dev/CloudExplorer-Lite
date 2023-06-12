@@ -4,7 +4,7 @@ import com.fit2cloud.common.query.annotaion.Query;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.dao.constants.ComplianceStatus;
 import com.fit2cloud.request.pub.OrderRequest;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -16,28 +16,28 @@ import lombok.Data;
 @Data
 public class ComplianceScanRequest {
 
-    @ApiModelProperty(value = "云账号id", notes = "云账号id")
+    @Schema(title = "云账号id", description = "云账号id")
     @Query(field = "cloudAccountId", compareType = QueryUtil.CompareType.EQ)
     private String cloudAccountId;
 
-    @ApiModelProperty(value = "合规规则组id", notes = "合规规则组id")
+    @Schema(title = "合规规则组id", description = "合规规则组id")
     private String complianceRuleGroupId;
 
-    @ApiModelProperty(value = "资源类型", notes = "资源类型", required = true)
+    @Schema(title = "资源类型", description = "资源类型", required = true)
     private String resourceType;
 
-    @ApiModelProperty(value = "合规规则名称", notes = "合规规则名称")
+    @Schema(title = "合规规则名称", description = "合规规则名称")
     private String complianceRuleName;
 
-    @ApiModelProperty(value = "供应商", notes = "供应商")
+    @Schema(title = "供应商", description = "供应商")
     private String platform;
 
-    @ApiModelProperty(value = "风险等级", notes = "风险等级")
+    @Schema(title = "风险等级", description = "风险等级")
     private String riskLevel;
 
-    @ApiModelProperty(value = "检测状态", notes = "检测状态")
+    @Schema(title = "检测状态", description = "检测状态")
     private ComplianceStatus scanStatus;
 
-    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
+    @Schema(title = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 }

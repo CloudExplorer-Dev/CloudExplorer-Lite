@@ -1,6 +1,6 @@
 package com.fit2cloud.response.cloud_account;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,12 +13,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResourceCountResponse {
-    @ApiModelProperty(value = "资源图标")
+
+    @Schema(title = "资源图标")
     private String icon;
-    @ApiModelProperty(value = "资源显示名称")
+
+    @Schema(title = "资源显示名称")
     private String name;
-    @ApiModelProperty(value = "资源计数")
+
+    @Schema(title = "资源计数")
     private long count;
-    @ApiModelProperty(value = "单位")
+
+    @Schema(title = "单位")
     private String unit;
 }

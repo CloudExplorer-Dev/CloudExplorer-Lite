@@ -16,17 +16,17 @@ import com.fit2cloud.controller.request.OrganizationRequest;
 import com.fit2cloud.controller.request.PageOrganizationRequest;
 import com.fit2cloud.dto.OrganizationDTO;
 import com.fit2cloud.service.IOrganizationService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,38 +38,38 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/organization")
-@Api("组织相关接口")
+@Tag(name = "组织相关接口")
 @Validated
 public class OrganizationController {
     @Resource
     private IOrganizationService organizationService;
 
-    @ApiOperation(value = "分页查询组织", notes = "分页查询组织")
+    @Operation(summary = "分页查询组织", description = "分页查询组织")
     @GetMapping("/page")
-    @PreAuthorize("hasAnyCePermission('ORGANIZATION:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('ORGANIZATION:READ')")
     public ResultHolder<IPage<OrganizationDTO>> page(@Validated PageOrganizationRequest pageOrganizationRequest) {
         return ResultHolder.success(organizationService.pageOrganization(pageOrganizationRequest));
     }
 
-    @ApiOperation(value = "查询组织数量", notes = "查询组织数量")
+    @Operation(summary = "查询组织数量", description = "查询组织数量")
     @GetMapping("/count")
-    @PreAuthorize("hasAnyCePermission('ORGANIZATION:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('ORGANIZATION:READ')")
     public ResultHolder<Long> count() {
         return ResultHolder.success(organizationService.countOrganization());
     }
 
     @GetMapping("/{organizationId}")
-    @ApiOperation(value = "根据组织id查询组织", notes = "根据组织id查询组织")
-    public ResultHolder<Organization> getOrganization(@ApiParam("组织id")
+    @Operation(summary = "根据组织id查询组织", description = "根据组织id查询组织")
+    public ResultHolder<Organization> getOrganization(@Parameter(name = "组织id")
                                                       @NotNull(message = "{i18n.organization.name.is.not.empty}")
                                                       @CustomValidated(mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
                                                       @PathVariable("organizationId") String id) {
         return ResultHolder.success(organizationService.getOne(id, null));
     }
 
-    @ApiOperation(value = "添加组织", notes = "添加组织")
+    @Operation(summary = "添加组织", description = "添加组织")
     @PostMapping
-    @PreAuthorize("hasAnyCePermission('ORGANIZATION:CREATE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('ORGANIZATION:CREATE')")
     @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.ADD,
             content = "'添加组织['+#request.name+']'",
             param = "#request")
@@ -81,9 +81,9 @@ public class OrganizationController {
         return ResultHolder.success(organizationService.create(organization));
     }
 
-    @ApiOperation(value = "批量添加组织", notes = "批量添加组织")
+    @Operation(summary = "批量添加组织", description = "批量添加组织")
     @PostMapping("/batch")
-    @PreAuthorize("hasAnyCePermission('ORGANIZATION:CREATE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('ORGANIZATION:CREATE')")
     @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.BATCH_ADD,
             content = "'批量添加组织['+#request.orgDetails.![name]+']'",
             param = "#request")
@@ -94,9 +94,9 @@ public class OrganizationController {
         return ResultHolder.success(organizations);
     }
 
-    @ApiOperation(value = "编辑组织", notes = "编辑组织")
+    @Operation(summary = "编辑组织", description = "编辑组织")
     @PutMapping
-    @PreAuthorize("hasAnyCePermission('ORGANIZATION:EDIT')")
+    @PreAuthorize("@cepc.hasAnyCePermission('ORGANIZATION:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#request.id",
             content = "'编辑组织['+#request.name+']'",
@@ -108,30 +108,30 @@ public class OrganizationController {
         return ResultHolder.success(organizationService.getById(request.getId()));
     }
 
-    @ApiOperation(value = "删除组织", notes = "删除组织")
+    @Operation(summary = "删除组织", description = "删除组织")
     @DeleteMapping("/{organizationId}")
-    @PreAuthorize("hasAnyCePermission('ORGANIZATION:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('ORGANIZATION:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.DELETE,
             resourceId = "#id",
             content = "'删除组织'",
             param = "#id")
     @Emit("DELETE::ORGANIZATION")
-    public ResultHolder<Boolean> delete(@ApiParam("组织id")
+    public ResultHolder<Boolean> delete(@Parameter(name = "组织id")
                                         @NotNull(message = "{i18n.organization.name.is.not.empty}")
                                         @CustomValidated(mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
                                         @PathVariable("organizationId") String id) {
         return ResultHolder.success(organizationService.removeTreeById(id));
     }
 
-    @ApiOperation(value = "批量删除组织", notes = "批量删除组织")
+    @Operation(summary = "批量删除组织", description = "批量删除组织")
     @DeleteMapping
-    @PreAuthorize("hasAnyCePermission('ORGANIZATION:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('ORGANIZATION:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.ORGANIZATION, operated = OperatedTypeEnum.BATCH_DELETE,
             resourceId = "#organizationIds.![id]",
             content = "'批量删除了['+#organizationIds.size+']个组织'",
             param = "#organizationIds")
     @Emit(value = "DELETE_BATCH::ORGANIZATION", el = "#arrayOf(#organizationIds).map(\"#root.id\")")
-    public ResultHolder<Boolean> deleteBatch(@ApiParam("批量删除组织")
+    public ResultHolder<Boolean> deleteBatch(@Parameter(name = "批量删除组织")
                                              @Size(min = 1, message = "{i18n.organization.id.size.gt.one}")
                                              @NotNull(message = "{i18n.organization.id.is.not.empty}")
                                              @RequestBody ArrayList<Organization> organizationIds) {

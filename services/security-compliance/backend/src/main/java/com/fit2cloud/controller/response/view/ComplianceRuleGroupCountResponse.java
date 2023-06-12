@@ -1,7 +1,7 @@
 package com.fit2cloud.controller.response.view;
 
 import com.fit2cloud.controller.response.rule_group.ComplianceRuleGroupResponse;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,22 +17,22 @@ import java.util.List;
 @Setter
 public class ComplianceRuleGroupCountResponse extends ComplianceRuleGroupResponse {
 
-    @ApiModelProperty(value = "低风险数量", notes = "低风险数量")
+    @Schema(title = "低风险数量", description = "低风险数量")
     private Long low;
 
-    @ApiModelProperty(value = "中风险数量", notes = "中风险数量")
+    @Schema(title = "中风险数量", description = "中风险数量")
     private Long middle;
 
-    @ApiModelProperty(value = "高风险数量", notes = "高风险数量")
+    @Schema(title = "高风险数量", description = "高风险数量")
     private Long high;
 
-    @ApiModelProperty(value = "总数", notes = "总数")
+    @Schema(title = "总数", description = "总数")
     private Long total;
 
-    @ApiModelProperty(value = "资源类型", notes = "资源类型")
+    @Schema(title = "资源类型", description = "资源类型")
     private List<String> resourceType;
 
-    @ApiModelProperty(value = "云平台", notes = "云平台")
+    @Schema(title = "云平台", description = "云平台")
     private List<String> platform;
 
 }

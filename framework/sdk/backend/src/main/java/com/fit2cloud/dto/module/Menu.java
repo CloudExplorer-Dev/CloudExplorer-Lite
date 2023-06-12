@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Accessors(chain = true)
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Menu extends CeBaseObject {
 

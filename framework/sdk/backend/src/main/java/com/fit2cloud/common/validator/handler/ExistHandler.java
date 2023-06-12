@@ -9,8 +9,8 @@ import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintVa
 import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintViolationCreationContext;
 import org.hibernate.validator.internal.engine.path.NodeImpl;
 
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.ElementKind;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.ElementKind;
 
 /**
  * { @Author:张少虎}

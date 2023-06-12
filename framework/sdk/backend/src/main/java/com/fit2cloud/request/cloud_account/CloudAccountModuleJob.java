@@ -1,7 +1,7 @@
 package com.fit2cloud.request.cloud_account;
 
 import com.fit2cloud.dto.module.ModuleInfo;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -14,9 +14,10 @@ import java.util.List;
  */
 @Data
 public class CloudAccountModuleJob extends ModuleInfo {
-    @ApiModelProperty(value = "模块名称", notes = "模块名称")
+
+    @Schema(title = "模块名称", description = "模块名称")
     private String module;
 
-    @ApiModelProperty(value = "定时任务", notes = "定时任务")
+    @Schema(title = "定时任务", description = "定时任务")
     private List<CloudAccountJobItem> jobDetailsList;
 }

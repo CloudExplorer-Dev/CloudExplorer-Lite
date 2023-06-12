@@ -1,6 +1,6 @@
 package com.fit2cloud.request.pub;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -13,7 +13,7 @@ public class PageOrderRequest extends PageRequest implements PageOrderRequestInt
     @Serial
     private static final long serialVersionUID = 7813088780673224646L;
 
-    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
+    @Schema(title = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 
 }

@@ -1,7 +1,7 @@
 package com.fit2cloud.controller.response.compliance_scan;
 
 import com.fit2cloud.dao.constants.ComplianceStatus;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.Map;
@@ -14,22 +14,31 @@ import java.util.Map;
  */
 @Data
 public class ComplianceResourceResponse {
-    @ApiModelProperty("主键id")
+
+    @Schema(title = "主键id")
     private String id;
-    @ApiModelProperty("供应商")
+
+    @Schema(title = "供应商")
     private String platform;
-    @ApiModelProperty("云账号id")
+
+    @Schema(title = "云账号id")
     private String cloudAccountId;
-    @ApiModelProperty("云账号名称")
+
+    @Schema(title = "云账号名称")
     private String cloudAccountName;
-    @ApiModelProperty("资源类型")
+
+    @Schema(title = "资源类型")
     private String resourceType;
-    @ApiModelProperty("资源名称")
+
+    @Schema(title = "资源名称")
     private String resourceName;
-    @ApiModelProperty("资源id")
+
+    @Schema(title = "资源id")
     private String resourceId;
-    @ApiModelProperty("扫描状态")
+
+    @Schema(title = "扫描状态")
     private ComplianceStatus complianceStatus;
-    @ApiModelProperty("实例对象")
+
+    @Schema(title = "实例对象")
     private Map<String, Object> instance;
 }

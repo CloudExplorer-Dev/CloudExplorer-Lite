@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.request.optimize.strategy;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,8 +11,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BaseStatusRequest {
-    @ApiModelProperty("持续开机")
+
+    @Schema(title = "持续开机")
     private boolean continuedRunning;
-    @ApiModelProperty("持续天数")
+
+    @Schema(title = "持续天数")
     private Long continuedDays;
 }

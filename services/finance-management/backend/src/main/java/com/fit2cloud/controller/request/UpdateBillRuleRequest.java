@@ -6,7 +6,7 @@ import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.common.validator.handler.ExistQueryWrapperValidatedHandler;
 import com.fit2cloud.dao.mapper.BillRuleMapper;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -22,7 +22,7 @@ public class UpdateBillRuleRequest extends AddBillRuleRequest {
     /**
      * 主键id
      */
-    @ApiModelProperty(value = "主键id", notes = "主键id")
+    @Schema(title = "主键id", description = "主键id")
     @CustomValidated(mapper = BillRuleMapper.class, handler = ExistHandler.class, message = "账单规则id必须存在", exist = false)
     private String id;
 }

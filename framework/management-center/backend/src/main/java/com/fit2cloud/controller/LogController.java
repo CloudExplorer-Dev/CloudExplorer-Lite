@@ -9,14 +9,14 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.es.PageOperatedLogRequest;
 import com.fit2cloud.controller.request.es.PageSystemLogRequest;
 import com.fit2cloud.service.ILogService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 /**
@@ -25,7 +25,7 @@ import java.util.List;
  **/
 @RestController
 @RequestMapping("/api/log")
-@Api("ES操作相关接口")
+@Tag(name = "ES操作相关接口")
 public class LogController {
 
     @Resource
@@ -34,21 +34,21 @@ public class LogController {
     private IBaseSystemParameterService baseSystemParameterService;
 
     @GetMapping("/system/list")
-    @ApiOperation(value = "系统日志搜索", notes = "系统日志搜索")
-    @PreAuthorize("hasAnyCePermission('SYS_LOG:READ')")
+    @Operation(summary = "系统日志搜索", description = "系统日志搜索")
+    @PreAuthorize("@cepc.hasAnyCePermission('SYS_LOG:READ')")
     public ResultHolder<Object> systemLogs(@Validated PageSystemLogRequest pageSystemLogRequest) {
         return ResultHolder.success(logService.systemLogs(pageSystemLogRequest));
     }
 
     @GetMapping("/operated/list")
-    @ApiOperation(value = "操作日志搜索", notes = "操作日志搜索")
-    @PreAuthorize("hasAnyCePermission('OPERATED_LOG:READ')")
+    @Operation(summary = "操作日志搜索", description = "操作日志搜索")
+    @PreAuthorize("@cepc.hasAnyCePermission('OPERATED_LOG:READ')")
     public ResultHolder<Object> apiLogs(@Validated PageOperatedLogRequest pageOperatedLogRequest) {
         return ResultHolder.success(logService.operatedLogs(pageOperatedLogRequest));
     }
 
     @GetMapping("keep/months")
-    @PreAuthorize("hasAnyCePermission('PARAMS_SETTING:EDIT')")
+    @PreAuthorize("@cepc.hasAnyCePermission('PARAMS_SETTING:EDIT')")
     public ResultHolder<String> getKeepMonths(SystemParameter systemParameter) {
         String value = baseSystemParameterService.getValue(systemParameter.getParamKey());
         if (StringUtils.isNotBlank(value)) {
@@ -59,7 +59,7 @@ public class LogController {
     }
 
     @PostMapping("keep/months")
-    @PreAuthorize("hasAnyCePermission('PARAMS_SETTING:EDIT')")
+    @PreAuthorize("@cepc.hasAnyCePermission('PARAMS_SETTING:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.LOG, operated = OperatedTypeEnum.MODIFY,
             content = "'更新日志['+#systemParameter.paramKey+']清理策略为['+#systemParameter.paramValue+']天'",
             param = "#systemParameter")
@@ -70,7 +70,7 @@ public class LogController {
     }
 
     @PostMapping("keep/months/batch")
-    @PreAuthorize("hasAnyCePermission('PARAMS_SETTING:EDIT')")
+    @PreAuthorize("@cepc.hasAnyCePermission('PARAMS_SETTING:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.LOG, operated = OperatedTypeEnum.MODIFY,
             content = "'更新日志清理策略'",
             param = "#systemParameters")

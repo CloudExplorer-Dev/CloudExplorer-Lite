@@ -1,6 +1,6 @@
 package com.fit2cloud.request;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -9,16 +9,22 @@ import lombok.Data;
  **/
 @Data
 public class PerfMonitorRequest {
-    @ApiModelProperty("云账号ID")
+
+    @Schema(title = "云账号ID")
     private String cloudAccountId;
-    @ApiModelProperty("资源类型")
+
+    @Schema(title = "资源类型")
     private String entityType;
-    @ApiModelProperty("资源ID")
+
+    @Schema(title = "资源ID")
     private String instanceId;
-    @ApiModelProperty("监控指标")
+
+    @Schema(title = "监控指标")
     private String metricName;
-    @ApiModelProperty("开始时间")
+
+    @Schema(title = "开始时间")
     private long startTime;
-    @ApiModelProperty("结束时间")
+
+    @Schema(title = "结束时间")
     private long endTime;
 }

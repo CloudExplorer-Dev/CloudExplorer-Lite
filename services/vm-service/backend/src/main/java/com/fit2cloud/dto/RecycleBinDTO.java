@@ -1,7 +1,7 @@
 package com.fit2cloud.dto;
 
 import com.fit2cloud.base.entity.RecycleBin;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -10,36 +10,52 @@ import lombok.Data;
  */
 @Data
 public class RecycleBinDTO extends RecycleBin {
-    @ApiModelProperty("用户名称")
+
+    @Schema(title = "用户名称")
     private String userName;
-    @ApiModelProperty("资源名称")
+
+    @Schema(title = "资源名称")
     private String resourceName;
-    @ApiModelProperty("资源状态")
+
+    @Schema(title = "资源状态")
     private String resourceStatus;
-    @ApiModelProperty("资源配置")
+
+    @Schema(title = "资源配置")
     private String resourceConfig;
-    @ApiModelProperty("ip")
+
+    @Schema(title = "ip")
     private String ipArray;
-    @ApiModelProperty("公网 IP")
+
+    @Schema(title = "公网 IP")
     private String remoteIp;
-    @ApiModelProperty("关联资源")
+
+    @Schema(title = "关联资源")
     private String relateResource;
-    @ApiModelProperty("资源创建时间")
+
+    @Schema(title = "资源创建时间")
     private String resourceCreateTime;
-    @ApiModelProperty("是否随实例删除")
+
+    @Schema(title = "是否随实例删除")
     private String deleteWithInstance;
-    @ApiModelProperty("账号ID")
+
+    @Schema(title = "账号ID")
     private String accountId;
-    @ApiModelProperty("账号名称")
+
+    @Schema(title = "账号名称")
     private String accountName;
-    @ApiModelProperty("云平台")
+
+    @Schema(title = "云平台")
     private String platform;
-    @ApiModelProperty("工作空间名称")
+
+    @Schema(title = "工作空间名称")
     private String workspaceName;
-    @ApiModelProperty("工作空间ID")
+
+    @Schema(title = "工作空间ID")
     private String workspaceId;
-    @ApiModelProperty("组织名称")
+
+    @Schema(title = "组织名称")
     private String organizationName;
-    @ApiModelProperty("组织ID")
+
+    @Schema(title = "组织ID")
     private String organizationId;
 }

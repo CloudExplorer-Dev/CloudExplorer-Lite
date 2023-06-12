@@ -39,6 +39,7 @@ import com.fit2cloud.dao.jentity.BillAuthorizeRuleCondition;
 import com.fit2cloud.dao.mapper.BillDimensionSettingMapper;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.service.IBillDimensionSettingService;
+import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
@@ -50,7 +51,6 @@ import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -100,7 +100,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
             ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
             assert aggregations != null;
             StringTermsAggregate terms = aggregations.aggregations().get(0).aggregation().getAggregate().sterms();
-            return terms.buckets().array().stream().map(item -> new DefaultKeyValue<>(MappingUtil.mapping(groupField, item.key()), item.key())).toList();
+            return terms.buckets().array().stream().map(item -> new DefaultKeyValue<>(MappingUtil.mapping(groupField, item.key().stringValue()), item.key().stringValue())).toList();
         }
         return new ArrayList<>();
     }
@@ -392,7 +392,7 @@ public class BillDimensionSettingServiceImpl extends ServiceImpl<BillDimensionSe
         Aggregation.Builder.ContainerBuilder terms = new Aggregation.Builder().terms(new TermsAggregation.Builder().field("aggregations.ledgerResource.keyword").size(limit).build());
         terms.aggregations("hits", new Aggregation.Builder().topHits(new TopHitsAggregation.Builder().size(1).build()).build());
         // 所有的聚合key
-        List<String> keys = group.sterms().buckets().array().stream().map(StringTermsBucket::key).filter(Objects::nonNull).toList();
+        List<String> keys = group.sterms().buckets().array().stream().map(bucket -> bucket.key().stringValue()).filter(Objects::nonNull).toList();
         SearchRequest hitSearch = new SearchRequest.Builder().query(
                 new Query.Builder().bool(new BoolQuery.Builder().must(new TermsQuery.Builder().field("aggregations.ledgerResource.keyword")
                                 .terms(new TermsQueryField.Builder()

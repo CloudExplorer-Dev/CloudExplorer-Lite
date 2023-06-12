@@ -40,7 +40,7 @@ import org.springframework.data.elasticsearch.core.AggregationsContainer;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -194,7 +194,7 @@ public class BillViewServiceImpl implements BillViewService {
             Aggregate groupAggregate = bu.aggregations().get("group" + groupIndex);
             DefaultKeyValue<String, String> keyValue = new DefaultKeyValue<>();
             keyValue.setKey("group" + groupIndex);
-            keyValue.setValue(MappingUtil.mapping(aggregation.terms().field(), bu.key()));
+            keyValue.setValue(MappingUtil.mapping(aggregation.terms().field(), bu.key().stringValue()));
             ArrayList<DefaultKeyValue<String, String>> defaultKeyValues = new ArrayList<>();
             if (groupAggregate != null) {
                 if (CollectionUtils.isNotEmpty(superGroups)) {

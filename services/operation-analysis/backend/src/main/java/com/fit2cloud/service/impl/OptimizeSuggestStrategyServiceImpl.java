@@ -14,7 +14,7 @@ import com.fit2cloud.factory.optimize.OptimizeFactory;
 import com.fit2cloud.service.IOptimizeSuggestStrategyService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.Objects;
 

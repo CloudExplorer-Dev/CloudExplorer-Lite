@@ -6,17 +6,20 @@ import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.security.filter.JwtTokenAuthFilter;
-import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.ssl.SSLContexts;
+import org.apache.hc.client5.http.ConnectionKeepAliveStrategy;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.DefaultHttpRequestRetryStrategy;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.ssl.SSLContexts;
+import org.apache.hc.core5.ssl.TrustStrategy;
+import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.util.Timeout;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpRequest;
@@ -34,7 +37,6 @@ import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @Author:张少虎
@@ -65,30 +67,34 @@ public class RestTemplateConfig {
      * @return httprest客户端工厂
      */
     public HttpComponentsClientHttpRequestFactory generateHttpsRequestFactory() {
-        PoolingHttpClientConnectionManager connectionManager =
-                new PoolingHttpClientConnectionManager(30, TimeUnit.SECONDS);
-        connectionManager.setMaxTotal(200);
-        connectionManager.setDefaultMaxPerRoute(20);
-
         try {
             TrustStrategy acceptingTrustStrategy = (x509Certificates, authType) -> true;
             SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
-            SSLConnectionSocketFactory connectionSocketFactory = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
-            ConnectionKeepAliveStrategy connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
-                @Override
-                public long getKeepAliveDuration(org.apache.http.HttpResponse httpResponse,
-                                                 HttpContext httpContext) {
-                    return 20 * 1000; // 20 seconds,because tomcat default keep-alive timeout is 20s
-                }
-            };
-            HttpClientBuilder httpClientBuilder = HttpClients.custom().setKeepAliveStrategy(connectionKeepAliveStrategy).setConnectionManager(connectionManager).setRetryHandler(new DefaultHttpRequestRetryHandler());
-            httpClientBuilder.setSSLSocketFactory(connectionSocketFactory);
-            CloseableHttpClient httpClient = httpClientBuilder.build();
+            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+
+            ConnectionKeepAliveStrategy connectionKeepAliveStrategy = (response, context) -> TimeValue.ofSeconds(20);
+
+            PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                    .setSSLSocketFactory(sslConnectionSocketFactory)
+                    .setMaxConnTotal(200)
+                    .setMaxConnPerRoute(20)
+                    .setDefaultSocketConfig(SocketConfig.custom().setSoTimeout(Timeout.ofSeconds(60)).build())
+                    .build();
+
+            HttpClientBuilder httpClientBuilder = HttpClients.custom()
+                    .setKeepAliveStrategy(connectionKeepAliveStrategy)
+                    .setConnectionManager(connectionManager)
+                    .setRetryStrategy(new DefaultHttpRequestRetryStrategy());
+
+            HttpClient httpClient = httpClientBuilder.build();
+
             HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+
             factory.setBufferRequestBody(false);
             factory.setHttpClient(httpClient);
             factory.setConnectTimeout(60 * 1000);
-            factory.setReadTimeout(60 * 1000);
+
+
             return factory;
         } catch (Exception e) {
             throw new RuntimeException("创建HttpsRestTemplate失败", e);

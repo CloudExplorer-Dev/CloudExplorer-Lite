@@ -3,7 +3,7 @@ package com.fit2cloud.controller.request.workspace;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import com.fit2cloud.request.pub.PageRequest;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -15,15 +15,15 @@ import java.util.List;
 @Data
 public class PageWorkspaceRequest extends PageRequest implements PageOrderRequestInterface {
 
-    @ApiModelProperty("工作空间名称")
+    @Schema(title = "工作空间名称")
     private String name;
 
-    @ApiModelProperty("组织")
+    @Schema(title = "组织")
     private List<String> organizationIds;
 
-    @ApiModelProperty("组织名称")
+    @Schema(title = "组织名称")
     private String organizationName;
 
-    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
+    @Schema(title = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 }

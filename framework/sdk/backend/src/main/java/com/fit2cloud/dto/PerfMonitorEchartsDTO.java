@@ -1,6 +1,6 @@
 package com.fit2cloud.dto;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -11,14 +11,19 @@ import java.util.List;
  **/
 @Data
 public class PerfMonitorEchartsDTO {
-    @ApiModelProperty("资源 ID")
+
+    @Schema(title = "资源 ID")
     private String resourceId;
-    @ApiModelProperty("监控值")
+
+    @Schema(title = "监控值")
     private List<Object> values;
-    @ApiModelProperty("时间戳")
+
+    @Schema(title = "时间戳")
     private List<Long> timestamps;
-    @ApiModelProperty("监控指标")
+
+    @Schema(title = "监控指标")
     private String metricName;
-    @ApiModelProperty("单位")
+
+    @Schema(title = "单位")
     private String unit;
 }

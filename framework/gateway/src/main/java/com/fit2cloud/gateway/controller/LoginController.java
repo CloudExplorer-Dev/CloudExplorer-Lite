@@ -20,6 +20,7 @@ import com.fit2cloud.service.BasePermissionService;
 import com.fit2cloud.service.CommonService;
 import com.fit2cloud.service.MenuService;
 import com.fit2cloud.service.TokenPoolService;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.List;
 import java.util.Map;

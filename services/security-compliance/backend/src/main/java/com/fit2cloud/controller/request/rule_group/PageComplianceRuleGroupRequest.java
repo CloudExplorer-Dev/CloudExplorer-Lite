@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.request.rule_group;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -11,6 +11,8 @@ import lombok.Data;
  */
 @Data
 public class PageComplianceRuleGroupRequest {
-    @ApiModelProperty(value = "规则组名称", notes = "规则组名称")
+
+    @Schema(title = "规则组名称", description = "规则组名称")
     private String name;
+
 }

@@ -10,13 +10,13 @@ import com.fit2cloud.controller.request.recycle_bin.PageRecycleBinRequest;
 import com.fit2cloud.controller.request.recycle_bin.RecycleRequest;
 import com.fit2cloud.dto.RecycleBinDTO;
 import com.fit2cloud.service.IRecycleBinService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * @author : LiuDi
@@ -25,21 +25,21 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/api/vm/recycleBin")
 @Validated
-@Api("云主机模块回收站相关接口")
+@Tag(name="云主机模块回收站相关接口")
 public class RecycleBinController {
     @Resource
     private IRecycleBinService recycleBinService;
 
-    @ApiOperation(value = "分页查询回收站信息", notes = "分页查询回收站信息")
+    @Operation(summary = "分页查询回收站信息", description = "分页查询回收站信息")
     @GetMapping("/page")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:READ')")
     public ResultHolder<IPage<RecycleBinDTO>> list(@Validated PageRecycleBinRequest pageRecycleBinRequest) {
         return ResultHolder.success(recycleBinService.pageRecycleBin(pageRecycleBinRequest));
     }
 
-    @ApiOperation(value = "批量删除资源", notes = "批量删除资源")
+    @Operation(summary = "批量删除资源", description = "批量删除资源")
     @PostMapping("batchDeleteResource")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.RECYCLE, operated = OperatedTypeEnum.BATCH_DELETE,
             resourceId = "#request.recycleIds",
             content = "'批量彻底删除['+#request.recycleIds.size+']个资源'",
@@ -48,9 +48,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.batchDeleteResource(request));
     }
 
-    @ApiOperation(value = "批量删除云主机", notes = "批量删除云主机")
+    @Operation(summary = "批量删除云主机", description = "批量删除云主机")
     @PostMapping("batchDeleteVm")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.BATCH_DELETE,
             resourceId = "#request.resourceIds",
             content = "'批量彻底删除['+#request.resourceIds.size+']个云主机'",
@@ -59,9 +59,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.batchDeleteResource(request));
     }
 
-    @ApiOperation(value = "批量删除磁盘", notes = "批量删除磁盘")
+    @Operation(summary = "批量删除磁盘", description = "批量删除磁盘")
     @PostMapping("batchDeleteDisk")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_DELETE,
             resourceId = "#request.resourceIds",
             content = "'批量彻底删除['+#request.resourceIds.size+']个磁盘'",
@@ -70,9 +70,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.batchDeleteResource(request));
     }
 
-    @ApiOperation(value = "批量恢复资源", notes = "批量恢复资源")
+    @Operation(summary = "批量恢复资源", description = "批量恢复资源")
     @PostMapping("batchRecoverResource")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:RECOVER')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:RECOVER')")
     @OperatedLog(resourceType = ResourceTypeEnum.RECYCLE, operated = OperatedTypeEnum.BATCH_RECOVER,
             resourceId = "#request.recycleIds",
             content = "'批量恢复资源['+#request.recycleIds.size+']'",
@@ -81,9 +81,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.batchRecoverResource(request));
     }
 
-    @ApiOperation(value = "批量恢复云主机", notes = "批量恢复云主机")
+    @Operation(summary = "批量恢复云主机", description = "批量恢复云主机")
     @PostMapping("batchRecoverVm")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:RECOVER')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:RECOVER')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.BATCH_RECOVER,
             resourceId = "#request.resourceIds",
             content = "'批量恢复['+#request.resourceIds.size+']个云主机'",
@@ -92,9 +92,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.batchRecoverResource(request));
     }
 
-    @ApiOperation(value = "批量恢复磁盘", notes = "批量恢复磁盘")
+    @Operation(summary = "批量恢复磁盘", description = "批量恢复磁盘")
     @PostMapping("batchRecoverDisk")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:RECOVER')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:RECOVER')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_RECOVER,
             resourceId = "#request.resourceIds",
             content = "'批量恢复['+#request.resourceIds.size+']个磁盘'",
@@ -103,9 +103,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.batchRecoverResource(request));
     }
 
-    @ApiOperation(value = "删除单个资源", notes = "删除单个资源")
+    @Operation(summary = "删除单个资源", description = "删除单个资源")
     @PostMapping("deleteResource/{recycleId}")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.RECYCLE, operated = OperatedTypeEnum.DELETE,
             resourceId = "#recycleId",
             content = "'删除单个资源'",
@@ -114,9 +114,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.deleteResource(recycleId));
     }
 
-    @ApiOperation(value = "删除云主机", notes = "删除云主机")
+    @Operation(summary = "删除云主机", description = "删除云主机")
     @PostMapping("deleteVm")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.DELETE,
             resourceId = "#request.resourceId",
             param = "#request")
@@ -124,9 +124,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.deleteResource(request.getId()));
     }
 
-    @ApiOperation(value = "删除磁盘", notes = "删除磁盘")
+    @Operation(summary = "删除磁盘", description = "删除磁盘")
     @PostMapping("deleteDisk")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.DELETE,
             resourceId = "#request.resourceId",
             param = "#request")
@@ -134,9 +134,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.deleteResource(request.getId()));
     }
 
-    @ApiOperation(value = "恢复单个资源", notes = "恢复单个资源")
+    @Operation(summary = "恢复单个资源", description = "恢复单个资源")
     @PostMapping("recoverResource/{recycleId}")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:RECOVER')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:RECOVER')")
     @OperatedLog(resourceType = ResourceTypeEnum.RECYCLE, operated = OperatedTypeEnum.RECOVER,
             resourceId = "#recycleId",
             content = "'恢复单个资源'",
@@ -145,9 +145,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.recoverResource(recycleId));
     }
 
-    @ApiOperation(value = "恢复云主机", notes = "恢复云主机")
+    @Operation(summary = "恢复云主机", description = "恢复云主机")
     @PostMapping("recoverVm")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:RECOVER')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:RECOVER')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_SERVER, operated = OperatedTypeEnum.RECOVER,
             resourceId = "#request.resourceId",
             param = "#request")
@@ -155,9 +155,9 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.recoverResource(request.getId()));
     }
 
-    @ApiOperation(value = "恢复磁盘", notes = "恢复磁盘")
+    @Operation(summary = "恢复磁盘", description = "恢复磁盘")
     @PostMapping("recoverDisk")
-    @PreAuthorize("hasAnyCePermission('RECYCLE_BIN:RECOVER')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RECYCLE_BIN:RECOVER')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.RECOVER,
             resourceId = "#request.resourceId",
             param = "#request")
@@ -165,7 +165,7 @@ public class RecycleBinController {
         return ResultHolder.success(recycleBinService.recoverResource(request.getId()));
     }
 
-    @ApiOperation(value = "获取当前回收站开启状态", notes = "获取当前回收站开启状态")
+    @Operation(summary = "获取当前回收站开启状态", description = "获取当前回收站开启状态")
     @GetMapping("getRecycleEnableStatus")
     public ResultHolder<Boolean> getRecycleEnableStatus() {
         return ResultHolder.success(recycleBinService.getRecycleEnableStatus());

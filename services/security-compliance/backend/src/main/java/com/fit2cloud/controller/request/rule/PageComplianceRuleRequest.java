@@ -1,10 +1,10 @@
 package com.fit2cloud.controller.request.rule;
 
 import com.fit2cloud.request.pub.OrderRequest;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
 
 /**
  * {@code @Author:张少虎}
@@ -14,23 +14,32 @@ import javax.validation.constraints.Pattern;
  */
 @Data
 public class PageComplianceRuleRequest {
-    @ApiModelProperty(name = "规则名称", notes = "规则名称")
+
+    @Schema(title = "规则名称", description = "规则名称")
     private String name;
-    @ApiModelProperty(name = "云平台", notes = "云平台")
+
+    @Schema(title = "云平台", description = "云平台")
     private String platform;
-    @ApiModelProperty(name = "资源类型", notes = "资源类型")
+
+    @Schema(title = "资源类型", description = "资源类型")
     private String resourceType;
-    @ApiModelProperty(name = "风险等级", notes = "风险等级")
+
+    @Schema(title = "风险等级", description = "风险等级")
     @Pattern(regexp = "HIGH|MIDDLE|LOW", message = "风险等级只支持HIGH,MIDDLE,LOW")
     private String riskLevel;
-    @ApiModelProperty(name = "规则组id", notes = "规则组id")
+
+    @Schema(title = "规则组id", description = "规则组id")
     private String ruleGroupId;
-    @ApiModelProperty(name = "规则组名称", notes = "规则组名称")
+
+    @Schema(title = "规则组名称", description = "规则组名称")
     private String ruleGroupName;
-    @ApiModelProperty(name = "规则描述", notes = "规则描述")
+
+    @Schema(title = "规则描述", description = "规则描述")
     private String description;
-    @ApiModelProperty(name = "是否启用", notes = "是否启用")
+
+    @Schema(title = "是否启用", description = "是否启用")
     private Boolean enable;
-    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
+
+    @Schema(title = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 }

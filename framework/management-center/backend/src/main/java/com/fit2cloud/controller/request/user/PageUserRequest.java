@@ -4,10 +4,10 @@ import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import com.fit2cloud.request.pub.PageRequest;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import java.io.Serial;
 import java.util.List;
 
@@ -17,38 +17,38 @@ public class PageUserRequest extends PageRequest implements PageOrderRequestInte
     @Serial
     private static final long serialVersionUID = -5792220537769141979L;
 
-    @ApiModelProperty("用户ID，模糊匹配")
+    @Schema(title = "用户ID，模糊匹配")
     private String username;
 
-    @ApiModelProperty("姓名，模糊匹配")
+    @Schema(title = "姓名，模糊匹配")
     private String name;
 
-    @ApiModelProperty("邮箱，模糊匹配")
+    @Schema(title = "邮箱，模糊匹配")
     private String email;
 
-    @ApiModelProperty("角色ID，精确匹配")
+    @Schema(title = "角色ID，精确匹配")
     private String roleId;
 
-    @ApiModelProperty("角色名称，模糊匹配")
+    @Schema(title = "角色名称，模糊匹配")
     private String roleName;
 
-    @ApiModelProperty("工作空间ID，精确匹配")
+    @Schema(title = "工作空间ID，精确匹配")
     private String workspaceId;
 
-    @ApiModelProperty("组织ID，精确匹配")
+    @Schema(title = "组织ID，精确匹配")
     private String organizationId;
 
-    @ApiModelProperty("父角色类型，精确匹配 ADMIN | ORGADMIN | USER")
+    @Schema(title = "父角色类型，精确匹配 ADMIN | ORGADMIN | USER")
     private RoleConstants.ROLE parentRole;
 
     @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
-    @ApiModelProperty(value = "创建时间", example = "createTime[]=2121&createTime[]=21212")
+    @Schema(title = "创建时间", example = "createTime[]=2121&createTime[]=21212")
     private List<Long> createTime;
 
     @Size(min = 2, max = 2, message = "{i18n.request.date.message}")
-    @ApiModelProperty(value = "编辑时间", example = "updateTime[]=2121&updateTime[]=21212")
+    @Schema(title = "编辑时间", example = "updateTime[]=2121&updateTime[]=21212")
     private List<Long> updateTime;
 
-    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
+    @Schema(title = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 }

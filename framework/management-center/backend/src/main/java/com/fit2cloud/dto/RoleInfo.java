@@ -1,6 +1,6 @@
 package com.fit2cloud.dto;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serial;
@@ -17,12 +17,12 @@ public class RoleInfo implements Serializable {
     @Serial
     private static final long serialVersionUID = -6403922661617397034L;
 
-    @ApiModelProperty("组织 ID 集合")
+    @Schema(title = "组织 ID 集合")
     private List<String> organizationIds;
 
-    @ApiModelProperty("工作空间 ID 集合")
+    @Schema(title = "工作空间 ID 集合")
     private List<String> workspaceIds;
 
-    @ApiModelProperty("角色ID")
+    @Schema(title = "角色ID")
     private String roleId;
 }

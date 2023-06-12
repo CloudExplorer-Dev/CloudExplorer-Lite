@@ -1,7 +1,7 @@
 package com.fit2cloud.controller.response.view;
 
 import com.fit2cloud.constants.GroupTypeConstants;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -12,16 +12,23 @@ import lombok.Data;
  */
 @Data
 public class ComplianceViewGroupResponse {
-    @ApiModelProperty(value = "分组值", notes = "分组值")
+
+    @Schema(title = "分组值", description = "分组值")
     private String groupValue;
-    @ApiModelProperty(value = "分组名称", notes = "分组名称")
+
+    @Schema(title = "分组名称", description = "分组名称")
     private String groupName;
-    @ApiModelProperty(value = "分组类型", notes = "分组类型")
+
+    @Schema(title = "分组类型", description = "分组类型")
     private GroupTypeConstants groupType;
-    @ApiModelProperty(value = "合规数量", notes = "合规数量")
+
+    @Schema(title = "合规数量", description = "合规数量")
     private int complianceCount;
-    @ApiModelProperty(value = "总数", notes = "总数")
+
+    @Schema(title = "总数", description = "总数")
     private int total;
-    @ApiModelProperty(value = "不合规数量", notes = "不合规数量")
+
+    @Schema(title = "不合规数量", description = "不合规数量")
     private int notComplianceCount;
+
 }

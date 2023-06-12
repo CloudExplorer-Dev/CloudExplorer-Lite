@@ -12,15 +12,15 @@ import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceRespo
 import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IComplianceScanService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -32,15 +32,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/compliance_scan")
 @Validated
-@Api(value = "安全合规扫描相关接口", tags = "安全合规扫描相关接口")
+@Tag(name = "安全合规扫描相关接口", description = "安全合规扫描相关接口")
 public class ComplianceScanController {
     @Resource
     private IComplianceScanService complianceScanService;
 
 
     @GetMapping("/resource/{complianceRuleId}/{currentPage}/{limit}")
-    @ApiOperation("分页查询资源")
-    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
+    @Operation(summary = "分页查询资源")
+    @PreAuthorize("@cepc.hasAnyCePermission('SCAN:READ')")
     public ResultHolder<Page<ComplianceResourceResponse>> pageResource(@NotNull(message = "合规规则id不能为空")
                                                                        @PathVariable("complianceRuleId")
                                                                        String complianceRuleId,
@@ -57,8 +57,8 @@ public class ComplianceScanController {
     }
 
     @PostMapping("/sync_scan")
-    @ApiOperation("发送扫描任务")
-    @PreAuthorize("hasAnyCePermission('SCAN:SEND_JOB')")
+    @Operation(summary = "发送扫描任务")
+    @PreAuthorize("@cepc.hasAnyCePermission('SCAN:SEND_JOB')")
     @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_SCAN, operated = OperatedTypeEnum.SCAN,
             resourceId = "#request.cloudAccountResources.![cloudAccountId]",
             content = "'发送扫描任务'",
@@ -68,17 +68,17 @@ public class ComplianceScanController {
         return ResultHolder.success(true);
     }
 
-    @ApiOperation("获取支持的云账号以及云账号可扫描资源")
+    @Operation(summary = "获取支持的云账号以及云账号可扫描资源")
     @GetMapping("/support_cloud_account")
-    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('SCAN:READ')")
     public ResultHolder<List<SupportCloudAccountResourceResponse>> listSupportCloudAccountResource() {
         List<SupportCloudAccountResourceResponse> list = complianceScanService.listSupportCloudAccountResource();
         return ResultHolder.success(list);
     }
 
-    @ApiOperation("获取资源类型同步情况")
+    @Operation(summary = "获取资源类型同步情况")
     @GetMapping("job_record")
-    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('SCAN:READ')")
     @TokenRenewal
     public ResultHolder<List<JobRecordResourceResponse>> listJobRecord() {
         List<JobRecordResourceResponse> res = complianceScanService.listJobRecord();

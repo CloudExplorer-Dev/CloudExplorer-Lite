@@ -15,7 +15,7 @@ import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.constants.ProviderConstants;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -34,7 +34,7 @@ import java.util.concurrent.Executors;
 @RestController
 @RequestMapping("/api/server/catalog")
 @Validated
-@Api("创建云主机")
+@Tag(name = "创建云主机")
 public class VmCloudServerCatalogController {
 
     @Resource
@@ -47,7 +47,7 @@ public class VmCloudServerCatalogController {
     private BaseVmCloudDiskMapper diskMapper;
 
     @GetMapping("/form/{cloudAccountId}")
-    @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:CREATE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_SERVER:CREATE')")
     public ResultHolder<FormObject> getCreateServerForm(@PathVariable String cloudAccountId) throws Exception {
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
         Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
@@ -55,7 +55,7 @@ public class VmCloudServerCatalogController {
     }
 
     @GetMapping("/goods")
-    @PreAuthorize("hasAnyCePermission('CLOUD_SERVER:CREATE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_SERVER:CREATE')")
     public ResultHolder<List<Good>> listGoods() {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         try {

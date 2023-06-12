@@ -12,7 +12,7 @@ import org.springframework.context.annotation.PropertySource;
         ServletWebServerFactoryAutoConfiguration.class,
         JobSettingConfig.class,
         LocaleConfig.class,
-        SwaggerConfig.class,
+        SwaggerOpenApiConfig.class,
         RedisConfig.class,
         QuartzConfig.class
 })

@@ -4,11 +4,11 @@ import com.fit2cloud.base.mapper.BaseRoleMapper;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
@@ -22,16 +22,16 @@ public class UpdateRoleRequest implements Serializable {
 
     @NotNull(groups = ValidationGroup.UPDATE.class, message = "{i18n.role.id.warn.cannot.null}")
     @CustomValidated(groups = {ValidationGroup.UPDATE.class}, mapper = BaseRoleMapper.class, handler = ExistHandler.class, message = "{i18n.role.id.warn.not.exist}", exist = false)
-    @ApiModelProperty("角色ID")
+    @Schema(title = "角色ID")
     private String id;
 
-    @ApiModelProperty("角色名称")
+    @Schema(title = "角色名称")
     private String name;
 
-    @ApiModelProperty("描述")
+    @Schema(title = "描述")
     private String description;
 
-    @ApiModelProperty("权限")
+    @Schema(title = "权限")
     private List<String> permissions;
 
 }

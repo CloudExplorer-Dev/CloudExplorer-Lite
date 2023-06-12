@@ -8,7 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.dao.constants.ComplianceStatus;
 import com.fit2cloud.dao.constants.RiskLevel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -22,34 +22,34 @@ import java.time.LocalDateTime;
 @Data
 public class ComplianceScanResultResponse {
 
-    @ApiModelProperty(value = "规则id", notes = "规则id")
+    @Schema(title = "规则id", description = "规则id")
     private String id;
 
-    @ApiModelProperty(value = "规则名称", notes = "规则名称")
+    @Schema(title = "规则名称", description = "规则名称")
     private String name;
 
-    @ApiModelProperty(value = "供应商", notes = "供应商")
+    @Schema(title = "供应商", description = "供应商")
     private String platform;
 
-    @ApiModelProperty(value = "风险等级", notes = "风险等级")
+    @Schema(title = "风险等级", description = "风险等级")
     private RiskLevel riskLevel;
 
-    @ApiModelProperty(value = "规则描述", notes = "规则描述")
+    @Schema(title = "规则描述", description = "规则描述")
     private String description;
 
-    @ApiModelProperty(value = "资源类型", notes = "资源类型")
+    @Schema(title = "资源类型", description = "资源类型")
     private ResourceTypeConstants resourceType;
 
-    @ApiModelProperty(value = "检查状态", notes = "检查状态")
+    @Schema(title = "检查状态", description = "检查状态")
     private ComplianceStatus scanStatus;
 
-    @ApiModelProperty(value = "合规数量", notes = "合规数量")
+    @Schema(title = "合规数量", description = "合规数量")
     private Long complianceCount;
 
-    @ApiModelProperty(value = "不合规数量", notes = "不合规数量")
+    @Schema(title = "不合规数量", description = "不合规数量")
     private Long notComplianceCount;
 
-    @ApiModelProperty(value = "最后同步时间", notes = "最后同步时间")
+    @Schema(title = "最后同步时间", description = "最后同步时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

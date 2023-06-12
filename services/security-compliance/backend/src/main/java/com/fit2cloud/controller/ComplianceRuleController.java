@@ -16,18 +16,16 @@ import com.fit2cloud.controller.response.rule.ComplianceRuleSearchFieldResponse;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
 import com.fit2cloud.service.IComplianceRuleService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
-import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -39,14 +37,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/compliance_rule")
 @Validated
-@Api(value = "合规规则相关接口", tags = "合规规则相关接口")
+@Tag(name = "合规规则相关接口", description = "合规规则相关接口")
 public class ComplianceRuleController {
     @Resource
     private IComplianceRuleService complianceRuleService;
 
-    @ApiOperation("分页查询合规规则")
+    @Operation(summary = "分页查询合规规则")
     @GetMapping("/{currentPage}/{limit}")
-    @PreAuthorize("hasAnyCePermission('RULE:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:READ')")
     public ResultHolder<IPage<ComplianceRuleResponse>> page(@NotNull(message = "当前页不能为空")
                                                             @Min(message = "当前页不能小于0", value = 1)
                                                             @PathVariable("currentPage")
@@ -60,17 +58,17 @@ public class ComplianceRuleController {
         return ResultHolder.success(complianceRuleResponsePage);
     }
 
-    @ApiModelProperty("根据规则id获取合规规则")
+    @Operation(summary = "根据规则id获取合规规则")
     @GetMapping("/{complianceRuleId}")
-    @PreAuthorize("hasAnyCePermission('RULE:READ','SCAN:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:READ','SCAN:READ')")
     public ResultHolder<ComplianceRuleResponse> one(@PathVariable("complianceRuleId") String complianceRuleId) {
         ComplianceRule complianceRule = complianceRuleService.getById(complianceRuleId);
         return ResultHolder.success(new ComplianceRuleResponse(complianceRule));
     }
 
-    @ApiOperation("获取可过滤的合规条件维度")
+    @Operation(summary = "获取可过滤的合规条件维度")
     @GetMapping("/instance_search_field")
-    @PreAuthorize("hasAnyCePermission('RULE:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:READ')")
     public ResultHolder<List<ComplianceRuleSearchFieldResponse>> listInstanceSearchField(@RequestParam("platform")
                                                                                          String platform,
                                                                                          @RequestParam("resourceType")
@@ -79,9 +77,9 @@ public class ComplianceRuleController {
     }
 
 
-    @ApiOperation("插入合规规则")
+    @Operation(summary = "插入合规规则")
     @PostMapping
-    @PreAuthorize("hasAnyCePermission('RULE:CREATE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:CREATE')")
     @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE, operated = OperatedTypeEnum.ADD,
             resourceId = "#complianceRuleRequest.id",
             content = "'创建合规规则['+#complianceRuleRequest.name+']'",
@@ -93,17 +91,17 @@ public class ComplianceRuleController {
         return ResultHolder.success(complianceRuleResponse);
     }
 
-    @ApiOperation("获取规则实例类型")
+    @Operation(summary = "获取规则实例类型")
     @GetMapping("/resource_type")
-    @PreAuthorize("hasAnyCePermission('RULE:READ','SCAN:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:READ','SCAN:READ')")
     public ResultHolder<List<DefaultKeyValue<String, String>>> listResourceType() {
         List<DefaultKeyValue<String, String>> resourceTypes = complianceRuleService.listResourceType();
         return ResultHolder.success(resourceTypes);
     }
 
     @PutMapping
-    @ApiOperation("修改合规规则")
-    @PreAuthorize("hasAnyCePermission('RULE:EDIT')")
+    @Operation(summary = "修改合规规则")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#complianceRuleRequest.id",
             content = "#complianceRuleRequest.name!=null?'修改合规规则['+#complianceRuleRequest.name+']':#complianceRuleRequest.enable?'修改合规规则为[启用]':'修改合规规则为[禁用]'",
@@ -116,8 +114,8 @@ public class ComplianceRuleController {
     }
 
     @DeleteMapping("/{compliance_rule_id}")
-    @ApiModelProperty("删除合规规则")
-    @PreAuthorize("hasAnyCePermission('RULE:DELETE')")
+    @Operation(summary = "删除合规规则")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE, operated = OperatedTypeEnum.DELETE,
             resourceId = "#id",
             content = "'删除合规规则['+#id+']'",
@@ -130,9 +128,9 @@ public class ComplianceRuleController {
         return ResultHolder.success(true);
     }
 
-    @ApiOperation("获取支持的云平台以及对应的资源")
+    @Operation(summary = "获取支持的云平台以及对应的资源")
     @GetMapping("/support_platform")
-    @PreAuthorize("hasAnyCePermission('RULE:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:READ')")
     public ResultHolder<List<SupportPlatformResourceResponse>> listSupportPlatformResource() {
         List<SupportPlatformResourceResponse> list = complianceRuleService.listSupportPlatformResource();
         return ResultHolder.success(list);

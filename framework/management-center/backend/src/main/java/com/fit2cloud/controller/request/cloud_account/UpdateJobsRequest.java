@@ -5,11 +5,11 @@ import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -23,7 +23,7 @@ public class UpdateJobsRequest {
     /**
      * 云账号id
      */
-    @ApiModelProperty(value = "云账号id", notes = "云账号id")
+    @Schema(title = "云账号id", description = "云账号id")
     @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
     @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = true)
     private String cloudAccountId;

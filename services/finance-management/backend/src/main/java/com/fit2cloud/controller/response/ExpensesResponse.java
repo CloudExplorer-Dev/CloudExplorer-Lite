@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.response;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,11 +17,13 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExpensesResponse {
-    @ApiModelProperty(value = "当前月/年", notes = "当前月/年")
+
+    @Schema(title = "当前月/年", description = "当前月/年")
     private BigDecimal current;
+
     /**
      * 需要注意 上月数据根据当前日进行
      */
-    @ApiModelProperty(value = "上月/年", notes = "上月/年")
+    @Schema(title = "上月/年", description = "上月/年")
     private BigDecimal up;
 }

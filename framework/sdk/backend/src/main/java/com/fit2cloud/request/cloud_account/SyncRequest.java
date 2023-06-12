@@ -1,6 +1,6 @@
 package com.fit2cloud.request.cloud_account;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,12 +19,13 @@ public class SyncRequest {
     /**
      * 云账号id
      */
-    @ApiModelProperty(value = "云账号id", notes = "云账号id")
+    @Schema(title = "云账号id", description = "云账号id")
     private String cloudAccountId;
+
     /**
      * 任务
      */
-    @ApiModelProperty(value = "同步任务", notes = "同步任务")
+    @Schema(title = "同步任务", description = "同步任务")
     private List<Job> syncJob;
 
     /**
@@ -39,15 +40,15 @@ public class SyncRequest {
         /**
          * 模块名称
          */
-        @ApiModelProperty(value = "模块名称", notes = "模块名称")
+        @Schema(title = "模块名称", description = "模块名称")
         private String module;
         /**
          * 任务名称
          */
-        @ApiModelProperty(value = "任务名称", notes = "任务名称")
+        @Schema(title = "任务名称", description = "任务名称")
         private String jobName;
 
-        @ApiModelProperty(value = "任务组", notes = "任务组")
+        @Schema(title = "任务组", description = "任务组")
         private String jobGroup;
     }
 }

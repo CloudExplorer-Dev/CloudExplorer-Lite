@@ -66,7 +66,17 @@
                     <groupId>org.flywaydb</groupId>
                     <artifactId>flyway-mysql</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.springdoc</groupId>
+                    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+            <version>${swagger.openapi.version}</version>
         </dependency>
 
         <dependency>
@@ -151,10 +161,10 @@
                                 <phase>install</phase>
                                 <configuration>
                                     <target>
-                                        <echo message="*******************install*******************" />
-                                        <echo message="${project.build.directory}/${artifactId}-${revision}.jar" />
+                                        <echo message="*******************install*******************"/>
+                                        <echo message="${project.build.directory}/${artifactId}-${revision}.jar"/>
                                         <move file="${project.build.directory}/${artifactId}-${revision}.jar"
-                                              tofile="../../target/${artifactId}-${revision}.jar" />
+                                              tofile="../../target/${artifactId}-${revision}.jar"/>
                                     </target>
                                 </configuration>
                                 <goals>
