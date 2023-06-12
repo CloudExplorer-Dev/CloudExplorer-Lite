@@ -24,7 +24,7 @@ import com.fit2cloud.service.IJobStepService;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 

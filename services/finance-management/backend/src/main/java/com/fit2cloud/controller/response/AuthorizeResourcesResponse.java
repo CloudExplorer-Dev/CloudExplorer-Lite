@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.response;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.Map;
@@ -13,24 +13,34 @@ import java.util.Map;
  */
 @Data
 public class AuthorizeResourcesResponse {
-    @ApiModelProperty("资源id")
+
+    @Schema(title = "资源id")
     private String resourceId;
-    @ApiModelProperty("资源名称")
+
+    @Schema(title = "资源名称")
     private String resourceName;
-    @ApiModelProperty("企业项目id")
+
+    @Schema(title = "企业项目id")
     private String projectId;
-    @ApiModelProperty("企业项目名称")
+
+    @Schema(title = "企业项目名称")
     private String projectName;
-    @ApiModelProperty("产品id")
+
+    @Schema(title = "产品id")
     private String productId;
-    @ApiModelProperty("产品名称")
+
+    @Schema(title = "产品名称")
     private String productName;
-    @ApiModelProperty("标签")
+
+    @Schema(title = "标签")
     private Map<String, Object> tags;
-    @ApiModelProperty("云账号id")
+
+    @Schema(title = "云账号id")
     private String cloudAccountId;
-    @ApiModelProperty("云账号名称")
+
+    @Schema(title = "云账号名称")
     private String cloudAccountName;
-    @ApiModelProperty("云平台")
+
+    @Schema(title = "云平台")
     private String provider;
 }

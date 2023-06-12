@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.request.datastore;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -17,6 +17,7 @@ public class DatastoreRequest implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 8484185034593083260L;
-    @ApiModelProperty("存储器名称")
+
+    @Schema(title = "存储器名称")
     private String datastoreName;
 }

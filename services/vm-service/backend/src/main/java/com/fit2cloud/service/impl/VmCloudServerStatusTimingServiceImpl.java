@@ -11,11 +11,12 @@ import com.fit2cloud.dao.entity.VmCloudServerStatusTiming;
 import com.fit2cloud.dao.mapper.VmCloudServerStatusTimingMapper;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.service.IVmCloudServerStatusTimingService;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;

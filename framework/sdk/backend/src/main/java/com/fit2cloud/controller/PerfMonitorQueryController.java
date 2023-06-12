@@ -4,14 +4,14 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.PerfMonitorEchartsDTO;
 import com.fit2cloud.request.PerfMonitorRequest;
 import com.fit2cloud.service.PerfMonitorService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -23,13 +23,13 @@ import java.util.Map;
 @Validated
 @RestController
 @RequestMapping("/api/base/monitor")
-@Api(value = "公共监控相关接口", tags = "公共监控相关接口")
+@Tag(name = "公共监控相关接口", description = "公共监控相关接口")
 public class PerfMonitorQueryController {
 
     @Resource
     private PerfMonitorService perfMonitorService;
 
-    @ApiOperation(value = "查询监控数据", notes = "查询监控数据")
+    @Operation(summary = "查询监控数据", description = "查询监控数据")
     @GetMapping("/list")
     public ResultHolder<Map<String, List<PerfMonitorEchartsDTO>>> list(
             @Validated PerfMonitorRequest perfMonitorRequest) {

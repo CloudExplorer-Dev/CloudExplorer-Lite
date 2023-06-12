@@ -2,7 +2,7 @@ package com.fit2cloud.response;
 
 import com.fit2cloud.base.entity.Role;
 import com.fit2cloud.dto.permission.Permission;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -16,12 +16,12 @@ import java.util.List;
 @Data
 public class UserInfoResponse {
 
-    @ApiModelProperty(value = "用户拥有的所有角色", notes = "用户拥有的所有角色")
+    @Schema(title = "用户拥有的所有角色", description = "用户拥有的所有角色")
     private List<Role> roles;
 
-    @ApiModelProperty(value = "当前角色", notes = "当前角色")
+    @Schema(title = "当前角色", description = "当前角色")
     private Role currentRole;
 
-    @ApiModelProperty(value = "当前角色权限", notes = "当前角色权限")
+    @Schema(title = "当前角色权限", description = "当前角色权限")
     private Permission permission;
 }

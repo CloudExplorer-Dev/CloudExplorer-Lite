@@ -2,8 +2,8 @@ package com.fit2cloud.controller;
 
 import com.fit2cloud.common.utils.FileUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -17,12 +17,12 @@ import java.io.File;
 @RestController
 @RequestMapping("/api/licence")
 @Validated
-@Api("证书相关接口")
+@Tag(name = "证书相关接口")
 public class LicenceController {
 
     @GetMapping("version")
-    @ApiOperation(value = "获取版本号", notes = "获取版本号")
-    @PreAuthorize("hasAnyCePermission('ABOUT:READ')")
+    @Operation(summary = "获取版本号", description = "获取版本号")
+    @PreAuthorize("@cepc.hasAnyCePermission('ABOUT:READ')")
     public ResultHolder<String> getVersion() {
         File versionFile = new File("/opt/cloudexplorer/VERSION");
         String version = StringUtils.trim(FileUtils.txt2String(versionFile));

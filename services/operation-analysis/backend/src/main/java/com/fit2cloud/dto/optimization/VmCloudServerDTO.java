@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.base.entity.VmCloudServer;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -24,34 +24,42 @@ public class VmCloudServerDTO extends VmCloudServer {
     @Serial
     private static final long serialVersionUID = 2780061897725836746L;
 
-    @ApiModelProperty("组织名称")
+    @Schema(title = "组织名称")
     private String organizationName;
-    @ApiModelProperty("工作空间名称")
+
+    @Schema(title = "工作空间名称")
     private String workspaceName;
-    @ApiModelProperty("组织ID")
+
+    @Schema(title = "组织ID")
     private String organizationId;
-    @ApiModelProperty("工作空间ID")
+
+    @Schema(title = "工作空间ID")
     private String workspaceId;
-    @ApiModelProperty("云账号名称")
+
+    @Schema(title = "云账号名称")
     private String accountName;
-    @ApiModelProperty("企业项目")
+
+    @Schema(title = "企业项目")
     private String cloudProjectName;
-    @ApiModelProperty("云平台")
+
+    @Schema(title = "云平台")
     private String platform;
-    @ApiModelProperty("申请用户名")
+
+    @Schema(title = "申请用户名")
     private String applyUserName;
-    @ApiModelProperty("删除时间")
+
+    @Schema(title = "删除时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime deleteTime;
 
-    @ApiModelProperty("CPU使用率")
+    @Schema(title = "CPU使用率")
     private MonitoringDataValueDTO cpuMonitoringValue;
 
-    @ApiModelProperty("内存使用率")
+    @Schema(title = "内存使用率")
     private MonitoringDataValueDTO memoryMonitoringValue;
 
-    @ApiModelProperty("优化建议")
+    @Schema(title = "优化建议")
     private String content;
 }

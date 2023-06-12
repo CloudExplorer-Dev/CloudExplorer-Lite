@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -18,24 +18,29 @@ import java.time.LocalDateTime;
  */
 @Data
 public class ComplianceRuleGroupResponse {
-    @ApiModelProperty(name = "主键id", notes = "主键id")
+
+    @Schema(title = "主键id", description = "主键id")
     private String id;
-    @ApiModelProperty(name = "规则组名称", notes = "规则组名称")
+
+    @Schema(title = "规则组名称", description = "规则组名称")
     private String name;
-    @ApiModelProperty(name = "描述", notes = "描述")
+
+    @Schema(title = "描述", description = "描述")
     private String description;
-    @ApiModelProperty(name = "是否内置", notes = "是否内置")
+
+    @Schema(title = "是否内置", description = "是否内置")
     private Boolean builtIn;
 
-    @ApiModelProperty(name = "创建时间", notes = "创建时间")
+    @Schema(title = "创建时间", description = "创建时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime createTime;
 
-    @ApiModelProperty(name = "修改时间", notes = "修改时间")
+    @Schema(title = "修改时间", description = "修改时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime updateTime;
+
 }

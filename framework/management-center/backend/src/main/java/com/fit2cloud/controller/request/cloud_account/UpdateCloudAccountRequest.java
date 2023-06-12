@@ -16,11 +16,11 @@ import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.common.validator.handler.ExistQueryWrapperValidatedHandler;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -38,21 +38,21 @@ import java.util.Arrays;
         mapper = CloudAccountMapper.class)
 @JsonDeserialize(using = UpdateCloudAccountRequest.Deserializer.class)
 public class UpdateCloudAccountRequest {
-    @ApiModelProperty(value = "云账号id", notes = "云账号id")
+    @Schema(title = "云账号id", description = "云账号id")
     @NotNull(message = "云账号id不能为空")
     @CustomValidated(groups = ValidationGroup.UPDATE.class, mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
     private String id;
 
-    @ApiModelProperty(value = "云账号名称", notes = "云账号名称")
+    @Schema(title = "云账号名称", description = "云账号名称")
     @NotNull(message = "云账号名称不能为null")
     @CustomValidated(groups = ValidationGroup.SAVE.class, mapper = CloudAccountMapper.class, field = "name", handler = ExistHandler.class, message = "{i18n.cloud_account.name.not.repeat}", exist = true)
     private String name;
 
-    @ApiModelProperty(value = "凭证信息", notes = "凭证信息")
+    @Schema(title = "凭证信息", description = "凭证信息")
     @NotNull(message = "{i18n.cloud_account.credential.is.not.empty}")
     private Credential credential;
 
-    @ApiModelProperty(value = "云平台", notes = "云平台")
+    @Schema(title = "云平台", description = "云平台")
     @NotNull(message = "{i18n.cloud_account.platform,is.not.empty}")
     private String platform;
 

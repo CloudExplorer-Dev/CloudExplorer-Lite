@@ -1,10 +1,10 @@
 package com.fit2cloud.controller.request.compliance_scan;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -15,11 +15,13 @@ import java.util.List;
  */
 @Data
 public class ComplianceSyncRequest {
-    @ApiModelProperty(value = "需要扫描的云账号id", notes = "需要扫描的云账号id")
+
+    @Schema(title = "需要扫描的云账号id", description = "需要扫描的云账号id")
     @Size(min = 1, message = "云账号最少传入一个")
     @NotNull(message = "云账号不能为空")
     private List<String> cloudAccountIds;
-    @ApiModelProperty(value = "需要扫描的规则组id", notes = "需要扫描的规则组id")
+
+    @Schema(title = "需要扫描的规则组id", description = "需要扫描的规则组id")
     @Size(min = 1, message = "规则组最小传入一个")
     @NotNull(message = "规则组不能为空")
     private List<String> ruleGroupIds;

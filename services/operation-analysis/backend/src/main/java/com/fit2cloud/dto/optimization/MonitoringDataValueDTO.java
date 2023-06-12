@@ -1,6 +1,6 @@
 package com.fit2cloud.dto.optimization;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 
 /**
  * 描述：监测数据值dto
+ *
  * @author jianneng
  */
 @Data
@@ -16,11 +17,13 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class MonitoringDataValueDTO {
 
-    @ApiModelProperty("最大值")
+    @Schema(title = "最大值")
     private BigDecimal maxValue;
-    @ApiModelProperty("最小值")
+
+    @Schema(title = "最小值")
     private BigDecimal minValue;
-    @ApiModelProperty("平均值")
+
+    @Schema(title = "平均值")
     private BigDecimal avgValue;
 
 }

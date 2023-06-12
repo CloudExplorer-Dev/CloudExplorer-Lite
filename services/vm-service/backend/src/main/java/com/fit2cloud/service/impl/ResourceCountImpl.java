@@ -13,7 +13,7 @@ import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.service.IResourceCountService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 

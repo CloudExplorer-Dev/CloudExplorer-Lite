@@ -1,12 +1,12 @@
 package com.fit2cloud.autoconfigure;
 
 import com.fit2cloud.dto.module.ModuleInfo;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @Component
 public class ServerInfo {

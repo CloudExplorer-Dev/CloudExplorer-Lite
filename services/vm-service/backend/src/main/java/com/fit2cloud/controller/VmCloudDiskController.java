@@ -14,15 +14,15 @@ import com.fit2cloud.controller.request.disk.*;
 import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.service.IVmCloudDiskService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -32,49 +32,49 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/disk")
 @Validated
-@Api("硬盘相关接口")
+@Tag(name = "硬盘相关接口")
 public class VmCloudDiskController {
     @Resource
     private IVmCloudDiskService diskService;
 
-    @ApiOperation(value = "分页查询硬盘", notes = "分页查询硬盘")
+    @Operation(summary = "分页查询硬盘", description = "分页查询硬盘")
     @GetMapping("/page")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:READ')")
     public ResultHolder<IPage<VmCloudDiskDTO>> list(@Validated PageVmCloudDiskRequest pageVmCloudDiskRequest) {
         return ResultHolder.success(diskService.pageVmCloudDisk(pageVmCloudDiskRequest));
     }
 
-    @ApiOperation(value = "查询硬盘数量", notes = "查询硬盘数量")
+    @Operation(summary = "查询硬盘数量", description = "查询硬盘数量")
     @GetMapping("/count")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:READ')")
     public ResultHolder<Long> count() {
         return ResultHolder.success(diskService.countDisk());
     }
 
-    @ApiOperation(value = "查询可以挂载磁盘的云主机")
+    @Operation(summary = "查询可以挂载磁盘的云主机")
     @GetMapping("/listVm")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:READ')")
     public ResultHolder<List<VmCloudServerDTO>> cloudServerList(ListVmRequest req) {
         return ResultHolder.success(diskService.cloudServerList(req));
     }
 
-    @ApiOperation(value = "根据ID查询磁盘信息")
+    @Operation(summary = "根据ID查询磁盘信息")
     @GetMapping("/showCloudDiskById/{id}")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:READ')")
     public ResultHolder<VmCloudDiskDTO> cloudDisk(@PathVariable("id") String id) {
         return ResultHolder.success(diskService.cloudDisk(id));
     }
 
     @GetMapping("/createDiskForm/{platform}")
-    @ApiOperation(value = "根据云平台查询创建磁盘的表单数据")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:READ')")
+    @Operation(summary = "根据云平台查询创建磁盘的表单数据")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:READ')")
     public ResultHolder<FormObject> findCreateDiskForm(@PathVariable("platform") String platform) {
         return ResultHolder.success(diskService.getCreateDiskForm(platform));
     }
 
-    @ApiOperation(value = "创建磁盘")
+    @Operation(summary = "创建磁盘")
     @PostMapping("createDisk")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:CREATE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:CREATE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.ADD,
             content = "'创建磁盘['+#request.diskName+']'",
             joinResourceType = ResourceTypeEnum.CLOUD_SERVER,
@@ -84,9 +84,9 @@ public class VmCloudDiskController {
         return ResultHolder.success(diskService.createDisk(request));
     }
 
-    @ApiOperation(value = "扩容磁盘")
+    @Operation(summary = "扩容磁盘")
     @PutMapping("enlarge")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:RESIZE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:RESIZE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.ENLARGE,
             resourceId = "#req.id",
             joinResourceType = ResourceTypeEnum.CLOUD_SERVER,
@@ -97,9 +97,9 @@ public class VmCloudDiskController {
         return ResultHolder.success(diskService.enlarge(req.getId(), req.getNewDiskSize()));
     }
 
-    @ApiOperation(value = "挂载磁盘")
+    @Operation(summary = "挂载磁盘")
     @PutMapping("attach")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:ATTACH')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:ATTACH')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK,
             operated = OperatedTypeEnum.ATTACH,
             resourceId = "#req.id",
@@ -111,34 +111,34 @@ public class VmCloudDiskController {
         return ResultHolder.success(diskService.attach(req.getId(), req.getInstanceUuid(), req.getDeleteWithInstance()));
     }
 
-    @ApiOperation(value = "卸载磁盘")
+    @Operation(summary = "卸载磁盘")
     @PutMapping("detach/{id}")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DETACH')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:DETACH')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.DETACH,
             resourceId = "#id",
             content = "'磁盘卸载'",
             param = "#id")
-    public ResultHolder<Boolean> detach(@ApiParam("主键 ID")
+    public ResultHolder<Boolean> detach(@Parameter(name = "主键 ID")
                                         @NotNull(message = "{i18n.primary.key.cannot.be.null}")
                                         @CustomValidated(mapper = BaseVmCloudDiskMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                         @PathVariable("id") String id) {
         return ResultHolder.success(diskService.detach(id));
     }
 
-    @ApiOperation(value = "删除磁盘")
+    @Operation(summary = "删除磁盘")
     @DeleteMapping("delete/{id}")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.DELETE, resourceId = "#id", content = "'删除磁盘'", param = "#id")
-    public ResultHolder<Boolean> delete(@ApiParam("主键 ID")
+    public ResultHolder<Boolean> delete(@Parameter(name = "主键 ID")
                                         @NotNull(message = "{i18n.primary.key.cannot.be.null}")
                                         @CustomValidated(mapper = BaseVmCloudDiskMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                         @PathVariable("id") String id) {
         return ResultHolder.success(diskService.delete(id));
     }
 
-    @ApiOperation(value = "批量挂载磁盘")
+    @Operation(summary = "批量挂载磁盘")
     @PutMapping("batchAttach")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:ATTACH')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:ATTACH')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_ATTACH, resourceId = "#req.ids",
             joinResourceType = ResourceTypeEnum.CLOUD_SERVER,
             joinResourceId = "#req.instanceUuid",
@@ -147,25 +147,25 @@ public class VmCloudDiskController {
         return ResultHolder.success(diskService.batchAttach(req.getIds(), req.getInstanceUuid(), req.getDeleteWithInstance()));
     }
 
-    @ApiOperation(value = "批量卸载磁盘")
+    @Operation(summary = "批量卸载磁盘")
     @PutMapping("batchDetach")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DETACH')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:DETACH')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_DETACH, resourceId = "#ids", content = "'批量卸载磁盘'", param = "#ids")
     public ResultHolder<Boolean> batchDetach(@RequestBody String[] ids) {
         return ResultHolder.success(diskService.batchDetach(ids));
     }
 
-    @ApiOperation(value = "批量删除磁盘")
+    @Operation(summary = "批量删除磁盘")
     @DeleteMapping("batchDelete")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_DELETE, content = "'批量删除磁盘'", param = "#ids")
     public ResultHolder<Boolean> batchDelete(@RequestBody String[] ids) {
         return ResultHolder.success(diskService.batchDelete(ids));
     }
 
-    @ApiOperation(value = "磁盘授权")
+    @Operation(summary = "磁盘授权")
     @PostMapping("/grant")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:AUTH')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:AUTH')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_AUTHORISATION,
             resourceId = "#grantDiskRequest.ids",
             content = "#grantDiskRequest.grant?'磁盘批量授权':'磁盘批量取消授权'",
@@ -174,9 +174,9 @@ public class VmCloudDiskController {
         return ResultHolder.success(diskService.grant(grantDiskRequest));
     }
 
-    @ApiOperation(value = "批量放入回收站")
+    @Operation(summary = "批量放入回收站")
     @PutMapping("batchRecycleDisks")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.BATCH_RECYCLE,
             resourceId = "#ids",
             content = "'磁盘放入回收站'",
@@ -185,11 +185,11 @@ public class VmCloudDiskController {
         return ResultHolder.success(diskService.batchRecycleDisks(ids));
     }
 
-    @ApiOperation(value = "放入回收站")
+    @Operation(summary = "放入回收站")
     @PutMapping("recycleDisk/{id}")
-    @PreAuthorize("hasAnyCePermission('CLOUD_DISK:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.RECYCLE, resourceId = "#id", param = "#id")
-    public ResultHolder<Boolean> recycleDisk(@ApiParam("主键 ID")
+    public ResultHolder<Boolean> recycleDisk(@Parameter(name = "主键 ID")
                                              @NotNull(message = "{i18n.primary.key.cannot.be.null}")
                                              @CustomValidated(mapper = BaseVmCloudDiskMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                              @PathVariable("id") String id) {

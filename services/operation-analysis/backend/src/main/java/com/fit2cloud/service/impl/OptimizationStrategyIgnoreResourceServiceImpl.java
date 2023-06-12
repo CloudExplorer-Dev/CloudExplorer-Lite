@@ -24,11 +24,11 @@ import com.fit2cloud.dto.optimization.VmCloudServerDTO;
 import com.fit2cloud.service.IOptimizationStrategyIgnoreResourceService;
 import com.fit2cloud.service.IPermissionService;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

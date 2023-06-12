@@ -8,8 +8,9 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -30,7 +31,12 @@ public class JwtInitConfig {
             lock.lock(10, TimeUnit.SECONDS);
             //redis 读取 jwt key
             RBucket<String> bucket = redissonClient.getBucket(JwtTokenUtils.JWT_BUCKET);
-            String jwtKey = bucket.get();
+            String jwtKey = null;
+            try {
+                jwtKey = bucket.get();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             if (StringUtils.isBlank(jwtKey)) {
                 jwtKey = JwtTokenUtils.initJwtKey();
 

@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.request.view;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -11,6 +11,8 @@ import lombok.Data;
  */
 @Data
 public class ListRuleGroupRiskDataRequest {
-    @ApiModelProperty(value = "云账号id", notes = "云账号id")
+
+    @Schema(title = "云账号id", description = "云账号id")
     private String cloudAccountId;
+
 }

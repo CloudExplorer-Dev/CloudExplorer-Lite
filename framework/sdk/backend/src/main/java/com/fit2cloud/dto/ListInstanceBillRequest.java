@@ -1,7 +1,7 @@
 package com.fit2cloud.dto;
 
 import com.fit2cloud.common.charging.constants.BillingGranularityConstants;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -12,12 +12,13 @@ import lombok.Data;
  */
 @Data
 public class ListInstanceBillRequest {
-    @ApiModelProperty("月份")
+
+    @Schema(title = "月份")
     private String month;
 
-    @ApiModelProperty(value = "生成粒度", example = "DAY HOUR MONTH")
+    @Schema(title = "生成粒度", example = "DAY HOUR MONTH")
     private BillingGranularityConstants granularity;
 
-    @ApiModelProperty(value = "云账号id")
+    @Schema(title = "云账号id")
     private String cloudAccountId;
 }

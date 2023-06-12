@@ -4,8 +4,8 @@ import com.fit2cloud.common.validator.annnotaion.CustomQueryWrapperValidated;
 import com.fit2cloud.common.validator.function.ValidatorFunction;
 import lombok.SneakyThrows;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * {@code @Author:张少虎}

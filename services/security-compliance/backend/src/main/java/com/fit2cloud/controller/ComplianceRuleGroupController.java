@@ -14,16 +14,16 @@ import com.fit2cloud.controller.response.rule_group.ComplianceRuleGroupResponse;
 import com.fit2cloud.dao.entity.ComplianceRuleGroup;
 import com.fit2cloud.dao.mapper.ComplianceRuleGroupMapper;
 import com.fit2cloud.service.IComplianceRuleGroupService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -35,14 +35,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/compliance_rule_group")
 @Validated
-@Api(value = "合规规则组相关接口", tags = "合规规则组相关接口")
+@Tag(name = "合规规则组相关接口", description = "合规规则组相关接口")
 public class ComplianceRuleGroupController {
     @Resource
     private IComplianceRuleGroupService complianceRuleGroupService;
 
     @GetMapping
-    @ApiOperation("获取所有规则组")
-    @PreAuthorize("hasAnyCePermission('RULE:READ','SCAN:READ')")
+    @Operation(summary = "获取所有规则组")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:READ','SCAN:READ')")
     public ResultHolder<List<ComplianceRuleGroupResponse>> list() {
         return ResultHolder.success(complianceRuleGroupService.list().stream().map(item -> {
             ComplianceRuleGroupResponse complianceRuleGroupResponse = new ComplianceRuleGroupResponse();
@@ -52,8 +52,8 @@ public class ComplianceRuleGroupController {
     }
 
     @GetMapping("/{complianceRuleGroupId}")
-    @ApiOperation("根据合规规则组id获取规则组信息")
-    @PreAuthorize("hasAnyCePermission('RULE:READ','SCAN:READ')")
+    @Operation(summary = "根据合规规则组id获取规则组信息")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:READ','SCAN:READ')")
     public ResultHolder<ComplianceRuleGroupResponse> one(@PathVariable("complianceRuleGroupId") String complianceRuleGroupId) {
         ComplianceRuleGroup complianceRuleGroup = complianceRuleGroupService.getById(complianceRuleGroupId);
         ComplianceRuleGroupResponse complianceRuleGroupResponse = new ComplianceRuleGroupResponse();
@@ -62,8 +62,8 @@ public class ComplianceRuleGroupController {
     }
 
     @GetMapping("/{currentPage}/{limit}")
-    @ApiOperation(value = "分页查询合规规则组", notes = "分页查询规格规则组")
-    @PreAuthorize("hasAnyCePermission('RULE:READ')")
+    @Operation(summary = "分页查询合规规则组", description = "分页查询规格规则组")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:READ')")
     public ResultHolder<Page<ComplianceRuleGroupResponse>> page(@NotNull(message = "当前页不能为空")
                                                                 @Min(message = "当前页不能小于0", value = 1)
                                                                 @PathVariable("currentPage")
@@ -77,8 +77,8 @@ public class ComplianceRuleGroupController {
     }
 
     @PostMapping
-    @ApiOperation(value = "插入合规规则组", notes = "插入合规规则组")
-    @PreAuthorize("hasAnyCePermission('RULE:CREATE')")
+    @Operation(summary = "插入合规规则组", description = "插入合规规则组")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:CREATE')")
     @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE_GROUP, operated = OperatedTypeEnum.ADD,
             resourceId = "#request.id",
             content = "'创建合规规则组['+#request.name+']'",
@@ -90,8 +90,8 @@ public class ComplianceRuleGroupController {
     }
 
     @PutMapping
-    @ApiOperation(value = "修改合规规则组", notes = "修改合规规则组")
-    @PreAuthorize("hasAnyCePermission('RULE:EDIT')")
+    @Operation(summary = "修改合规规则组", description = "修改合规规则组")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE_GROUP, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#request.id",
             content = "'修改合规规则组['+#request.name+']'",
@@ -102,9 +102,9 @@ public class ComplianceRuleGroupController {
         return ResultHolder.success(complianceRuleGroupResponse);
     }
 
-    @ApiOperation(value = "删除规则组", notes = "删除规则组根据规则组id")
+    @Operation(summary = "删除规则组", description = "删除规则组根据规则组id")
     @DeleteMapping("/{compliance_rule_group_id}")
-    @PreAuthorize("hasAnyCePermission('RULE:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('RULE:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.COMPLIANCE_RULE_GROUP, operated = OperatedTypeEnum.DELETE,
             resourceId = "#complianceRuleGroupId",
             content = "'删除合规规则组['+#complianceRuleGroupId+']'",

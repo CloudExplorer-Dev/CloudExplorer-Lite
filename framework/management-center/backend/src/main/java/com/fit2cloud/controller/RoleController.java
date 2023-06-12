@@ -15,25 +15,25 @@ import com.fit2cloud.controller.request.role.UpdateRoleRequest;
 import com.fit2cloud.dto.permission.ModulePermission;
 import com.fit2cloud.service.IRolePermissionService;
 import com.fit2cloud.service.IRoleService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
 
 
 @RestController
 @RequestMapping("/api/role")
-@Api("角色相关接口")
+@Tag(name = "角色相关接口")
 public class RoleController {
 
     @Resource
@@ -41,8 +41,8 @@ public class RoleController {
     @Resource
     IRolePermissionService rolePermissionService;
 
-    @ApiOperation(value = "添加角色", notes = "添加角色")
-    @PreAuthorize("hasAnyCePermission('ROLE:CREATE')")
+    @Operation(summary = "添加角色", description = "添加角色")
+    @PreAuthorize("@cepc.hasAnyCePermission('ROLE:CREATE')")
     @PostMapping
     @OperatedLog(resourceType = ResourceTypeEnum.ROLE, operated = OperatedTypeEnum.ADD,
             content = "'添加了角色['+#request.name+']'",
@@ -57,8 +57,8 @@ public class RoleController {
         return ResultHolder.success(roleService.getById(role.getId()));
     }
 
-    @ApiOperation(value = "更新角色", notes = "更新角色")
-    @PreAuthorize("hasAnyCePermission('ROLE:EDIT')")
+    @Operation(summary = "更新角色", description = "更新角色")
+    @PreAuthorize("@cepc.hasAnyCePermission('ROLE:EDIT')")
     @PutMapping
     @OperatedLog(resourceType = ResourceTypeEnum.ROLE, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#request.id",
@@ -75,15 +75,15 @@ public class RoleController {
         return ResultHolder.success(roleService.getById(role.getId()));
     }
 
-    @ApiOperation(value = "删除角色", notes = "删除角色")
-    @PreAuthorize("hasAnyCePermission('ROLE:DELETE')")
+    @Operation(summary = "删除角色", description = "删除角色")
+    @PreAuthorize("@cepc.hasAnyCePermission('ROLE:DELETE')")
     @DeleteMapping
     @OperatedLog(resourceType = ResourceTypeEnum.ROLE, operated = OperatedTypeEnum.DELETE,
             resourceId = "#id",
             content = "'删除角色'",
             param = "#id")
     public ResultHolder<Boolean> removeRole(
-            @ApiParam("角色ID")
+            @Parameter(name = "角色ID")
             @NotNull(message = "角色ID不能为空")
             @CustomValidated(mapper = BaseRoleMapper.class, handler = ExistHandler.class, message = "角色ID不存在", exist = false)
             @RequestParam("id")
@@ -91,26 +91,26 @@ public class RoleController {
         return ResultHolder.success(roleService.deleteRoleById(id));
     }
 
-    @ApiOperation(value = "批量删除角色", notes = "批量删除角色")
-    @PreAuthorize("hasAnyCePermission('ROLE:DELETE')")
+    @Operation(summary = "批量删除角色", description = "批量删除角色")
+    @PreAuthorize("@cepc.hasAnyCePermission('ROLE:DELETE')")
     @DeleteMapping("batch")
     @OperatedLog(resourceType = ResourceTypeEnum.ROLE, operated = OperatedTypeEnum.BATCH_DELETE,
             resourceId = "#ids",
             content = "'批量删除了'+#ids.size+'个角色'",
             param = "#ids")
     public ResultHolder<Boolean> batchRemoveRole(
-            @ApiParam("角色ID列表")
+            @Parameter(name = "角色ID列表")
             @Size(min = 1, message = "至少需要一个角色ID")
             @RequestBody
             List<String> ids) {
         return ResultHolder.success(roleService.deleteRolesByIds(ids));
     }
 
-    @ApiOperation(value = "查看模块权限", notes = "查看模块权限")
-    @PreAuthorize("hasAnyCePermission('ROLE:READ')")
+    @Operation(summary = "查看模块权限", description = "查看模块权限")
+    @PreAuthorize("@cepc.hasAnyCePermission('ROLE:READ')")
     @GetMapping("module-permission")
     public ResultHolder<Map<String, ModulePermission>> listModulePermissionByRole(
-            @ApiParam("角色")
+            @Parameter(name = "角色")
             @NotNull(message = "角色不能为空")
             @RequestParam("role")
             RoleConstants.ROLE role
@@ -118,11 +118,11 @@ public class RoleController {
         return ResultHolder.success(rolePermissionService.getAllModulePermission(role));
     }
 
-    @ApiOperation(value = "查看角色权限", notes = "查看角色权限")
-    @PreAuthorize("hasAnyCePermission('ROLE:READ')")
+    @Operation(summary = "查看角色权限", description = "查看角色权限")
+    @PreAuthorize("@cepc.hasAnyCePermission('ROLE:READ')")
     @GetMapping("permission")
     public ResultHolder<List<String>> listRolePermissionByRole(
-            @ApiParam("角色ID")
+            @Parameter(name = "角色ID")
             @NotNull(message = "角色ID不能为空")
             @RequestParam("id")
             String id
@@ -130,15 +130,15 @@ public class RoleController {
         return ResultHolder.success(rolePermissionService.getCachedRolePermissionsByRole(id));
     }
 
-    @ApiOperation(value = "更新角色权限", notes = "更新角色权限")
-    @PreAuthorize("hasAnyCePermission('ROLE:EDIT')")
+    @Operation(summary = "更新角色权限", description = "更新角色权限")
+    @PreAuthorize("@cepc.hasAnyCePermission('ROLE:EDIT')")
     @PostMapping("permission")
     @OperatedLog(resourceType = ResourceTypeEnum.ROLE, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#id",
             content = "'更新角色权限为['+#permissionIds+']'",
             param = "#permissionIds")
     public ResultHolder<List<String>> updateRolePermissionByRole(
-            @ApiParam("角色ID")
+            @Parameter(name = "角色ID")
             @NotNull(message = "角色ID不能为空")
             @CustomValidated(mapper = BaseRoleMapper.class, handler = ExistHandler.class, message = "角色ID不存在", exist = false)
             @RequestParam("id")

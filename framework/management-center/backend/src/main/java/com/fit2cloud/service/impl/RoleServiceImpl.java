@@ -12,7 +12,7 @@ import com.fit2cloud.service.IRolePermissionService;
 import com.fit2cloud.service.IRoleService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

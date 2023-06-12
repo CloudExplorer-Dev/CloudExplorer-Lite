@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.request;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -11,6 +11,7 @@ import lombok.Data;
  */
 @Data
 public class ListCloudAccountByPolicyRequest {
-    @ApiModelProperty(value = "计费策略id", required = false, notes = "计费策略id")
+
+    @Schema(title = "计费策略id", required = false)
     private String billingPolicyId;
 }

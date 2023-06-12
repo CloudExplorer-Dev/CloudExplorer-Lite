@@ -1,6 +1,6 @@
 package com.fit2cloud.common.event;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * {@code @Author:张少虎}

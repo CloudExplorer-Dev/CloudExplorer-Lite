@@ -1,9 +1,9 @@
 package com.fit2cloud.controller.request.workspace;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -12,22 +12,22 @@ import java.util.List;
  **/
 @Data
 public class WorkspaceBatchCreateRequest {
-    @ApiModelProperty("所属组织id")
+    @Schema(title = "所属组织id")
     private String organizationId;
 
     @Size(min = 1, message = "{i18n.workspace.is.not.empty}")
-    @ApiModelProperty("工作空间数据")
+    @Schema(title = "工作空间数据")
     private List<WorkspaceBatchCreateRequest.WorkspaceDetails> workspaceDetails;
 
     @Data
     public static class WorkspaceDetails {
-        @ApiModelProperty(value = "工作空间id", notes = "工作空间id")
+        @Schema(title = "工作空间id", description = "工作空间id")
         private String id;
-        @ApiModelProperty(value = "工作空间名称", notes = "工作空间名称")
+        @Schema(title = "工作空间名称", description = "工作空间名称")
         private String name;
-        @ApiModelProperty("所属组织id")
+        @Schema(title = "所属组织id")
         private String organizationId;
-        @ApiModelProperty(value = "工作空间描述", notes = "工作空间描述")
+        @Schema(title = "工作空间描述", description = "工作空间描述")
         private String description;
     }
 

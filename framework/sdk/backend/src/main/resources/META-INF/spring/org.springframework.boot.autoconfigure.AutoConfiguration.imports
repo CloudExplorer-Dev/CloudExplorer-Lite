@@ -6,7 +6,8 @@ com.fit2cloud.autoconfigure.JobSettingConfig
 com.fit2cloud.autoconfigure.QuartzConfig
 com.fit2cloud.autoconfigure.RestTemplateConfig
 com.fit2cloud.autoconfigure.LocaleConfig
-com.fit2cloud.autoconfigure.SwaggerConfig
+com.fit2cloud.autoconfigure.SwaggerOpenApiConfig
 com.fit2cloud.autoconfigure.ThreadPoolConfig
+com.fit2cloud.autoconfigure.RedisConfig
 com.fit2cloud.autoconfigure.MyBatisPlusConfig
-
+com.fit2cloud.autoconfigure.ChargingConfig

@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.response.view;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,12 +15,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ComplianceViewCountResponse {
-    @ApiModelProperty(value = "合规数量", notes = "合规数量")
+
+    @Schema(title = "合规数量", description = "合规数量")
     private int complianceCount;
-    @ApiModelProperty(value = "总数", notes = "总数")
+
+    @Schema(title = "总数", description = "总数")
     private int total;
-    @ApiModelProperty(value = "不合规数量", notes = "不合规数量")
+
+    @Schema(title = "不合规数量", description = "不合规数量")
     private int notComplianceCount;
-    @ApiModelProperty(value = "不合规资源占比", notes = "不合规资源占比")
+
+    @Schema(title = "不合规资源占比", description = "不合规资源占比")
     private double notCompliancePercentage;
 }

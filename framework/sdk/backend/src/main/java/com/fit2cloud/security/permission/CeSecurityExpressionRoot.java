@@ -40,7 +40,7 @@ public class CeSecurityExpressionRoot extends SecurityExpressionRoot {
 
     /**
      * 判断是否有当前模块内权限
-     * // @PreAuthorize("hasAnyCePermission('group1:operate1', 'group2:operate2')")
+     * // @PreAuthorize("@cepc.hasAnyCePermission('group1:operate1', 'group2:operate2')")
      */
     public boolean hasAnyCePermission(String... permissions) {
         Set<String> authorities = getCurrentModulePermissions();

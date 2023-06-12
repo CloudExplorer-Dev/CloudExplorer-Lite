@@ -31,18 +31,22 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
         String path = request.getPath().value();
 
-        if (HttpMethod.GET.matches(request.getMethodValue())) {
+        if (HttpMethod.GET.equals(request.getMethod())) {
             String[] vs = StringUtils.split(path, "/");
             String var = null;
+            String var2 = "";
             if (vs.length > 1) {
                 var = vs[1];
+            }
+            if (vs.length > 2) {
+                var2 = vs[2];
             }
 
             //api和assets资源不需要判断
             if (var == null || !(StringUtils.equals("api", var) || StringUtils.equals("assets", var))) {
                 //获取子模块的静态页面如果没有这个头说明是直接访问的子模块，需要返回基座，让基座转发
                 String microApp = request.getHeaders().getFirst("ce-micro-app");
-                if (StringUtils.isBlank(microApp)) {
+                if (StringUtils.isBlank(microApp) && !StringUtils.equals("v3/api-docs", var + "/" + var2)) {
                     //第一次访问页面需要跳基座
                     try {
                         return WriteMessageUtil.write(response, HttpStatus.OK, html);

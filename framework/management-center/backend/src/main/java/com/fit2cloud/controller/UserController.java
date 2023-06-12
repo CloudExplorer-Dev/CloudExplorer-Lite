@@ -15,15 +15,15 @@ import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.UserNotifySettingDTO;
 import com.fit2cloud.dto.UserOperateDto;
 import com.fit2cloud.service.IUserService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -32,35 +32,35 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/user")
-@Api("用户相关接口")
+@Tag(name = "用户相关接口")
 @Validated
 public class UserController {
     @Resource
     IUserService userService;
 
-    @ApiOperation(value = "分页查询用户")
-    @PreAuthorize("hasAnyCePermission('USER:READ')")
+    @Operation(summary = "分页查询用户")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:READ')")
     @GetMapping("/page")
     public ResultHolder<IPage<UserDto>> listUser(PageUserRequest pageUserRequest) {
         return ResultHolder.success(userService.pageUser(pageUserRequest));
     }
 
-    @ApiOperation(value = "管理员/组织管理员获取可管理的用户列表")
-    @PreAuthorize("hasAnyCePermission('USER:READ')")
+    @Operation(summary = "管理员/组织管理员获取可管理的用户列表")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:READ')")
     @GetMapping("/manage/list")
     public ResultHolder<List<User>> listUser() {
         return ResultHolder.success(userService.getManageUserSimpleList(null));
     }
 
-    @ApiOperation(value = "查询用户总数")
-    @PreAuthorize("hasAnyCePermission('USER:READ')")
+    @Operation(summary = "查询用户总数")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:READ')")
     @GetMapping("/count")
     public ResultHolder<Long> count() {
         return ResultHolder.success(userService.countUser());
     }
 
-    @ApiOperation(value = "添加用户")
-    @PreAuthorize("hasAnyCePermission('USER:CREATE')")
+    @Operation(summary = "添加用户")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:CREATE')")
     @PostMapping("/add")
     @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.ADD,
             content = "'添加了用户['+#request.name+']'",
@@ -69,8 +69,8 @@ public class UserController {
         return ResultHolder.success(userService.createUser(request));
     }
 
-    @ApiOperation(value = "更新用户")
-    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @Operation(summary = "更新用户")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:EDIT')")
     @PostMapping("/update")
     @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#request.id",
@@ -80,8 +80,8 @@ public class UserController {
         return ResultHolder.success(userService.updateUser(request));
     }
 
-    @ApiOperation(value = "更新密码")
-    @PreAuthorize("hasAnyCePermission('USER:EDIT_PASSWORD')")
+    @Operation(summary = "更新密码")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:EDIT_PASSWORD')")
     @PostMapping("/updatePwd")
     @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#user.id",
@@ -90,42 +90,42 @@ public class UserController {
         return ResultHolder.success(userService.updatePwd(user));
     }
 
-    @ApiOperation(value = "查询用户")
-    @PreAuthorize("hasAnyCePermission('USER:READ')")
+    @Operation(summary = "查询用户")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:READ')")
     @GetMapping("/{id}")
-    public ResultHolder<UserDto> getUser(@ApiParam("主键 ID")
+    public ResultHolder<UserDto> getUser(@Parameter(name = "主键 ID")
                                          @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                          @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                          @PathVariable("id") String id) {
         return ResultHolder.success(userService.getUser(id));
     }
 
-    @ApiOperation(value = "删除用户")
-    @PreAuthorize("hasAnyCePermission('USER:DELETE')")
+    @Operation(summary = "删除用户")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:DELETE')")
     @DeleteMapping("/{id}")
     @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.DELETE,
             resourceId = "#id",
             content = "'删除用户'",
             param = "#id")
-    public ResultHolder<Boolean> delete(@ApiParam("主键 ID")
+    public ResultHolder<Boolean> delete(@Parameter(name = "主键 ID")
                                         @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                         @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                         @PathVariable("id") String id) {
         return ResultHolder.success(userService.deleteUser(id));
     }
 
-    @ApiOperation(value = "根据用户ID查询用户角色信息")
-    @PreAuthorize("hasAnyCePermission('USER:READ')")
+    @Operation(summary = "根据用户ID查询用户角色信息")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:READ')")
     @GetMapping(value = "/role/info/{id}")
-    public ResultHolder<UserOperateDto> roleInfo(@ApiParam("主键 ID") @NotNull(message = "{i18n.user.id.cannot.be.null}")
+    public ResultHolder<UserOperateDto> roleInfo(@Parameter(name = "主键 ID") @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                                  @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                                  @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                                  @PathVariable("id") String id) {
         return ResultHolder.success(userService.userRoleInfo(id));
     }
 
-    @ApiOperation(value = "启停用户")
-    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @Operation(summary = "启停用户")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/changeStatus")
     @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#user.id",
@@ -135,7 +135,7 @@ public class UserController {
         return ResultHolder.success(userService.changeUserStatus(user));
     }
 
-    @PreAuthorize("hasAnyCePermission('USER:NOTIFICATION_SETTING')")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:NOTIFICATION_SETTING')")
     @PostMapping(value = "/notificationSetting")
     @OperatedLog(resourceType = ResourceTypeEnum.USER, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#userNotificationSetting.id",
@@ -145,14 +145,14 @@ public class UserController {
         return ResultHolder.success(userService.updateUserNotification(userNotificationSetting));
     }
 
-    @PreAuthorize("hasAnyCePermission('USER:NOTIFICATION_SETTING')")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:NOTIFICATION_SETTING')")
     @GetMapping(value = "/findUserNotification/{userId}")
     public ResultHolder<UserNotifySettingDTO> findUserNotification(@PathVariable String userId) {
         return ResultHolder.success(userService.findUserNotification(userId));
     }
 
-    @ApiOperation(value = "批量添加用户角色")
-    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @Operation(summary = "批量添加用户角色")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/addRole")
     @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.BATCH_ADD,
             resourceId = "#userBatchAddRoleRequest.userIdList",
@@ -162,8 +162,8 @@ public class UserController {
         return ResultHolder.success(userService.addUserRole(userBatchAddRoleRequest));
     }
 
-    @ApiOperation(value = "批量添加用户角色V2")
-    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @Operation(summary = "批量添加用户角色V2")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/addRole/v2")
     @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.BATCH_ADD,
             resourceId = "#userBatchAddRoleRequest.userIdList.userIds",
@@ -173,8 +173,8 @@ public class UserController {
         return ResultHolder.success(userService.addUserRoleV2(userBatchAddRoleRequest));
     }
 
-    @ApiOperation(value = "批量添加用户角色V3")
-    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @Operation(summary = "批量添加用户角色V3")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:EDIT')")
     @PostMapping(value = "/addRole/v3")
     @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.BATCH_ADD,
             resourceId = "#userBatchAddRoleRequest.userIdList.userIds",
@@ -184,8 +184,8 @@ public class UserController {
         return ResultHolder.success(userService.addUserRoleV3(userBatchAddRoleRequest));
     }
 
-    @ApiOperation(value = "移除用户角色")
-    @PreAuthorize("hasAnyCePermission('USER:EDIT')")
+    @Operation(summary = "移除用户角色")
+    @PreAuthorize("@cepc.hasAnyCePermission('USER:EDIT')")
     @DeleteMapping(value = "/removeRole")
     @OperatedLog(resourceType = ResourceTypeEnum.USER_ROLE, operated = OperatedTypeEnum.DELETE,
             resourceId = "#request.userId",

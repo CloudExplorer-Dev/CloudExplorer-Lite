@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.common.constants.CloudAccountConstants;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,33 +24,34 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CloudAccountResponse {
-    @ApiModelProperty(value = "主键id", notes = "主键id")
+
+    @Schema(title = "主键id", description = "主键id")
     private String id;
 
-    @ApiModelProperty(value = "云账号名称", notes = "云账号名称")
+    @Schema(title = "云账号名称", description = "云账号名称")
     private String name;
 
-    @ApiModelProperty(value = "云平台", notes = "云平台")
+    @Schema(title = "云平台", description = "云平台")
     private String platform;
 
-    @ApiModelProperty(value = "凭证字段", notes = "凭证字段")
+    @Schema(title = "凭证字段", description = "凭证字段")
     private String credential;
 
-    @ApiModelProperty(value = "云账号状态", notes = "云账号状态")
+    @Schema(title = "云账号状态", description = "云账号状态")
     private Boolean state;
 
-    @ApiModelProperty(value = "同步状态", notes = "同步状态")
+    @Schema(title = "同步状态", description = "同步状态")
     private CloudAccountConstants.Status status;
 
     @TableField("create_time")
-    @ApiModelProperty(value = "创建时间", notes = "创建时间")
+    @Schema(title = "创建时间", description = "创建时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime createTime;
 
     @TableField("update_time")
-    @ApiModelProperty(value = "编辑时间", notes = "编辑时间")
+    @Schema(title = "编辑时间", description = "编辑时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

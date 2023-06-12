@@ -13,35 +13,35 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @RestController
 @RequestMapping("/api/demo")
 @Validated
-@Api("Demo接口")
+@Tag(name="Demo接口")
 public class DemoController {
 
     @Resource
     private IDemoService demoService;
 
     @GetMapping("/currentUser")
-    @ApiOperation(value = "获取当前用户信息", notes = "获取当前用户信息")
-    @PreAuthorize("hasAnyCePermission('DEMO:READ')") //这里结合PermissionConstants设置接口权限
+    @Operation(summary = "获取当前用户信息", description = "获取当前用户信息")
+    @PreAuthorize("@cepc.hasAnyCePermission('DEMO:READ')") //这里结合PermissionConstants设置接口权限
     public ResultHolder<UserDto> currentUser() {
         return ResultHolder.success(CurrentUserUtils.getUser());
     }
 
     @GetMapping("/demo")
-    @ApiOperation(value = "demo", notes = "demo")
-    @PreAuthorize("hasAnyCePermission('DEMO:READ')") //这里结合PermissionConstants设置接口权限
+    @Operation(summary = "demo", description = "demo")
+    @PreAuthorize("@cepc.hasAnyCePermission('DEMO:READ')") //这里结合PermissionConstants设置接口权限
     public ResultHolder<DemoObject> demo() {
         return ResultHolder.success(demoService.getDemoObject());
     }
 
 
     @PostMapping("/demo")
-    @ApiOperation(value = "demo", notes = "demo")
-    @PreAuthorize("hasAnyCePermission('DEMO:READ')") //这里结合PermissionConstants设置接口权限
+    @Operation(summary = "demo", description = "demo")
+    @PreAuthorize("@cepc.hasAnyCePermission('DEMO:READ')") //这里结合PermissionConstants设置接口权限
     public ResultHolder<DemoObject> setDemoObjectValue(@RequestBody
                                                        @Validated(ValidationGroup.UPDATE.class)
                                                        DemoRequest request) {

@@ -1,10 +1,10 @@
 package com.fit2cloud.controller.request.user;
 
 import com.fit2cloud.dto.RoleInfo;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
 /**
@@ -15,10 +15,10 @@ import java.util.List;
 public class UserBatchAddRoleRequest {
 
     @NotEmpty(message = "{i18n.user.id.list.cannot.null}")
-    @ApiModelProperty(value = "用户ID列表")
+    @Schema(title = "用户ID列表")
     private List<String> userIdList;
 
     @NotEmpty(message = "{i18n.user.role.list.cannot.null}")
-    @ApiModelProperty(value = "角色信息列表")
+    @Schema(title = "角色信息列表")
     private List<RoleInfo> roleInfoList;
 }

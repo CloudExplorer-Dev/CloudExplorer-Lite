@@ -67,3 +67,21 @@ eureka:
       name_en: Gateway
       basePath: /
       icon: gateway
+
+springdoc:
+  swagger-ui:
+    use-root-path: true
+    urls:
+      - name: gateway
+        url: /v3/api-docs
+      - name: management-center
+        url: /management-center/v3/api-docs
+      - name: vm-service
+        url: /vm-service/v3/api-docs
+      - name: finance-management
+        url: /finance-management/v3/api-docs
+      - name: operation-analysis
+        url: /operation-analysis/v3/api-docs
+      - name: security-compliance
+        url: /security-compliance/v3/api-docs
+

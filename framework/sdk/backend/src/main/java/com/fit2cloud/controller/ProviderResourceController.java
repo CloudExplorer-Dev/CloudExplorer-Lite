@@ -2,7 +2,7 @@ package com.fit2cloud.controller;
 
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.controller.handler.ResultHolder;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -15,7 +15,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/base")
-@Api(value = "云平台资源获取", tags = "云平台资源获取")
+@Tag(name = "云平台资源获取", description = "云平台资源获取")
 public class ProviderResourceController {
 
     @PostMapping("provider/{clazz}/{method}")

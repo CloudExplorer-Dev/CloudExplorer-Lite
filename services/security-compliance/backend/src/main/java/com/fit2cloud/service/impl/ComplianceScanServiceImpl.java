@@ -42,6 +42,7 @@ import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceFieldCompare;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.*;
+import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
@@ -51,7 +52,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -269,10 +269,10 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     private List<ComplianceScanResourceResult> listComplianceScanResourceResult(ComplianceRule rule, String cloudAccountId) {
         SearchRequest pageSearch = getPageComplianceSearch(rule, cloudAccountId, ComplianceStatus.COMPLIANCE);
         SearchResponse<ResourceInstance> response = elasticsearchClient.search(pageSearch, ResourceInstance.class);
-        List<String> resourceIds = response.aggregations().get("id").sterms().buckets().array().stream().map(StringTermsBucket::key).toList();
+        List<String> resourceIds = response.aggregations().get("id").sterms().buckets().array().stream().map(bucket -> bucket.key().stringValue()).toList();
         List<ComplianceScanResourceResult> complianceScanResourceResults = resourceIds.stream().map(id -> new ComplianceScanResourceResult(null, rule.getId(), rule.getResourceType(), cloudAccountId, id, ComplianceStatus.COMPLIANCE, null, null)).toList();
         SearchResponse<ResourceInstance> notComplianceResource = elasticsearchClient.search(getPageComplianceSearch(rule, cloudAccountId, ComplianceStatus.NOT_COMPLIANCE), ResourceInstance.class);
-        List<ComplianceScanResourceResult> notComplianceResourceList = notComplianceResource.aggregations().get("id").sterms().buckets().array().stream().map(StringTermsBucket::key).toList().stream().map(id -> new ComplianceScanResourceResult(null, rule.getId(), rule.getResourceType(), cloudAccountId, id, ComplianceStatus.NOT_COMPLIANCE, null, null)).toList();
+        List<ComplianceScanResourceResult> notComplianceResourceList = notComplianceResource.aggregations().get("id").sterms().buckets().array().stream().map(StringTermsBucket::key).toList().stream().map(id -> new ComplianceScanResourceResult(null, rule.getId(), rule.getResourceType(), cloudAccountId, id.stringValue(), ComplianceStatus.NOT_COMPLIANCE, null, null)).toList();
         List<ComplianceScanResourceResult> all = new ArrayList<>(complianceScanResourceResults);
         all.addAll(notComplianceResourceList);
         return all;

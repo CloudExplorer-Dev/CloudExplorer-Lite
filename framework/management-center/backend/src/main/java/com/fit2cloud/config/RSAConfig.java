@@ -4,7 +4,7 @@ import com.fit2cloud.common.utils.RSAUtil;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Component
 @Order(-1)

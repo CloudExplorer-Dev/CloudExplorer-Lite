@@ -3,7 +3,7 @@ package com.fit2cloud.controller.request.compliance_scan;
 import com.fit2cloud.common.query.annotaion.Query;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.dao.constants.ComplianceStatus;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -14,15 +14,19 @@ import lombok.Data;
  */
 @Data
 public class ComplianceResourceRequest {
-    @ApiModelProperty(value = "资源类型", notes = "资源类型")
+
+    @Schema(title = "资源类型", description = "资源类型")
     @Query(field = "resourceType", compareType = QueryUtil.CompareType.EQ)
     private String resourceType;
-    @ApiModelProperty(value = "云账号id", notes = "云账号id")
+
+    @Schema(title = "云账号id", description = "云账号id")
     @Query(field = "cloudAccountId", compareType = QueryUtil.CompareType.EQ)
     private String cloudAccountId;
-    @ApiModelProperty(value = "合规状态", example = "COMPLIANCE:合规,NOT_COMPLIANCE:不合规")
+
+    @Schema(title = "合规状态", example = "COMPLIANCE:合规,NOT_COMPLIANCE:不合规")
     private ComplianceStatus complianceStatus;
-    @ApiModelProperty(value = "资源名称")
+
+    @Schema(title = "资源名称")
     @Query(field = "resourceName.keyword", compareType = QueryUtil.CompareType.WILDCARD)
     private String resourceName;
 }

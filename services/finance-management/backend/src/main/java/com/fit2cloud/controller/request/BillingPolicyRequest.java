@@ -3,7 +3,7 @@ package com.fit2cloud.controller.request;
 import com.fit2cloud.base.entity.json_entity.BillingField;
 import com.fit2cloud.base.entity.json_entity.PackagePriceBillingPolicy;
 import com.fit2cloud.common.form.vo.Form;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -18,10 +18,11 @@ import java.util.List;
 @Data
 public class BillingPolicyRequest {
 
-    @ApiModelProperty("策略名称")
+    @Schema(title = "策略名称")
     @Length(min = 1, max = 255, message = "计费策略名称长度必须在1-255之间")
+
     private String name;
-    @ApiModelProperty("策略详情")
+    @Schema(title = "策略详情")
     private List<BillingPolicyDetails> billingPolicyDetailsList;
 
     @Data

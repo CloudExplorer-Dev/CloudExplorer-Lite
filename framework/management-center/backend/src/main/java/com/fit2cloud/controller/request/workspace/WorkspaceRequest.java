@@ -1,11 +1,11 @@
 package com.fit2cloud.controller.request.workspace;
 
 import com.fit2cloud.common.validator.group.ValidationGroup;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 
 /**
  * @author jianneng
@@ -15,19 +15,19 @@ import javax.validation.constraints.Null;
 @Data
 public class WorkspaceRequest {
 
-    @ApiModelProperty("主键id,编辑的时候必填")
+    @Schema(title = "主键id,编辑的时候必填")
     @NotNull(groups = ValidationGroup.UPDATE.class, message = "{i18n.workspace.id.is.not.empty}")
     @Null(groups = ValidationGroup.SAVE.class, message = "{i18n.workspace.id.is.null}")
     private String id;
 
-    @ApiModelProperty(value = "工作空间名称", required = true)
+    @Schema(title = "工作空间名称", required = true)
     @NotNull(groups = {ValidationGroup.SAVE.class, ValidationGroup.UPDATE.class}, message = "{i18n.workspace.name.is.not.empty}")
     private String name;
 
-    @ApiModelProperty(value = "工作空间描述", required = false)
+    @Schema(title = "工作空间描述", required = false)
     private String description;
 
-    @ApiModelProperty(value = "父级组织ID", required = true)
+    @Schema(title = "父级组织ID", required = true)
     @NotNull(groups = {ValidationGroup.SAVE.class, ValidationGroup.UPDATE.class}, message = "{i18n.workspace.organization.is.not.empty}")
     private String organizationId;
 

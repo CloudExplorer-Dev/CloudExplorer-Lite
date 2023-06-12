@@ -4,13 +4,13 @@ import com.fit2cloud.common.charging.setting.BillSetting;
 import com.fit2cloud.common.utils.ClassScanUtil;
 import com.fit2cloud.dto.charging.ChargingModuleInfo;
 import com.fit2cloud.dto.module.ModuleInfo;
+import jakarta.annotation.Resource;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 

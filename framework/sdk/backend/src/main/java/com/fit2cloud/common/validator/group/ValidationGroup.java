@@ -1,6 +1,7 @@
 package com.fit2cloud.common.validator.group;
 
-import javax.validation.groups.Default;
+
+import jakarta.validation.groups.Default;
 
 /**
  * @Author:张少虎

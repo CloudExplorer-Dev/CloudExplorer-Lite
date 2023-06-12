@@ -1,7 +1,7 @@
 package com.fit2cloud.controller.request.compliance_insurance_statute;
 
 import com.fit2cloud.request.pub.OrderRequest;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -12,22 +12,23 @@ import lombok.Data;
  */
 @Data
 public class ComplianceInsuranceStatuteRequest {
-    @ApiModelProperty(value = "基本条款", notes = "基本条款")
+
+    @Schema(title = "基本条款", description = "基本条款")
     private String baseClause;
 
-    @ApiModelProperty(value = "安全层面", notes = "安全层面")
+    @Schema(title = "安全层面", description = "安全层面")
     private String securityLevel;
 
-    @ApiModelProperty(value = "控制点", notes = "控制点")
+    @Schema(title = "控制点", description = "控制点")
     private String controlPoint;
 
-    @ApiModelProperty(value = "改进建议", notes = "改进建议")
+    @Schema(title = "改进建议", description = "改进建议")
     private String improvementProposal;
 
-    @ApiModelProperty(value = "合规规则id", notes = "合规规则id")
+    @Schema(title = "合规规则id", description = "合规规则id")
     private String complianceRuleId;
 
-    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
+    @Schema(title = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 
 }

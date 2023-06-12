@@ -8,8 +8,8 @@ import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanRe
 import com.fit2cloud.controller.response.compliance_scan_result.ComplianceScanRuleGroupResultResponse;
 import com.fit2cloud.controller.response.view.ComplianceRuleGroupCountResponse;
 import com.fit2cloud.service.IComplianceScanResultService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -31,22 +31,22 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/compliance_scan_result")
 @Validated
-@Api(value = "安全合规扫描结果相关接口", tags = "安全合规扫描结果相关接口")
+@Tag(name = "安全合规扫描结果相关接口", description = "安全合规扫描结果相关接口")
 public class ComplianceScanResultController {
     @Resource
     private IComplianceScanResultService complianceScanResultService;
 
     @GetMapping
-    @ApiOperation("获取当前合规信息")
-    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
+    @Operation(summary = "获取当前合规信息")
+    @PreAuthorize("@cepc.hasAnyCePermission('SCAN:READ')")
     public ResultHolder<List<ComplianceScanResultResponse>> list(ComplianceScanRequest request) {
         List<ComplianceScanResultResponse> list = complianceScanResultService.list(request);
         return ResultHolder.success(list);
     }
 
     @GetMapping("/{currentPage}/{limit}")
-    @ApiOperation("分页查看规则的合规信息")
-    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
+    @Operation(summary = "分页查看规则的合规信息")
+    @PreAuthorize("@cepc.hasAnyCePermission('SCAN:READ')")
     public ResultHolder<IPage<ComplianceScanResultResponse>> page(@NotNull(message = "当前页不能为空")
                                                                   @Min(message = "当前页不能小于0", value = 1)
                                                                   @PathVariable("currentPage")
@@ -61,8 +61,8 @@ public class ComplianceScanResultController {
 
 
     @GetMapping("/rule_group/{complianceRuleGroupId}")
-    @ApiOperation("获取规则组扫描情况")
-    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
+    @Operation(summary = "获取规则组扫描情况")
+    @PreAuthorize("@cepc.hasAnyCePermission('SCAN:READ')")
     public ResultHolder<ComplianceScanRuleGroupResultResponse> getRuleGroupCompliance(@PathVariable("complianceRuleGroupId")
                                                                                       String complianceRuleGroupId) {
         ComplianceScanRuleGroupResultResponse ruleGroupCompliance = complianceScanResultService.getComplianceRuleGroupByGroupId(complianceRuleGroupId);
@@ -70,8 +70,8 @@ public class ComplianceScanResultController {
     }
 
     @GetMapping("/rule_group")
-    @PreAuthorize("hasAnyCePermission('SCAN:READ')")
-    @ApiOperation(value = "获取规则组的扫描详情", notes = "获取规则组的扫描详情")
+    @PreAuthorize("@cepc.hasAnyCePermission('SCAN:READ')")
+    @Operation(summary = "获取规则组的扫描详情", description = "获取规则组的扫描详情")
     public ResultHolder<List<ComplianceRuleGroupCountResponse>> listRuleGroupRiskData(ListRuleGroupRiskDataRequest request) {
         List<ComplianceRuleGroupCountResponse> res = complianceScanResultService.listRuleGroupRiskData(request);
         return ResultHolder.success(res);

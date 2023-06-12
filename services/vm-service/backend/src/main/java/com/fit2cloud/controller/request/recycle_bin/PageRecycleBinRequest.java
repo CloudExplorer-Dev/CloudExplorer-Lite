@@ -3,46 +3,48 @@ package com.fit2cloud.controller.request.recycle_bin;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.request.pub.PageOrderRequestInterface;
 import com.fit2cloud.request.pub.PageRequest;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
 public class PageRecycleBinRequest extends PageRequest implements PageOrderRequestInterface {
-    @ApiModelProperty("资源名称")
+
+    @Schema(title = "资源名称")
     private String resourceName;
 
-    @ApiModelProperty("IP地址")
+    @Schema(title = "IP地址")
     private String ipArray;
 
-    @ApiModelProperty("关联资源名称")
+    @Schema(title = "关联资源名称")
     private String relateResource;
 
-    @ApiModelProperty("操作人名称")
+    @Schema(title = "操作人名称")
     private String userName;
 
-    @ApiModelProperty("资源类型")
+    @Schema(title = "资源类型")
     private String resourceType;
 
-    @ApiModelProperty("资源状态")
+    @Schema(title = "资源状态")
     private String resourceStatus;
 
-    @ApiModelProperty("是否随实例删除")
+    @Schema(title = "是否随实例删除")
     private String deleteWithInstance;
 
-    @ApiModelProperty("云账号IDs")
+    @Schema(title = "云账号IDs")
     private List<String> accountIds;
 
-    @ApiModelProperty("组织或者工作空间 ID 集合")
+    @Schema(title = "组织或者工作空间 ID 集合")
     private List<String> sourceIds;
 
-    @ApiModelProperty("组织 ID 集合")
+    @Schema(title = "组织 ID 集合")
     private List<String> organizationIds;
 
-    @ApiModelProperty("工作空间 ID 集合")
+    @Schema(title = "工作空间 ID 集合")
     private List<String> workspaceIds;
 
-    @ApiModelProperty(value = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
+    @Schema(title = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
+
 }

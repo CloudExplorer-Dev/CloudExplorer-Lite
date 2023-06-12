@@ -1,7 +1,7 @@
 package com.fit2cloud.controller.response.view;
 
 import com.fit2cloud.dao.constants.RiskLevel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -13,15 +13,15 @@ import lombok.Data;
 @Data
 public class ComplianceViewRuleCountResponse {
 
-    @ApiModelProperty(value = "风险等级", notes = "风险等级")
+    @Schema(title = "风险等级", description = "风险等级")
     private RiskLevel riskLevel;
 
-    @ApiModelProperty(value = "合规数量", notes = "合规数量")
+    @Schema(title = "合规数量", description = "合规数量")
     private Long complianceCount;
 
-    @ApiModelProperty(value = "不合规数量", notes = "不合规数量")
+    @Schema(title = "不合规数量", description = "不合规数量")
     private Long notComplianceCount;
 
-    @ApiModelProperty(value = "总数", notes = "总数")
+    @Schema(title = "总数", description = "总数")
     private Long total;
 }

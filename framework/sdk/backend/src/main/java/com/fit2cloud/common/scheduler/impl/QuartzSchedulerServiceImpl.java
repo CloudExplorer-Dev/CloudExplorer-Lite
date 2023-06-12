@@ -14,7 +14,7 @@ import org.quartz.*;
 import org.quartz.DateBuilder.IntervalUnit;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Calendar;
 import java.util.*;
 import java.util.stream.Collectors;

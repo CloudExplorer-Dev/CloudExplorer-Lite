@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.response.compliance_scan_result;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -11,16 +11,22 @@ import lombok.Data;
  */
 @Data
 public class ComplianceScanRuleGroupResultResponse {
-    @ApiModelProperty(value = "规则组名称", notes = "规则组名称")
+
+    @Schema(title = "规则组名称", description = "规则组名称")
     private String ruleGroupName;
-    @ApiModelProperty(value = "合规的规则数量", notes = "合规的规则数量")
+
+    @Schema(title = "合规的规则数量", description = "合规的规则数量")
     private long complianceRuleCount;
-    @ApiModelProperty(value = "不合规的规则数量", notes = "不合规的规则数量")
+
+    @Schema(title = "不合规的规则数量", description = "不合规的规则数量")
     private long notComplianceRuleCount;
-    @ApiModelProperty(value = "高风险", notes = "高风险")
+
+    @Schema(title = "高风险", description = "高风险")
     private long high;
-    @ApiModelProperty(value = "中风险", notes = "中风险")
+
+    @Schema(title = "中风险", description = "中风险")
     private long middle;
-    @ApiModelProperty(value = "低风险", notes = "低风险")
+
+    @Schema(title = "低风险", description = "低风险")
     private long low;
 }

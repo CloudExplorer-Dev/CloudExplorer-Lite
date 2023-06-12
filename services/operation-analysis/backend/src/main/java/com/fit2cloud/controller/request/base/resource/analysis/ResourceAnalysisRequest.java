@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.request.base.resource.analysis;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -12,18 +12,22 @@ import java.util.List;
 @Data
 public class ResourceAnalysisRequest {
 
-    @ApiModelProperty("云账号ID")
+    @Schema(title = "云账号ID")
     private List<String> accountIds;
-    @ApiModelProperty("集群名称")
+
+    @Schema(title = "集群名称")
     private List<String> clusterIds;
-    @ApiModelProperty("宿主机ID")
+
+    @Schema(title = "宿主机ID")
     private List<String> hostIds;
-    @ApiModelProperty("存储器ID")
+
+    @Schema(title = "存储器ID")
     private List<String> datastoreIds;
-    @ApiModelProperty("云主机状态")
+
+    @Schema(title = "云主机状态")
     private String vmStatus;
 
-    @ApiModelProperty("组织或者工作空间 ID 集合")
+    @Schema(title = "组织或者工作空间 ID 集合")
     private List<String> sourceIds;
 
 }

@@ -1,6 +1,6 @@
 package com.fit2cloud.controller.response;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
@@ -14,9 +14,10 @@ import java.util.List;
  */
 @Data
 public class BillView {
-    @ApiModelProperty(value = "账单分组", notes = "账单分组")
+
+    @Schema(title = "账单分组", description = "账单分组")
     private List<DefaultKeyValue<String, String>> billGroupDetails;
 
-    @ApiModelProperty(value = "值", notes = "值")
+    @Schema(title = "值", description = "值")
     private Double value;
 }

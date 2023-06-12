@@ -19,15 +19,15 @@ import com.fit2cloud.dto.optimization.ResourceTypeDTO;
 import com.fit2cloud.dto.optimization.VmCloudServerDTO;
 import com.fit2cloud.service.IOptimizationStrategyIgnoreResourceService;
 import com.fit2cloud.service.IOptimizationStrategyService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -36,7 +36,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/optimization_strategy")
 @Validated
-@Api("优化策略相关接口")
+@Tag(name = "优化策略相关接口")
 public class OptimizationStrategyController {
 
     @Resource
@@ -44,24 +44,24 @@ public class OptimizationStrategyController {
     @Resource
     private IOptimizationStrategyIgnoreResourceService optimizationStrategyIgnoreResourceService;
 
-    @ApiOperation(value = "分页查询优化策略", notes = "分页查询优化策略")
+    @Operation(summary = "分页查询优化策略")
     @GetMapping("/page")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY:READ')")
     public ResultHolder<IPage<OptimizationStrategyDTO>> pageList(@Validated PageOptimizationStrategyRequest request) {
         return ResultHolder.success(optimizationStrategyService.pageList(request));
     }
 
-    @ApiOperation(value = "查询优化策略列表", notes = "查询优化策略列表")
+    @Operation(summary = "查询优化策略列表")
     @GetMapping("/{resourceType}/list")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY:READ')")
     public ResultHolder<List<OptimizationStrategy>> list(@PathVariable("resourceType") String resourceType) {
         return ResultHolder.success(optimizationStrategyService.getOptimizationStrategyList(resourceType));
     }
 
-    @ApiOperation(value = "查询优化策略", notes = "查询优化策略")
+    @Operation(summary = "查询优化策略")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY:READ')")
-    public ResultHolder<OptimizationStrategyDTO> getOneOptimizationStrategy(@ApiParam("主键 ID")
+    public ResultHolder<OptimizationStrategyDTO> getOneOptimizationStrategy(@Parameter(description = "主键 ID")
                                                                             @NotNull(message = "优化策略ID不能为空")
                                                                             @CustomValidated(mapper = OptimizationStrategyMapper.class, handler = ExistHandler.class, message = "优化策略不存在", exist = false)
                                                                             @PathVariable("id") String id) {
@@ -69,7 +69,7 @@ public class OptimizationStrategyController {
     }
 
     @PostMapping("/add")
-    @ApiOperation(value = "添加优化策略", notes = "添加优化策略")
+    @Operation(summary = "添加优化策略")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY:CREATE')")
     @OperatedLog(resourceType = ResourceTypeEnum.OPTIMIZATION_STRATEGY, operated = OperatedTypeEnum.ADD,
             content = "'创建['+#optimizationStrategyRequest.name+']'",
@@ -79,7 +79,7 @@ public class OptimizationStrategyController {
     }
 
     @PostMapping("/update")
-    @ApiOperation(value = "更新优化策略", notes = "更新优化策略")
+    @Operation(summary = "更新优化策略")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.OPTIMIZATION_STRATEGY, operated = OperatedTypeEnum.MODIFY,
             content = "'更新了ID为['+#optimizationStrategyRequest.id+']的优化策略'",
@@ -88,14 +88,14 @@ public class OptimizationStrategyController {
         return ResultHolder.success(optimizationStrategyService.saveOrUpdateStrategy(optimizationStrategyRequest));
     }
 
-    @ApiOperation(value = "删除一个优化策略")
+    @Operation(summary = "删除一个优化策略")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY:DELETE')")
     @DeleteMapping("/{optimizationStrategyId}")
     @OperatedLog(resourceType = ResourceTypeEnum.OPTIMIZATION_STRATEGY, operated = OperatedTypeEnum.DELETE,
             resourceId = "#optimizationStrategyId",
             content = "'删除优化策略'",
             param = "#optimizationStrategyId")
-    public ResultHolder<Boolean> delete(@ApiParam("主键 ID")
+    public ResultHolder<Boolean> delete(@Parameter(description = "主键 ID")
                                         @NotNull(message = "优化策略ID不能为空")
                                         @CustomValidated(mapper = OptimizationStrategyMapper.class, handler = ExistHandler.class, message = "优化策略不存在", exist = false)
                                         @PathVariable("optimizationStrategyId") String optimizationStrategyId) {
@@ -103,7 +103,7 @@ public class OptimizationStrategyController {
     }
 
     @PostMapping("/cancel_ignore")
-    @ApiOperation(value = "优化策略忽略资源取消忽略", notes = "优化策略忽略资源取消忽略")
+    @Operation(summary = "优化策略忽略资源取消忽略")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY_IGNORE_RESOURCE:CANCEL')")
     @OperatedLog(resourceType = ResourceTypeEnum.OPTIMIZATION_STRATEGY_IGNORE_RESOURCE, operated = OperatedTypeEnum.DELETE,
             content = "'取消ID为['+#request.optimizationStrategyId+']的优化策略的已忽略资源'")
@@ -112,7 +112,7 @@ public class OptimizationStrategyController {
     }
 
     @PostMapping("/add_ignore")
-    @ApiOperation(value = "优化策略添加忽略资源", notes = "优化策略添加忽略资源")
+    @Operation(summary = "优化策略添加忽略资源")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY_IGNORE_RESOURCE:ADD')")
     @OperatedLog(resourceType = ResourceTypeEnum.OPTIMIZATION_STRATEGY_IGNORE_RESOURCE, operated = OperatedTypeEnum.ADD,
             content = "'添加ID为['+#request.optimizationStrategyId+']的优化策略的忽略资源'")
@@ -120,14 +120,14 @@ public class OptimizationStrategyController {
         return ResultHolder.success(optimizationStrategyIgnoreResourceService.batchInsertIgnoreResourceByOptimizationStrategyId(request.getOptimizationStrategyId(), request.getResourceIdList()));
     }
 
-    @ApiOperation(value = "查询资源类型列表", notes = "查询资源类型列表")
+    @Operation(summary = "查询资源类型列表")
     @GetMapping("/resource_type/list")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY:CREATE')")
     public ResultHolder<List<ResourceTypeDTO>> getResourceTypeList() {
         return ResultHolder.success(optimizationStrategyService.getResourceTypeList());
     }
 
-    @ApiOperation(value = "启停策略")
+    @Operation(summary = "启停策略")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY:EDIT')")
     @PostMapping(value = "/changeStatus")
     @OperatedLog(resourceType = ResourceTypeEnum.OPTIMIZATION_STRATEGY, operated = OperatedTypeEnum.MODIFY,
@@ -138,14 +138,14 @@ public class OptimizationStrategyController {
         return ResultHolder.success(optimizationStrategyService.changeStatus(optimizationStrategyDTO));
     }
 
-    @ApiOperation(value = "分页查询优化策略云主机列表", notes = "分页查询优化策略云主机列表")
+    @Operation(summary = "分页查询优化策略云主机列表")
     @GetMapping("/server/page")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY:READ')")
     public ResultHolder<IPage<VmCloudServerDTO>> pageServer(@Validated PageServerRequest request) {
         return ResultHolder.success(optimizationStrategyIgnoreResourceService.pageVmCloudServerList(request));
     }
 
-    @ApiOperation(value = "查询优化策略云主机列表", notes = "查询优化策略云主机列表")
+    @Operation(summary = "查询优化策略云主机列表")
     @GetMapping("/server/list")
     @PreAuthorize("hasAnyCePermission('OPTIMIZATION_STRATEGY:READ')")
     public ResultHolder<List<VmCloudServerDTO>> serverList(@Validated ServerRequest request) {

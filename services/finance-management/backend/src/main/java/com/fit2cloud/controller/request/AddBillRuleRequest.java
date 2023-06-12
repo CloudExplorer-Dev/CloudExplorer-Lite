@@ -5,7 +5,7 @@ import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.dao.jentity.Group;
 import com.fit2cloud.dao.mapper.BillRuleMapper;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -21,12 +21,12 @@ public class AddBillRuleRequest {
     /**
      * 账单规则名称
      */
-    @ApiModelProperty(value = "账单规则名称", notes = "账单规则名称", required = true)
+    @Schema(title = "账单规则名称", description = "账单规则名称", required = true)
     @CustomValidated(groups = ValidationGroup.SAVE.class, mapper = BillRuleMapper.class, handler = ExistHandler.class, message = "账单规则名称不能重复", exist = true)
     private String name;
     /**
      * 账单组
      */
-    @ApiModelProperty(value = "账单规则组", notes = "账单规则组", required = true)
+    @Schema(title = "账单规则组", description = "账单规则组", required = true)
     private List<Group> groups;
 }

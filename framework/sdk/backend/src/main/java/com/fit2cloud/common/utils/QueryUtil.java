@@ -8,9 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 
 import java.util.Arrays;
 import java.util.List;
@@ -50,60 +47,6 @@ public class QueryUtil {
          * 比较条件
          */
         private CompareType compare = CompareType.EQ;
-    }
-
-    /**
-     * 获取es插叙
-     *
-     * @param queryConditions 查询条件
-     * @return 查询条件
-     */
-    public static QueryBuilder getRestQuery(QueryCondition... queryConditions) {
-        return getRestQuery(Arrays.stream(queryConditions).toList());
-    }
-
-    /**
-     * 获取es 查询
-     *
-     * @param queryConditions 查询条件
-     * @return 查询条件
-     */
-    public static QueryBuilder getRestQuery(List<QueryCondition> queryConditions) {
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        for (QueryCondition queryCondition : queryConditions) {
-            if (queryCondition.condition) {
-                switch (queryCondition.compare) {
-                    case LT:
-                        boolQueryBuilder.must(QueryBuilders.rangeQuery(queryCondition.field).lt(queryCondition.value));
-                        break;
-                    case LTE:
-                        boolQueryBuilder.must(QueryBuilders.rangeQuery(queryCondition.field).lte(queryCondition.value));
-                        break;
-                    case GT:
-                        boolQueryBuilder.must(QueryBuilders.rangeQuery(queryCondition.field).gt(queryCondition.value));
-                        break;
-                    case GTE:
-                        boolQueryBuilder.must(QueryBuilders.rangeQuery(queryCondition.field).gte(queryCondition.value));
-                        break;
-                    case EQ:
-                        boolQueryBuilder.must(QueryBuilders.termQuery(queryCondition.field, queryCondition.value));
-                        break;
-                    case LIKE:
-                        boolQueryBuilder.must(QueryBuilders.matchQuery(queryCondition.field, queryCondition.value));
-                        break;
-                    case NOT_EQ:
-                        boolQueryBuilder.mustNot(QueryBuilders.matchPhraseQuery(queryCondition.field, queryCondition.value));
-                        break;
-                    case IN:
-                        boolQueryBuilder.must(QueryBuilders.termQuery(queryCondition.field, queryCondition.value));
-                        break;
-                    case NOT_IN:
-                        boolQueryBuilder.mustNot(QueryBuilders.termQuery(queryCondition.field, queryCondition.value));
-                        break;
-                }
-            }
-        }
-        return boolQueryBuilder;
     }
 
     /**

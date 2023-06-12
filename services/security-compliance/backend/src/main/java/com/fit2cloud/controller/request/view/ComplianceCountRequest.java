@@ -2,7 +2,7 @@ package com.fit2cloud.controller.request.view;
 
 import com.fit2cloud.common.query.annotaion.Query;
 import com.fit2cloud.common.utils.QueryUtil;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -13,7 +13,9 @@ import lombok.Data;
  */
 @Data
 public class ComplianceCountRequest {
-    @ApiModelProperty(value = "云账号id", notes = "云账号id")
+
+    @Schema(title = "云账号id", description = "云账号id")
     @Query(compareType = QueryUtil.CompareType.EQ, field = "cloudAccountId")
     private String cloudAccountId;
+
 }

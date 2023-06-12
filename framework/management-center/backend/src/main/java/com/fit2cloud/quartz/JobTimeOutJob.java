@@ -9,7 +9,7 @@ import jdk.jfr.Name;
 import org.quartz.Job;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;

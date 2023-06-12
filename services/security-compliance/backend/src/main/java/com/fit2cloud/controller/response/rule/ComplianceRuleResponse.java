@@ -8,7 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fit2cloud.dao.constants.RiskLevel;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.jentity.Rules;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -25,43 +25,43 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ComplianceRuleResponse {
 
-    @ApiModelProperty(value = "主键id", notes = "主键id")
+    @Schema(title = "主键id", description = "主键id")
     private String id;
 
-    @ApiModelProperty(value = "规则名称", notes = "规则名称")
+    @Schema(title = "规则名称", description = "规则名称")
     private String name;
 
-    @ApiModelProperty(value = "规则组id", notes = "规则组id")
+    @Schema(title = "规则组id", description = "规则组id")
     private String ruleGroupId;
 
-    @ApiModelProperty(value = "规则组名称", notes = "规则组名称")
+    @Schema(title = "规则组名称", description = "规则组名称")
     private String ruleGroupName;
 
-    @ApiModelProperty(value = "云平台", notes = "云平台")
+    @Schema(title = "云平台", description = "云平台")
     private String platform;
 
-    @ApiModelProperty(value = "资源类型", notes = "资源类型")
+    @Schema(title = "资源类型", description = "资源类型")
     private String resourceType;
 
-    @ApiModelProperty(value = "规则条件", notes = "规则条件")
+    @Schema(title = "规则条件", description = "规则条件")
     private Rules rules;
 
-    @ApiModelProperty(value = "风险等级", notes = "风险等级")
+    @Schema(title = "风险等级", description = "风险等级")
     private RiskLevel riskLevel;
 
-    @ApiModelProperty(value = "描述", notes = "描述")
+    @Schema(title = "描述", description = "描述")
     private String description;
 
-    @ApiModelProperty(value = "是否启用", notes = "是否启用")
+    @Schema(title = "是否启用", description = "是否启用")
     private Boolean enable;
 
-    @ApiModelProperty(name = "创建时间", notes = "创建时间")
+    @Schema(title = "创建时间", description = "创建时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime createTime;
 
-    @ApiModelProperty(name = "修改时间", notes = "修改时间")
+    @Schema(title = "修改时间", description = "修改时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

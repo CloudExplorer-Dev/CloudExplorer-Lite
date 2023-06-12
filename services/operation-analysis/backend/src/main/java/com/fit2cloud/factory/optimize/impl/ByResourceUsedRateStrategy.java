@@ -21,6 +21,7 @@ import com.fit2cloud.controller.request.optimize.strategy.OptimizeStrategyBaseRe
 import com.fit2cloud.dto.AnalysisServerDTO;
 import com.fit2cloud.factory.optimize.IOptimizeStrategy;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -36,7 +37,6 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.beans.PropertyDescriptor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -248,7 +248,7 @@ public class ByResourceUsedRateStrategy implements IOptimizeStrategy {
                 List<StringTermsBucket> list = aggregations.aggregations().get(0).aggregation().getAggregate().sterms().buckets().array();
                 for (StringTermsBucket v : list) {
                     AnalysisServerDTO dto = new AnalysisServerDTO();
-                    dto.setInstanceUuid(v.key());
+                    dto.setInstanceUuid(v.key().stringValue());
                     Aggregate avg = v.aggregations().get(SpecialAttributesConstants.SpecialField.AVERAGE_VALUE);
                     Aggregate max = v.aggregations().get(SpecialAttributesConstants.SpecialField.MAX_VALUE);
                     Aggregate min = v.aggregations().get(SpecialAttributesConstants.SpecialField.MIN_VALUE);

@@ -22,16 +22,16 @@ import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,47 +46,47 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/cloud_account")
 @Validated
-@Api("云账号相关接口")
+@Tag(name = "云账号相关接口")
 public class CloudAccountController {
     @Resource
     private ICloudAccountService cloudAccountService;
 
 
     @GetMapping("page")
-    @ApiOperation(value = "分页查询云账号", notes = "分页查询云账号")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    @Operation(summary = "分页查询云账号", description = "分页查询云账号")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
     public ResultHolder<IPage<CloudAccountResponse>> page(@Validated CloudAccountRequest cloudAccountRequest) {
         return ResultHolder.success(cloudAccountService.page(cloudAccountRequest));
     }
 
     @GetMapping("count")
-    @ApiOperation(value = "查询云账号个数", notes = "查询云账号个数")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    @Operation(summary = "查询云账号个数", description = "查询云账号个数")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
     public ResultHolder<Long> count() {
         return ResultHolder.success(cloudAccountService.count());
     }
 
 
     @GetMapping("/{id}")
-    @ApiOperation(value = "根据id查询云账号", notes = "根据id查询云账号")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
-    public ResultHolder<CloudAccount> findCloudAccount(@ApiParam(value = "云账号id", required = true)
+    @Operation(summary = "根据id查询云账号", description = "根据id查询云账号")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    public ResultHolder<CloudAccount> findCloudAccount(@Parameter(name = "云账号id", required = true)
                                                        @CustomValidated(mapper = CloudAccountMapper.class, handler = ExistHandler.class, message = "{i18n.cloud_account_id_not_existent}", exist = false)
                                                        @PathVariable("id") String id) {
         return ResultHolder.success(cloudAccountService.getById(id));
     }
 
     @GetMapping("/platform")
-    @ApiOperation(value = "获取当前云平台所有供应商", notes = "获取当前云平台所有供应商")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    @Operation(summary = "获取当前云平台所有供应商", description = "获取当前云平台所有供应商")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
     public ResultHolder<List<PlatformResponse>> getPlatform() {
         List<PlatformResponse> platformResponses = cloudAccountService.getPlatforms();
         return ResultHolder.success(platformResponses);
     }
 
     @PostMapping
-    @ApiOperation(value = "插入云账号", notes = "插入云账号")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:CREATE')")
+    @Operation(summary = "插入云账号", description = "插入云账号")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:CREATE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.ADD,
             content = "'添加云账号['+#addCloudAccountRequest.name+']'",
             param = "#addCloudAccountRequest")
@@ -98,8 +98,8 @@ public class CloudAccountController {
 
 
     @PutMapping
-    @ApiOperation(value = "更新云账号", notes = "更新云账号")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    @Operation(summary = "更新云账号", description = "更新云账号")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#updateCloudAccountRequest.id",
             content = "'更新云账号['+#updateCloudAccountRequest.name+']'",
@@ -111,14 +111,14 @@ public class CloudAccountController {
     }
 
     @DeleteMapping("/{cloud_account_id}")
-    @ApiOperation(value = "删除云账号", notes = "删除云账号")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:DELETE')")
+    @Operation(summary = "删除云账号", description = "删除云账号")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.DELETE,
             resourceId = "#accountId",
             content = "'删除云账号'",
             param = "#accountId")
     @Emit(value = "DELETE::CLOUD_ACCOUNT")
-    public ResultHolder<Boolean> delete(@ApiParam("云账号id")
+    public ResultHolder<Boolean> delete(@Parameter(name = "云账号id")
                                         @PathVariable("cloud_account_id")
                                         @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                         String accountId) {
@@ -126,14 +126,14 @@ public class CloudAccountController {
     }
 
     @DeleteMapping
-    @ApiOperation(value = "批量删除云账号", notes = "批量删除云账号")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:DELETE')")
+    @Operation(summary = "批量删除云账号", description = "批量删除云账号")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.BATCH_DELETE,
             resourceId = "#cloudAccountIds",
             content = "'批量删除云账号'",
             param = "#cloudAccountIds")
     @Emit("DELETE_BATCH::CLOUD_ACCOUNT")
-    public ResultHolder<Boolean> deleteBatch(@ApiParam("云账号id")
+    public ResultHolder<Boolean> deleteBatch(@Parameter(name = "云账号id")
                                              @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}")
                                              @RequestBody ArrayList<String> cloudAccountIds) {
         boolean delete = cloudAccountService.delete(cloudAccountIds);
@@ -141,21 +141,21 @@ public class CloudAccountController {
     }
 
     @PutMapping("/sync")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC_RESOURCE')")
-    @ApiOperation(value = "根据云账号全量同步", notes = "根据云账号全量同步")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:SYNC_RESOURCE')")
+    @Operation(summary = "根据云账号全量同步", description = "根据云账号全量同步")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.SYNC,
             resourceId = "#cloudAccountIds",
             content = "'全量同步云账号'",
             param = "#cloudAccountIds")
-    public ResultHolder<Boolean> sync(@ApiParam("云账号id") @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}") @RequestBody ArrayList<String> cloudAccountIds) {
+    public ResultHolder<Boolean> sync(@Parameter(name = "云账号id") @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}") @RequestBody ArrayList<String> cloudAccountIds) {
         cloudAccountService.sync(cloudAccountIds);
         return ResultHolder.success(true);
     }
 
     @GetMapping("/region/{cloud_account_id}")
-    @ApiOperation(value = "获取当前云账号的区域信息", notes = "获取当前云账号的区域信息")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
-    public ResultHolder<List<Credential.Region>> region(@ApiParam("云账号id")
+    @Operation(summary = "获取当前云账号的区域信息", description = "获取当前云账号的区域信息")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    public ResultHolder<List<Credential.Region>> region(@Parameter(name = "云账号id")
                                                         @PathVariable("cloud_account_id")
                                                         @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                         @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
@@ -165,20 +165,20 @@ public class CloudAccountController {
     }
 
     @GetMapping("/sync/job_record")
-    @ApiOperation(value = "查询云账号最新的同步记录", notes = "查询云账号最新的同步记录")
+    @Operation(summary = "查询云账号最新的同步记录", description = "查询云账号最新的同步记录")
     @TokenRenewal
-    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudAccountSyncStatus(@ApiParam("需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
+    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudAccountSyncStatus(@Parameter(name = "需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
         return ResultHolder.success(cloudAccountService.findCloudAccountSyncStatus(cloudAccountIds).stream().collect(Collectors.groupingBy(JobRecordResourceResponse::getResourceId)));
     }
 
     @GetMapping("/verification/{cloud_account_id}")
-    @ApiOperation(value = "校验云账号信息", notes = "校验云账号信息")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    @Operation(summary = "校验云账号信息", description = "校验云账号信息")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.CHECK,
             resourceId = "#accountId",
             content = "'验证账号信息'",
             param = "#accountId")
-    public ResultHolder<CloudAccount> verification(@ApiParam("云账号id")
+    public ResultHolder<CloudAccount> verification(@Parameter(name = "云账号id")
                                                    @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                    @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                                    @PathVariable("cloud_account_id") String accountId) {
@@ -187,9 +187,9 @@ public class CloudAccountController {
     }
 
     @GetMapping("/jobs/{cloud_account_id}")
-    @ApiOperation(value = "获取云账号的定时任务", notes = "获取云账号的定时任务")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
-    public ResultHolder<CloudAccountJobDetailsResponse> jobs(@ApiParam("云账号id")
+    @Operation(summary = "获取云账号的定时任务", description = "获取云账号的定时任务")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    public ResultHolder<CloudAccountJobDetailsResponse> jobs(@Parameter(name = "云账号id")
                                                              @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                              @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                                              @PathVariable("cloud_account_id") String accountId) {
@@ -197,8 +197,8 @@ public class CloudAccountController {
     }
 
     @PutMapping("/jobs")
-    @ApiOperation(value = "编辑云账号定时任务", notes = "编辑云账号定时任务")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC_SETTING')")
+    @Operation(summary = "编辑云账号定时任务", description = "编辑云账号定时任务")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:SYNC_SETTING')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#updateJobsRequest.cloudAccountId",
             content = "'编辑云账号定时任务'",
@@ -208,15 +208,15 @@ public class CloudAccountController {
     }
 
     @GetMapping("/jobs/resource/{cloudAccountId}")
-    @ApiOperation(value = "获取所有模块的同步资源", notes = "获取所有模块的同步资源")
+    @Operation(summary = "获取所有模块的同步资源", description = "获取所有模块的同步资源")
     public ResultHolder<List<SyncResource>> getResourceJobs(@PathVariable String cloudAccountId) {
         List<SyncResource> moduleResourceJob = cloudAccountService.getModuleResourceJob(cloudAccountId);
         return ResultHolder.success(moduleResourceJob);
     }
 
     @PostMapping("/sync")
-    @ApiOperation(value = "同步", notes = "同步")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:SYNC_RESOURCE', 'CLOUD_ACCOUNT:SYNC_BILL')")
+    @Operation(summary = "同步", description = "同步")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:SYNC_RESOURCE', 'CLOUD_ACCOUNT:SYNC_BILL')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.SYNC,
             resourceId = "#request.cloudAccountId",
             content = "'执行同步'",
@@ -228,8 +228,8 @@ public class CloudAccountController {
 
 
     @PutMapping("/updateName")
-    @ApiOperation(value = "编辑云账号名称")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
+    @Operation(summary = "编辑云账号名称")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:EDIT')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_ACCOUNT, operated = OperatedTypeEnum.MODIFY,
             resourceId = "#updateAccountNameRequest.id",
             content = "'编辑云账号名称为['+#updateAccountNameRequest.name+']'",
@@ -239,9 +239,9 @@ public class CloudAccountController {
     }
 
     @GetMapping("/resourceCount/{cloud_account_id}")
-    @ApiOperation(value = "获取云账号资源计数")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
-    public ResultHolder<List<ResourceCountResponse>> resourceCount(@ApiParam("云账号id")
+    @Operation(summary = "获取云账号资源计数")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    public ResultHolder<List<ResourceCountResponse>> resourceCount(@Parameter(name = "云账号id")
                                                                    @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                                    @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                                                    @PathVariable("cloud_account_id") String accountId) {
@@ -249,15 +249,15 @@ public class CloudAccountController {
     }
 
     @GetMapping("/pageSyncRecord")
-    @ApiOperation(value = "获取同步记录")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    @Operation(summary = "获取同步记录")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
     public ResultHolder<IPage<JobRecordResourceResponse>> pageSyncRecord(@Validated SyncRecordRequest syncRecordRequest) {
         return ResultHolder.success(cloudAccountService.pageSyncRecord(syncRecordRequest));
     }
 
     @GetMapping("/record/types")
-    @ApiOperation(value = "获取同步记录类型")
-    @PreAuthorize("hasAnyCePermission('CLOUD_ACCOUNT:READ')")
+    @Operation(summary = "获取同步记录类型")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
     public ResultHolder<List<String>> listRecordTypes() {
         return ResultHolder.success(cloudAccountService.listTypes());
     }

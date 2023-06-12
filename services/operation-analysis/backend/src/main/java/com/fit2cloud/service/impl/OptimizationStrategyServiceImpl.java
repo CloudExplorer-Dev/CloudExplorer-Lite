@@ -22,13 +22,13 @@ import com.fit2cloud.service.IOptimizationStrategyService;
 import com.fit2cloud.service.IPermissionService;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.google.common.base.Joiner;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -206,7 +206,7 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
                 return optimizationStrategyIgnoreResourceService.batchInsertIgnoreResourceByOptimizationStrategyId(optimizationStrategy.getId(), strategy.getIgnoreResourceIdList());
             }
             // 改为优化所有资源时，取消所有已忽略的资源
-            if(result && strategy.getOptimizationScope()){
+            if (result && strategy.getOptimizationScope()) {
                 optimizationStrategyIgnoreResourceService.deleteIgnoreResourceByOptimizationStrategyId(optimizationStrategy.getId());
             }
         } catch (Exception e) {

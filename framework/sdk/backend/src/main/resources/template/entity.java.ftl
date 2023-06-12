@@ -54,7 +54,7 @@ import ${enumClass};
 @TableName("${schemaName}${table.name}")
 </#if>
 <#if springdoc>
-@Schema(name = "${entity}", description = "$!{table.comment}")
+@Schema(title = "${entity}", description = "$!{table.comment}")
 <#elseif swagger>
 @ApiModel(value = "${entity}对象", description = "${table.comment!}")
 </#if>
@@ -82,7 +82,7 @@ public class ${entity} {
         <#if springdoc>
     @Schema(description = "${field.comment}")
         <#elseif swagger>
-    @ApiModelProperty("${field.comment}")
+    @Schema(title="${field.comment}")
         <#else>
     /**
      * ${field.comment}
