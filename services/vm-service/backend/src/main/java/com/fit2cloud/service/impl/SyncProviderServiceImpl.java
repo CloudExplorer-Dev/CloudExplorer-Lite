@@ -22,6 +22,7 @@ import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.dao.entity.VmCloudServerStatusTiming;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.es.repository.PerfMetricMonitorDataRepository;
 import com.fit2cloud.provider.ICloudProvider;
@@ -69,6 +70,8 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
     private PerfMetricMonitorDataRepository perfMetricMonitorDataRepository;
     @Resource
     private ElasticsearchClient elasticsearchClient;
+    @Resource
+    private IVmCloudServerStatusTimingService vmCloudServerStatusTimingService;
 
     @Override
     public void syncCloudServer(String cloudAccountId) {
@@ -119,6 +122,18 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                         .eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId())
                         .eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid())
                 /*.eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())*/, updateWrapper);
+        // 初始云主机状态时间
+        try {
+            updateWrapper.clear();
+            updateWrapper.eq(VmCloudServer::getAccountId, saveBatchOrUpdateParams.getCloudAccountId())
+                    .eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())
+                    .notIn(VmCloudServer::getInstanceStatus, Arrays.asList(F2CInstanceStatus.Creating.name(), F2CInstanceStatus.Failed.name(), F2CInstanceStatus.WaitCreating.name(), F2CInstanceStatus.Deleted.name()))
+                    .in(CollectionUtils.isNotEmpty(vmCloudServers), VmCloudServer::getInstanceUuid, vmCloudServers.stream().map(VmCloudServer::getInstanceUuid).toList());
+            vmCloudServerStatusTimingService.batchInsertVmCloudServerStatusEvent(vmCloudServerService.list(updateWrapper), saveBatchOrUpdateParams.getSyncTime());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -396,6 +411,18 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
 
     @Override
     public void deleteDataSource(List<String> cloudAccountIds) {
+        // 删除云主机状态时长数据
+        AsyncJob.run(() -> {
+            try {
+                List<String> vmIdList = vmCloudServerService.list(new LambdaQueryWrapper<VmCloudServer>().in(VmCloudServer::getAccountId, cloudAccountIds)).stream().map(VmCloudServer::getId).toList();
+                if (CollectionUtils.isNotEmpty(vmIdList)) {
+                    vmCloudServerStatusTimingService.remove(
+                            new LambdaUpdateWrapper<VmCloudServerStatusTiming>().in(VmCloudServerStatusTiming::getCloudServerId, vmIdList));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
         // 删除云主机数据
         AsyncJob.run(() -> vmCloudServerService.remove(new LambdaUpdateWrapper<VmCloudServer>().in(VmCloudServer::getAccountId, cloudAccountIds)));
         // 删除磁盘

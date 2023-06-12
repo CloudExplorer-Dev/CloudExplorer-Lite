@@ -19,11 +19,16 @@ public class ServerRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 8484185034593083260L;
     @ApiModelProperty("名称")
-    private String name;
-
+    private String instanceName;
     @ApiModelProperty("云账号IDs")
     private List<String> accountIds;
-
     @ApiModelProperty("组织或者工作空间 ID 集合")
     private List<String> sourceIds;
+    @ApiModelProperty("IP地址")
+    private String ipArray;
+    @ApiModelProperty("优化策略ID")
+    private String optimizationStrategyId;
+    @ApiModelProperty("忽略的")
+    private boolean ignore;
+
 }
