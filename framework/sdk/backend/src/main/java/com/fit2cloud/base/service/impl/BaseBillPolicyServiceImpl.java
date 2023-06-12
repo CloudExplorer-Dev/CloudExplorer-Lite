@@ -9,12 +9,12 @@ import com.fit2cloud.base.entity.BillPolicyDetailsAccount;
 import com.fit2cloud.base.mapper.BaseBillPolicyMapper;
 import com.fit2cloud.base.service.IBaseBillPolicyDetailsService;
 import com.fit2cloud.base.service.IBaseBillPolicyService;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**

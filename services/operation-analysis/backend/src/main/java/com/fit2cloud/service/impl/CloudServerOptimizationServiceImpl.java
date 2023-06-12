@@ -32,6 +32,7 @@ import com.fit2cloud.utils.CustomCellWriteHeightConfig;
 import com.fit2cloud.utils.CustomCellWriteWidthConfig;
 import com.fit2cloud.utils.EasyExcelUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +47,6 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -415,7 +415,7 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
         if (CollectionUtils.isNotEmpty(aggregations.aggregations())) {
             List<StringTermsBucket> bucketList = aggregations.aggregations().get(0).aggregation().getAggregate().sterms().buckets().array();
             bucketList.forEach(instanceBucket -> {
-                String instanceUuid = instanceBucket.key();
+                String instanceUuid = instanceBucket.key().stringValue();
                 VmCloudServerDTO vmCloudServerDTO = new VmCloudServerDTO();
                 vmCloudServerDTO.setInstanceUuid(instanceUuid);
                 instanceBucket.aggregations().get("metricName").sterms().buckets().array().forEach(metricBucket -> setVmCloudServerMetricData(metricBucket, vmCloudServerDTO));
@@ -433,7 +433,7 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
      * @param vmCloudServerDTO vm云服务器dto
      */
     private void setVmCloudServerMetricData(StringTermsBucket metricBucket, VmCloudServerDTO vmCloudServerDTO) {
-        String metricName = metricBucket.key();
+        String metricName = metricBucket.key().stringValue();
         Aggregate avg = metricBucket.aggregations().get(SpecialAttributesConstants.SpecialField.AVERAGE_VALUE);
         Aggregate max = metricBucket.aggregations().get(SpecialAttributesConstants.SpecialField.MAX_VALUE);
         Aggregate min = metricBucket.aggregations().get(SpecialAttributesConstants.SpecialField.MIN_VALUE);

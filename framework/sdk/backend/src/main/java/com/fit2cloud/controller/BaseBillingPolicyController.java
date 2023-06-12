@@ -8,12 +8,12 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.ListInstanceBillRequest;
 import com.fit2cloud.dto.charging.BillingFieldMetaSetting;
 import com.fit2cloud.dto.charging.ChargingModuleInfo;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 import java.util.Map;
@@ -27,13 +27,13 @@ import java.util.Objects;
  */
 @RequestMapping("/api/base/billing")
 @RestController
-@Api(value = "账单相关接口", tags = "账单相关接口")
+@Tag(name = "账单相关接口", description = "账单相关接口")
 public class BaseBillingPolicyController {
 
 
     @GetMapping("/policy_config")
-    @ApiModelProperty("获取账单配置")
-    @ApiIgnore
+    @Operation(summary = "获取账单配置")
+    @Hidden
     private ResultHolder<List<BillingFieldMetaSetting>> getChargingModuleConfigInfo() {
         ChargingModuleInfo billSettings = ChargingConfig.getBillSettings();
         List<BillingFieldMetaSetting> billingFieldMetaSettings = billSettings
@@ -57,7 +57,7 @@ public class BaseBillingPolicyController {
 
 
     @GetMapping("/instance_bill")
-    @ApiModelProperty("获取实例账单")
+    @Operation(summary = "获取实例账单")
     private ResultHolder<List<InstanceBill>> listInstanceBill(ListInstanceBillRequest request) {
         ChargingModuleInfo billSettings = ChargingConfig.getBillSettings();
         List<InstanceBill> instanceBills = billSettings.getBillSettings().parallelStream()

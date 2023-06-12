@@ -27,6 +27,7 @@ import com.fit2cloud.controller.response.BillingPolicyDetailsResponse;
 import com.fit2cloud.controller.response.CloudAccountResponse;
 import com.fit2cloud.dto.charging.BillingFieldMetaSetting;
 import com.fit2cloud.service.IBillingPolicyService;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +42,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;

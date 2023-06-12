@@ -20,7 +20,7 @@ public class ServerRequest implements Serializable {
     private static final long serialVersionUID = 8484185034593083260L;
 
     @Schema(title = "名称")
-    private String name;
+    private String instanceName;
 
     @Schema(title = "云账号IDs")
     private List<String> accountIds;

@@ -3,10 +3,10 @@ package com.fit2cloud.controller.request;
 import com.fit2cloud.base.mapper.BaseBillPolicyMapper;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -17,10 +17,12 @@ import java.util.List;
  */
 @Data
 public class LinkCloudAccountRequest {
-    @ApiModelProperty("策略主键")
+
+    @Schema(title = "策略主键")
     @NotNull(message = "计费策略id不能为空")
     @CustomValidated(mapper = BaseBillPolicyMapper.class, handler = ExistHandler.class, field = "id", message = "计费策略id不存在", exist = false)
     private String billingPolicyId;
-    @ApiModelProperty("关联云账号列表")
+
+    @Schema(title = "关联云账号列表")
     private List<String> cloudAccountIdList;
 }
