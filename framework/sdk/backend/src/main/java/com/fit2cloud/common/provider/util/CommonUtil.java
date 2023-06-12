@@ -39,6 +39,11 @@ public class CommonUtil {
         return 0;
     }
 
+    public static String strSort(String s) {
+        char[] chars = s.toCharArray();
+        Arrays.sort(chars);
+        return new String(chars);
+    }
 
     /**
      * 解析时间字符串

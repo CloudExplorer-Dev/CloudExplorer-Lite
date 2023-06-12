@@ -97,6 +97,18 @@ public class MenuConstants {
                             .requiredPermission(new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .permission(GROUP.DIMENSION_SETTING, OPERATE.READ))
+            ).menu(
+                    new Menu.Builder()
+                            .name("billing_policy")
+                            .title("私有云计费")
+                            .componentPath("/src/views/billing_policy/index.vue")
+                            .path("/billing_policy")
+                            .saveRecent(true)
+                            .icon("icon_ledger_settings")
+                            .order(5)
+                            .requiredPermission(new MenuPermission.Builder()
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .permission(GROUP.BILLING_POLICY, OPERATE.READ))
             )
             //...
             ;

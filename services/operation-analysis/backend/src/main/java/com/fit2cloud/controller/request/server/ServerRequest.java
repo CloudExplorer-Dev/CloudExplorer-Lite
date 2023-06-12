@@ -27,4 +27,14 @@ public class ServerRequest implements Serializable {
 
     @Schema(title = "组织或者工作空间 ID 集合")
     private List<String> sourceIds;
+
+    @Schema(title = "IP地址")
+    private String ipArray;
+
+    @Schema(title = "优化策略ID")
+    private String optimizationStrategyId;
+
+    @Schema(title = "忽略的")
+    private boolean ignore;
+
 }

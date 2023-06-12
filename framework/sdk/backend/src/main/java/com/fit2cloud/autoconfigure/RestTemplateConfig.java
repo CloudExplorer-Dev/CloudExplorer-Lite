@@ -109,10 +109,11 @@ public class RestTemplateConfig {
         public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
             request.getHeaders().setAccept(List.of(MediaType.APPLICATION_JSON));
             if (SecurityContextHolder.getContext() != null && SecurityContextHolder.getContext().getAuthentication() != null && SecurityContextHolder.getContext().getAuthentication().getCredentials() != null) {
-                UserDto userDto = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                request.getHeaders().add(JwtTokenUtils.TOKEN_NAME, SecurityContextHolder.getContext().getAuthentication().getCredentials().toString());
-                request.getHeaders().add(RoleConstants.ROLE_TOKEN, userDto.getCurrentRole().name());
-                request.getHeaders().add(JwtTokenAuthFilter.CE_SOURCE_TOKEN, userDto.getCurrentSource());
+                if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof UserDto userDto) {
+                    request.getHeaders().add(JwtTokenUtils.TOKEN_NAME, SecurityContextHolder.getContext().getAuthentication().getCredentials().toString());
+                    request.getHeaders().add(RoleConstants.ROLE_TOKEN, userDto.getCurrentRole().name());
+                    request.getHeaders().add(JwtTokenAuthFilter.CE_SOURCE_TOKEN, userDto.getCurrentSource());
+                }
             }
             return execution.execute(request, body);
         }

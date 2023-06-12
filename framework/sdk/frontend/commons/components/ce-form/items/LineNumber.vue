@@ -17,6 +17,7 @@
 
     <template #append>
       <div
+        v-if="_showBtn"
         style="
           display: flex;
           flex-direction: column;
@@ -39,6 +40,9 @@
         />
       </div>
       <div class="unit-label" v-if="formItem?.unit">{{ formItem?.unit }}</div>
+      <div class="unit-label" v-if="$slots.unit">
+        <slot name="unit"></slot>
+      </div>
     </template>
   </el-input>
 </template>
@@ -55,9 +59,11 @@ const props = withDefaults(
     max?: number | string;
     disabled?: boolean;
     readonly?: boolean;
+    showBtn?: boolean | string;
   }>(),
   {
     specialStep: 1,
+    showBtn: true,
   }
 );
 import type { FormView } from "@commons/components/ce-form/type";
@@ -82,6 +88,9 @@ const _value = computed<number | undefined>({
     emit("update:modelValue", value);
     emit("change");
   },
+});
+const _showBtn = computed(() => {
+  return Boolean(props.showBtn);
 });
 
 const _min = computed(() => {

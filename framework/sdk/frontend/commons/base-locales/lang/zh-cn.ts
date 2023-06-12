@@ -293,8 +293,25 @@ const permissions = {
         read: "查看",
       },
       resource_optimization: {
+        base: "资源优化",
+        read: "查看",
+      },
+      server_optimization: {
         base: "云主机优化",
         read: "查看",
+      },
+      optimization_strategy: {
+        base: "优化策略",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
+      optimization_strategy_ignore_resource: {
+        base: "忽略资源",
+        read: "查看",
+        add: "添加",
+        cancel: "取消",
       },
     },
     bill: {

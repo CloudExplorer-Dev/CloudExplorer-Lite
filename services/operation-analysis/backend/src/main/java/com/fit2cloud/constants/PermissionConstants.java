@@ -31,13 +31,23 @@ public class PermissionConstants {
         public static final String DISK_ANALYSIS = "DISK_ANALYSIS";
         public static final String RESOURCE_OPTIMIZATION = "RESOURCE_OPTIMIZATION";
         public static final String SERVER_OPTIMIZATION = "SERVER_OPTIMIZATION";
+        public static final String OPTIMIZATION_STRATEGY = "OPTIMIZATION_STRATEGY";
         public static final String OVERVIEW = "OVERVIEW";
+        public static final String OPTIMIZATION_STRATEGY_IGNORE_RESOURCE = "OPTIMIZATION_STRATEGY_IGNORE_RESOURCE";
 
         //...
     }
 
     public static class OPERATE {
         public static final String READ = "READ";
+        public static final String CREATE = "CREATE";
+
+        public static final String EDIT = "EDIT";
+        public static final String DELETE = "DELETE";
+
+        public static final String CANCEL = "CANCEL";
+
+        public static final String ADD = "ADD";
     }
 
     public static ModulePermission MODULE_PERMISSION;
@@ -113,6 +123,16 @@ public class PermissionConstants {
             .group(
                     new PermissionGroup.Builder()
                             .id(GROUP.SERVER_OPTIMIZATION)
+                            .name("permission.operation.server_optimization.base")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ)
+                                    .name("permission.operation.server_optimization.read")
+                                    .role(RoleConstants.ROLE.ADMIN)
+                                    .role(RoleConstants.ROLE.ORGADMIN)
+                                    .role(RoleConstants.ROLE.USER))
+            ).group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.RESOURCE_OPTIMIZATION)
                             .name("permission.operation.resource_optimization.base")
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
@@ -120,6 +140,42 @@ public class PermissionConstants {
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN)
                                     .role(RoleConstants.ROLE.USER))
+            ).group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.OPTIMIZATION_STRATEGY)
+                            .name("permission.operation.optimization_strategy.base")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ)
+                                    .name("permission.operation.optimization_strategy.read")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.EDIT)
+                                    .name("permission.operation.optimization_strategy.edit")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.DELETE)
+                                    .name("permission.operation.optimization_strategy.delete")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.CREATE)
+                                    .name("permission.operation.optimization_strategy.create")
+                                    .role(RoleConstants.ROLE.ADMIN))
+            ).group(
+                    new PermissionGroup.Builder()
+                            .id(GROUP.OPTIMIZATION_STRATEGY_IGNORE_RESOURCE)
+                            .name("permission.operation.optimization_strategy_ignore_resource.base")
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.READ)
+                                    .name("permission.operation.optimization_strategy_ignore_resource.read")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.ADD)
+                                    .name("permission.operation.optimization_strategy_ignore_resource.add")
+                                    .role(RoleConstants.ROLE.ADMIN))
+                            .permission(new Permission.Builder()
+                                    .operate(OPERATE.CANCEL)
+                                    .name("permission.operation.optimization_strategy_ignore_resource.cancel")
+                                    .role(RoleConstants.ROLE.ADMIN))
             );
 
 

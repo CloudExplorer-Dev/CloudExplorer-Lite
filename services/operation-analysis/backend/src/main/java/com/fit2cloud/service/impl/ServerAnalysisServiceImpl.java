@@ -120,7 +120,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         wrapper.orderByDesc(VmCloudServer::getCreateTime);
         wrapper.selectAs(CloudAccount::getName, AnalysisServerDTO::getAccountName);
         wrapper.selectAs(CloudAccount::getPlatform, AnalysisServerDTO::getPlatform);
-        wrapper.like(StringUtils.isNotBlank(request.getName()), VmCloudServer::getInstanceName, request.getName());
+        wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), VmCloudServer::getInstanceName, request.getInstanceName());
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), VmCloudServer::getSourceId, request.getSourceIds());
         wrapper.notIn(true, VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE, SpecialAttributesConstants.StatusField.FAILED));
         return wrapper;

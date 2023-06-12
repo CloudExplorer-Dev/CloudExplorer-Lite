@@ -5,6 +5,7 @@ import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.quartz.CloudAccountSyncJob;
+import org.quartz.DateBuilder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -92,6 +93,8 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         JobSetting syncDatastore = new JobSetting(CloudAccountSyncJob.SyncDatastoreJob.class, SYNC_DATASTORE, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(), "同步存储器", null, p -> p.equals(PlatformConstants.fit2cloud_vsphere_platform.name()) || p.equals(PlatformConstants.fit2cloud_openstack_platform.name()));
         // 同步监控数据
         JobSetting syncMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncMetricMonitor.class, SYNC_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_RESOURCE_METRIC_SYNC_GROUP.name(), "同步监控数据", null, "0 30 * * * ? *", p -> true, p -> false, p -> false);
-        return List.of(syncVirtual, syncDisk, syncImage, syncHost, syncDatastore, syncMetricMonitor);
+        // 记录实例状态
+        JobSetting recorderInstanceState = new JobSetting(CloudAccountSyncJob.recorderInstanceState.class, "RECORDER_INSTANCE_STATE", com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "记录实例状态", null, 5, DateBuilder.IntervalUnit.MINUTE, p -> false, p -> false, p -> false);
+        return List.of(syncVirtual, syncDisk, syncImage, syncHost, syncDatastore, syncMetricMonitor, recorderInstanceState);
     }
 }

@@ -1,21 +1,50 @@
+<template>
+  <div
+    class="info-card"
+    :class="{ 'no-padding': noPadding }"
+    v-if="show"
+    v-bind="$attrs"
+  >
+    <div class="title" v-if="!noTitle">{{ title }}</div>
+
+    <el-row :gutter="16" :class="{ 'div-content': !noTitle }">
+      <el-col :span="6" v-for="o in optimizationStrategyList" :key="o.id">
+        <ServerOptimizationCard
+          ref="serverOptimizationCardRef"
+          :optimization-strategy="o"
+          :table-search-params="props.tableSearchParams"
+          :show="show"
+          :checked="checkedId === o.id"
+          :show-setting-icon="showSettingIcon"
+          @showStrategyDialog="showOptimizeStrategyDialog"
+          @click="checkDiv(o)"
+        />
+      </el-col>
+    </el-row>
+  </div>
+  <CreateOrEdit
+    ref="createEditFormRef"
+    @confirm="editConfirmed"
+    :id="optimizationStrategyId"
+  />
+</template>
+
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import _ from "lodash";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useUserStore } from "@commons/stores/modules/user";
-import type {
-  OptimizeSuggest,
-  PageOptimizeBaseRequest,
-  OptimizeBaseRequest,
-} from "@commons/api/optimize/type";
-import OptimizeViewApi from "@commons/api/optimize";
+import type {} from "@commons/api/optimize/type";
+import OptimizationStrategyViewApi from "@commons/api/optimize";
 import ServerOptimizationCard from "@commons/business/base-layout/home-page/items/operation/optimize/ServerOptimizationCard.vue";
-import OptimizeStrategyDialog from "@commons/business/base-layout/home-page/items/operation/optimize/OptimizeStrategyDialog.vue";
 import { useRouter } from "vue-router";
+import type {
+  OptimizationStrategy,
+  ListOptimizationStrategyRequest,
+} from "@commons/api/optimize/type";
+import CreateOrEdit from "./CreateOrEdit.vue";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
-const socRef = ref<Array<InstanceType<typeof ServerOptimizationCard>>>([]);
-
 const props = withDefaults(
   defineProps<{
     needRoles?: Array<"ADMIN" | "ORGADMIN" | "USER">;
@@ -26,11 +55,11 @@ const props = withDefaults(
     cloudAccountIds?: Array<string>;
     noTitle?: boolean;
     noPadding?: boolean;
-    checkId?: number;
+    checkId?: string;
     checkable?: boolean;
     showSettingIcon?: boolean;
     tableLoading?: boolean;
-    tableSearchParams?: OptimizeBaseRequest;
+    tableSearchParams?: any;
   }>(),
   {
     needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
@@ -47,23 +76,82 @@ const props = withDefaults(
     tableLoading: false,
   }
 );
-
+const serverOptimizationCardRef = ref<
+  Array<InstanceType<typeof ServerOptimizationCard>>
+>([]);
+const emit = defineEmits(["update:checkId", "change"]);
+const createEditFormRef = ref<InstanceType<typeof CreateOrEdit>>();
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
 const userStore = useUserStore();
-
 const router = useRouter();
-
 //获取优化建议
-const apiOptimizeSuggestList = ref<Array<OptimizeSuggest>>();
+const apiOptimizationStrategyList = ref<Array<OptimizationStrategy>>();
+const optimizationStrategyId = ref<string>();
 
-const getOptimizeSuggests = () => {
-  OptimizeViewApi.getOptimizeSuggestList().then((res) => {
-    apiOptimizeSuggestList.value = res.data;
-  });
+const checkedId = computed({
+  get() {
+    return props.checkId;
+  },
+  set(value) {
+    if (checkedId.value !== value || value === "") {
+      emit(
+        "update:checkId",
+        value === "" ? optimizationStrategyList.value?.[0]?.id : value
+      );
+      emit("change");
+    }
+  },
+});
+
+function checkDiv(req: OptimizationStrategy) {
+  if (props.tableLoading) {
+    return;
+  }
+  if (!props.checkable) {
+    goTo(req.id);
+    return;
+  }
+  checkedId.value = req.id;
+}
+function goTo(id: string) {
+  const queryParam: any = { checked: id };
+  if (props.cloudAccountId && props.cloudAccountId !== "all") {
+    queryParam.accountIds = encodeURI(JSON.stringify([props.cloudAccountId]));
+  }
+  if (import.meta.env.VITE_APP_NAME === "operation-analysis") {
+    router.push({
+      name: "server_optimization",
+      query: queryParam,
+    });
+  } else {
+    MicroAppRouterUtil.jumpToChildrenPath(
+      "operation-analysis",
+      "/operation-analysis/server_optimization/list?checked=" +
+        queryParam.checked +
+        (queryParam.accountIds ? "&accountIds=" + queryParam.accountIds : ""),
+      router
+    );
+  }
+}
+/**
+ * 优化策略
+ */
+const getOptimizationStrategyList = () => {
+  OptimizationStrategyViewApi.listOptimizationStrategy("VIRTUAL_MACHINE").then(
+    (res) => {
+      apiOptimizationStrategyList.value = res.data;
+      if (!props.checkId) {
+        checkedId.value = "";
+      }
+    }
+  );
 };
-const optimizeSuggestList = computed<Array<OptimizeSuggest>>(() => {
-  return _.map(apiOptimizeSuggestList.value, (s) => {
+/**
+ * 优化策略对象转换，添加云账号
+ */
+const optimizationStrategyList = computed<Array<OptimizationStrategy>>(() => {
+  return _.map(apiOptimizationStrategyList.value, (s) => {
     const v = _.clone(s);
     const accountIds = [];
     if (!(props.cloudAccountId === "all" || !props.cloudAccountId)) {
@@ -79,8 +167,24 @@ const optimizeSuggestList = computed<Array<OptimizeSuggest>>(() => {
   });
 });
 onMounted(() => {
-  getOptimizeSuggests();
+  getOptimizationStrategyList();
 });
+
+function editConfirmed() {
+  emit("update:checkId", optimizationStrategyId.value);
+  emit("change");
+  nextTick(() => {
+    if (serverOptimizationCardRef.value) {
+      const scoRef = _.find(
+        serverOptimizationCardRef.value,
+        (item) =>
+          item.getCurrentOptimizationStrategyId() ===
+          optimizationStrategyId.value
+      );
+      scoRef?.getOptimizeServerList();
+    }
+  });
+}
 
 const show = computed<boolean>(
   () =>
@@ -92,114 +196,36 @@ const show = computed<boolean>(
     _.includes(props.needRoles, userStore.currentRole)
 );
 
-const emit = defineEmits(["update:checkId", "change"]);
-function changeStrategy(o: OptimizeSuggest) {
-  emit("update:checkId", o.index);
-  emit("change");
-  socRef.value[o.index - 1]?.getOptimizeServerList();
-}
-const modifyConditionRef = ref();
-const currentOptimizeSuggest = ref<OptimizeSuggest>();
-const showOptimizeStrategyDialog = (o: OptimizeSuggest) => {
-  currentOptimizeSuggest.value = o;
-  modifyConditionRef.value.dialogVisible = true;
-};
-const checkedId = computed({
-  get() {
-    return props.checkId;
-  },
-  set(value) {
-    if (checkedId.value !== value) {
-      emit("update:checkId", value);
-      emit("change");
-    }
-  },
-});
-
-function getCheckedSearchParams(
-  index: number,
-  tableSearchParams: any
-): PageOptimizeBaseRequest | undefined {
-  return _.assign(
-    _.clone(_.find(optimizeSuggestList.value, (s) => s.index === index)),
-    tableSearchParams
-  );
-}
-
-defineExpose({
-  getCheckedSearchParams,
-});
-
-function checkDiv(req: OptimizeSuggest) {
-  if (props.tableLoading) {
-    return;
-  }
-  if (!props.checkable) {
-    goTo(req.index, req.optimizeSuggestCode);
-    return;
-  }
-  checkedId.value = req.index;
-}
-
 const showSettingIcon = computed<boolean>(() => props.showSettingIcon);
 
-function goTo(id: number, code: string) {
-  const queryParam: any = { checked: id };
-  if (props.cloudAccountId && props.cloudAccountId !== "all") {
-    queryParam.accountIds = encodeURI(JSON.stringify([props.cloudAccountId]));
-  }
-  if (import.meta.env.VITE_APP_NAME === "operation-analysis") {
-    router.push({
-      name: "resource_optimization_list",
-      query: queryParam,
-    });
-  } else {
-    MicroAppRouterUtil.jumpToChildrenPath(
-      "operation-analysis",
-      "/operation-analysis/server_optimization/list?checked=" +
-        queryParam.checked +
-        (code ? "&optimizeSuggestCode=" + code : "") +
-        (queryParam.accountIds ? "&accountIds=" + queryParam.accountIds : ""),
-      router
-    );
-  }
+const showOptimizeStrategyDialog = (o: OptimizationStrategy) => {
+  optimizationStrategyId.value = o.id;
+  createEditFormRef.value?.open(o.id);
+};
+function getCheckedSearchParams(
+  id: string,
+  tableSearchParams: any
+): ListOptimizationStrategyRequest | undefined {
+  return _.assign({ optimizationStrategyId: id }, tableSearchParams);
 }
+function changeCard (){
+  nextTick(() => {
+    if (serverOptimizationCardRef.value) {
+      const scoRef = _.find(
+          serverOptimizationCardRef.value,
+          (item) =>
+              item.getCurrentOptimizationStrategyId() ===
+              checkedId.value
+      );
+      scoRef?.getOptimizeServerList();
+    }
+  });
+}
+defineExpose({
+  getCheckedSearchParams,
+  changeCard
+});
 </script>
-<template>
-  <div
-    class="info-card"
-    :class="{ 'no-padding': noPadding }"
-    v-if="show"
-    v-bind="$attrs"
-  >
-    <div class="title" v-if="!noTitle">{{ title }}</div>
-
-    <el-row :gutter="16" :class="{ 'div-content': !noTitle }">
-      <el-col
-        :span="6"
-        v-for="o in optimizeSuggestList"
-        :key="o.optimizeSuggestCode"
-      >
-        <ServerOptimizationCard
-          ref="socRef"
-          :optimize-suggest="o"
-          :table-search-params="props.tableSearchParams"
-          :show="show"
-          :show-setting-icon="showSettingIcon"
-          :checked="checkedId === o.index"
-          @showStrategyDialog="showOptimizeStrategyDialog"
-          @click="checkDiv(o)"
-        />
-      </el-col>
-    </el-row>
-  </div>
-  <OptimizeStrategyDialog
-    ref="modifyConditionRef"
-    :optimize-suggest="currentOptimizeSuggest"
-    @changeStrategy="changeStrategy"
-    style="min-width: 600px"
-  />
-</template>
 
 <style scoped lang="scss">
 .info-card {

@@ -14,7 +14,8 @@ import org.springframework.context.annotation.PropertySource;
         LocaleConfig.class,
         SwaggerOpenApiConfig.class,
         RedisConfig.class,
-        QuartzConfig.class
+        QuartzConfig.class,
+        ChargingConfig.class
 })
 @EnableDiscoveryClient
 @PropertySource(value = {

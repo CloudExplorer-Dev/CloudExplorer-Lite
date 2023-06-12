@@ -1,7 +1,10 @@
 package com.fit2cloud.quartz;
 
+import com.fit2cloud.autoconfigure.ChargingConfig;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
+import com.fit2cloud.common.charging.instance.impl.SimpleInstanceStateRecorder;
+import com.fit2cloud.common.charging.setting.BillSetting;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
@@ -26,6 +29,18 @@ import java.util.function.Predicate;
  */
 @Component
 public class CloudAccountSyncJob {
+
+    @Name("实例状态记录")
+    public static class recorderInstanceState extends AsyncJob implements Job {
+
+        @Override
+        protected void run(Map<String, Object> map) {
+            List<BillSetting> billSettings = ChargingConfig.getBillSettings().getBillSettings();
+            billSettings
+                    .parallelStream()
+                    .forEach(billSetting -> SimpleInstanceStateRecorder.of(billSetting).run());
+        }
+    }
 
     @Name("同步磁盘定时任务")
     public static class SyncDiskJob extends AsyncJob implements Job {
@@ -216,4 +231,5 @@ public class CloudAccountSyncJob {
             }
         }
     }
+
 }

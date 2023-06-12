@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fit2cloud.base.mapper.BaseBillPolicyDetailsMapper">
+    <resultMap id="BaseResultMap" type="com.fit2cloud.base.entity.BillPolicyDetails">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="resource_type" jdbcType="VARCHAR" property="resourceType"/>
+        <result column="bill_policy_id" jdbcType="VARCHAR" property="billPolicyId"/>
+        <result column="unit_price_on_demand_billing_policy" jdbcType="VARCHAR"
+                property="unitPriceOnDemandBillingPolicy"
+                typeHandler="com.fit2cloud.base.handler.BillingFieldArrayTypeHandler"/>
+        <result column="unit_price_monthly_billing_policy" jdbcType="VARCHAR" property="unitPriceMonthlyBillingPolicy"
+                typeHandler="com.fit2cloud.base.handler.BillingFieldArrayTypeHandler"/>
+        <result column="package_price_billing_policy" jdbcType="VARCHAR" property="packagePriceBillingPolicy"
+                typeHandler="com.fit2cloud.base.handler.PackagePriceBillingPolicyTypeHandler"/>
+        <result column="global_config_meta" jdbcType="VARCHAR" property="globalConfigMeta"
+                typeHandler="com.fit2cloud.base.handler.MapTypeHandler"></result>
+        <result column="create_time" jdbcType="DATE" property="createTime"/>
+        <result column="update_time" jdbcType="DATE" property="updateTime"/>
+    </resultMap>
+
+    <select id="listLast" resultMap="BaseResultMap">
+        SELECT *
+        FROM bill_policy_details bill_policy_details
+                 RIGHT JOIN (SELECT max(create_time) AS create_time,
+                                    resource_type
+                             FROM bill_policy_details ${ew.customSqlSegment}
+                             GROUP BY resource_type) tmp ON tmp.create_time = bill_policy_details.create_time
+            AND tmp.resource_type = bill_policy_details.resource_type
+            ${ew.customSqlSegment}
+    </select>
+</mapper>

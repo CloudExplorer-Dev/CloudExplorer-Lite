@@ -136,4 +136,12 @@ public class CloudBill {
     @BillField(label = "聚合字段")
     @Field(type = FieldType.Object)
     private Map<String, String> aggregations;
+
+    /**
+     * 冗余数据
+     * 其他数据都加这里
+     */
+    @BillField(label = "元数据")
+    @Field(type = FieldType.Object)
+    private Map<String, Object> meta;
 }
