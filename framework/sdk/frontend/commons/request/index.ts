@@ -146,7 +146,8 @@ const promise: (
     }
     request
       .then((response) => {
-        if (response.data.code === 200) {
+        // blob类型的返回状态是response.status
+        if (response.data.code === 200 || response.status == 200) {
           resolve(response.data);
         } else {
           reject(response.data);
@@ -233,6 +234,21 @@ export const del: (
 ) => Promise<Result<any>> = (url, params, data, loading) => {
   return promise(
     request({ url: url, method: "delete", data, params }),
+    loading
+  );
+};
+
+export const exportExcel: (
+  url: string,
+  params?: unknown,
+  loading?: NProgress | Ref<boolean>
+) => Promise<Result<any>> = (
+  url: string,
+  params: unknown,
+  loading?: NProgress | Ref<boolean>
+) => {
+  return promise(
+    request({ url: url, method: "get", params, responseType: "blob" }),
     loading
   );
 };

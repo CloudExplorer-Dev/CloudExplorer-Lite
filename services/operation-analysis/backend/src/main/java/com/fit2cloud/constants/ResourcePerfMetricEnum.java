@@ -36,4 +36,11 @@ public enum ResourcePerfMetricEnum {
         this.description = description;
     }
 
+    public String getMetricName() {
+        return metricName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }
