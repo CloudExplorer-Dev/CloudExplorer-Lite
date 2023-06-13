@@ -136,6 +136,7 @@ const message = {
       email: "Email",
       phone: "Phone",
       wechat: "Wechat",
+      api: "API Doc",
     },
     date: {
       select_date: "Select Date",

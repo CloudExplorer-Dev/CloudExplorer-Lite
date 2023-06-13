@@ -26,6 +26,13 @@ const userInfoRef = ref();
 const showUserInfoDialog = () => {
   userInfoRef.value.dialogVisible = true;
 };
+
+function jumpToDoc() {
+  window.open(
+    window.location.protocol + "//" + window.location.host + "/swagger-ui.html",
+    "_blank"
+  );
+}
 </script>
 
 <template>
@@ -38,6 +45,9 @@ const showUserInfoDialog = () => {
         </el-dropdown-item>
         <el-dropdown-item icon="Edit" @click="showPasswordDialog">
           {{ $t("commons.personal.edit_pwd") }}
+        </el-dropdown-item>
+        <el-dropdown-item icon="Document" @click="jumpToDoc">
+          {{ $t("commons.personal.api") }}
         </el-dropdown-item>
         <el-dropdown-item icon="Right" divided @click="handleLogout">
           {{ $t("commons.personal.exit_system") }}

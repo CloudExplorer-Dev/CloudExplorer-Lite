@@ -136,6 +136,7 @@ const message = {
       email: "郵箱",
       phone: "手機號碼",
       wechat: "企業微信號碼",
+      api: "API文檔",
     },
     date: {
       select_date: "選擇日期",
