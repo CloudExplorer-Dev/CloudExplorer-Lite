@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 查询优化策略资源
@@ -33,7 +33,7 @@ public class OptimizationStrategyResourceController {
 
     @Operation(summary = "云主机优化")
     @GetMapping("/server/page")
-    @PreAuthorize("hasAnyCePermission('SERVER_OPTIMIZATION:READ','OVERVIEW:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('SERVER_OPTIMIZATION:READ','OVERVIEW:READ')")
     public ResultHolder<IPage<VmCloudServerDTO>> pageServerList(@Validated PageServerRequest request) {
         return ResultHolder.success(iCloudServerOptimizationService.pageList(request));
     }

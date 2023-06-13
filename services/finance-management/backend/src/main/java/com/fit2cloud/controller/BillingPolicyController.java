@@ -39,7 +39,7 @@ public class BillingPolicyController {
 
     @GetMapping()
     @Operation(summary = "查询所有计费策略 ")
-    @PreAuthorize("hasAnyCePermission('BILLING_POLICY:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:READ')")
     public ResultHolder<List<BillPolicy>> list() {
         return ResultHolder.success(billingPolicyService.list());
     }
@@ -54,7 +54,7 @@ public class BillingPolicyController {
 
     @GetMapping("/list_cloud_account")
     @Operation(summary = "查询当前策略可关联的云账号")
-    @PreAuthorize("hasAnyCePermission('BILLING_POLICY:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:READ')")
     public ResultHolder<List<CloudAccountResponse>> listCloudAccountByPolicy(ListCloudAccountByPolicyRequest request) {
         List<CloudAccountResponse> cloudAccounts = billingPolicyService.listCloudAccountByPolicy(request.getBillingPolicyId());
         return ResultHolder.success(cloudAccounts);
@@ -62,7 +62,7 @@ public class BillingPolicyController {
 
     @DeleteMapping("/{billing_policy_id}")
     @Operation(summary = "删除一个计费策略")
-    @PreAuthorize("hasAnyCePermission('BILLING_POLICY:DELETE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:DELETE')")
     public ResultHolder<Boolean> removeBillingPolicy(@Parameter(description = "计费策略Id")
                                                      @CustomValidated(mapper = BaseBillPolicyMapper.class, handler = ExistHandler.class, field = "id", message = "计费策略id不存在", exist = false)
                                                      @PathVariable("billing_policy_id")
