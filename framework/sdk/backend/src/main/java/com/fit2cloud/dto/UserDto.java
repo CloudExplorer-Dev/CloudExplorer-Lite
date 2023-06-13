@@ -41,7 +41,7 @@ public class UserDto extends User {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime loginTime;
 
-    @Schema(title = "角色列表")
+    @Schema(description = "角色列表")
     private List<Role> roles = new ArrayList<>();
 
 }
