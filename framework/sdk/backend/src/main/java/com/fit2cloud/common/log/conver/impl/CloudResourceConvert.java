@@ -59,7 +59,7 @@ public class CloudResourceConvert implements ResourceConvert {
                 BaseVmCloudServerMapper cloudServerMapper = SpringUtil.getBean(BaseVmCloudServerMapper.class);
                 QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<>();
                 wrapper.eq(true, ColumnNameUtil.getColumnName(VmCloudServer::getId, true), id).or().eq(true, ColumnNameUtil.getColumnName(VmCloudServer::getInstanceUuid, true), id);
-                VmCloudServer cloudServer = cloudServerMapper.selectOneDeep(wrapper);
+                VmCloudServer cloudServer = cloudServerMapper.selectOne(wrapper);
                 if (Objects.nonNull(cloudServer)) {
                     //BaseCloudServerCache.updateCache();
                     names.add(cloudServer.getInstanceName());
