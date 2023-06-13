@@ -5,7 +5,7 @@ import com.fit2cloud.common.utils.ClassScanUtil;
 import com.fit2cloud.dto.charging.ChargingModuleInfo;
 import com.fit2cloud.dto.module.ModuleInfo;
 import jakarta.annotation.Resource;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

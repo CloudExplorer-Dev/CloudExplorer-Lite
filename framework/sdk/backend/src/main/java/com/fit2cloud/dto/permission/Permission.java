@@ -4,10 +4,10 @@ package com.fit2cloud.dto.permission;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fit2cloud.common.constants.RoleConstants;
 import com.fit2cloud.dto.CeBaseObject;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;
 import java.util.Arrays;

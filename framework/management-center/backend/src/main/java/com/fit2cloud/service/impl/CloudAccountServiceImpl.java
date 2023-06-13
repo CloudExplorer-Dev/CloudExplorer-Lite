@@ -42,9 +42,10 @@ import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import com.fit2cloud.service.ICloudAccountService;
+import jakarta.annotation.Nullable;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -53,7 +54,6 @@ import org.springframework.security.concurrent.DelegatingSecurityContextExecutor
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -333,10 +333,9 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     @Override
     public CloudAccount verification(String accountId) {
-        CloudAccount cloudAccount = new CloudAccount() {{
-            setId(accountId);
-            setState(true);
-        }};
+        CloudAccount cloudAccount = new CloudAccount()
+                .setId(accountId)
+                .setState(true);
         try {
             listRegions(accountId);
         } catch (Exception e) {

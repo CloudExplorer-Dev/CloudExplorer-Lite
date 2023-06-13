@@ -4,3 +4,4 @@ singleServerConfig:
   database: 2
 threads: 8
 nettyThreads: 32
+codec: !<org.redisson.codec.SerializationCodec> {}

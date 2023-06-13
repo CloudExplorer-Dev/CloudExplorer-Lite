@@ -9,17 +9,17 @@ import com.fit2cloud.common.utils.ClassScanUtil;
 import com.fit2cloud.dto.job.JobModuleInfo;
 import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.dto.module.ModuleInfo;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.quartz.Trigger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import jakarta.annotation.Resource;
 import java.util.*;
 
 /**

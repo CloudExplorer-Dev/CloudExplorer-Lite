@@ -2,9 +2,9 @@ package com.fit2cloud.dto.module;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fit2cloud.dto.CeBaseObject;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;
 import java.util.ArrayList;
