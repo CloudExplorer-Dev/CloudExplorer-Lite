@@ -117,7 +117,7 @@ public class OptimizationStrategyController {
     @OperatedLog(resourceType = ResourceTypeEnum.OPTIMIZATION_STRATEGY_IGNORE_RESOURCE, operated = OperatedTypeEnum.ADD,
             content = "'添加ID为['+#request.optimizationStrategyId+']的优化策略的忽略资源'")
     public ResultHolder<Boolean> addIgnore(@RequestBody OptimizationStrategyIgnoreResourceRequest request) {
-        return ResultHolder.success(optimizationStrategyIgnoreResourceService.batchInsertIgnoreResourceByOptimizationStrategyId(request.getOptimizationStrategyId(), request.getResourceIdList()));
+        return ResultHolder.success(optimizationStrategyIgnoreResourceService.batchInsertIgnoreResourceByOptimizationStrategyId(request.getOptimizationStrategyId(), request.getResourceIdList(), false));
     }
 
     @Operation(summary = "查询资源类型列表")
