@@ -179,16 +179,6 @@ const tableConfig = ref<TableConfig>({
         "[operation-analysis]OPTIMIZATION_STRATEGY:EDIT"
       )
     ),
-    TableOperations.buildButtons().newInstance(
-      t("commons.btn.view"),
-      "primary",
-      showDetail,
-      undefined,
-      undefined,
-      permissionStore.hasPermission(
-        "[operation-analysis]OPTIMIZATION_STRATEGY:READ"
-      )
-    ),
   ]),
 });
 </script>

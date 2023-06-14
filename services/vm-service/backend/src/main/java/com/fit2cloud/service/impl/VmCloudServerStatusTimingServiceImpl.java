@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.ThreadPoolConfig;
@@ -8,7 +9,9 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.dao.entity.VmCloudServerStatusTiming;
+import com.fit2cloud.dao.mapper.VmCloudServerMapper;
 import com.fit2cloud.dao.mapper.VmCloudServerStatusTimingMapper;
+import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.service.IVmCloudServerStatusTimingService;
 import jakarta.annotation.Resource;
@@ -16,9 +19,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -36,6 +39,8 @@ public class VmCloudServerStatusTimingServiceImpl extends ServiceImpl<VmCloudSer
     private ThreadPoolConfig threadPoolConfig;
     @Resource
     private VmCloudServerStatusTimingMapper vmCloudServerStatusTimingMapper;
+    @Resource
+    private VmCloudServerMapper vmCloudServerMapper;
 
     /**
      * 单个虚拟机状态事件（只管开关机）
@@ -69,24 +74,30 @@ public class VmCloudServerStatusTimingServiceImpl extends ServiceImpl<VmCloudSer
      * 批量插入vm云服务器状态事件
      * 同步云主机时调用该方法
      *
-     * @param vms         虚拟机
+     * @param accountId   云账号ID
      * @param operateTime 操作完成时间
      * @author jianneng
      * @date 2023/05/30
      */
     @Override
-    public void batchInsertVmCloudServerStatusEvent(List<VmCloudServer> vms, LocalDateTime operateTime) {
+    public void batchInsertVmCloudServerStatusEvent(String accountId, String regionId, LocalDateTime operateTime) {
         try {
             threadPoolConfig.workThreadPool().execute(() -> {
-                if (CollectionUtils.isNotEmpty(vms)) {
+                LogUtil.debug("开始初始化云账号[" + accountId + "][" + regionId + "]云主机状态时间");
+                LambdaQueryWrapper<VmCloudServer> vmCloudServerLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                vmCloudServerLambdaQueryWrapper.eq(VmCloudServer::getAccountId, accountId).eq(VmCloudServer::getRegion, regionId)
+                        .in(VmCloudServer::getInstanceStatus, Arrays.asList(F2CInstanceStatus.Stopped.name(), F2CInstanceStatus.Running.name()));
+                List<VmCloudServerDTO> vmList = vmCloudServerMapper.selectServerList(vmCloudServerLambdaQueryWrapper);
+                LogUtil.debug("成功初始化[" + vmList.size() + "]台虚拟机的状态时间");
+                if (CollectionUtils.isNotEmpty(vmList)) {
                     QueryWrapper<VmCloudServerStatusTiming> batchWrapper = new QueryWrapper<>();
-                    batchWrapper.in(true, ColumnNameUtil.getColumnName(VmCloudServerStatusTiming::getCloudServerId, true), vms.stream().map(VmCloudServer::getId).toList());
+                    batchWrapper.in(true, ColumnNameUtil.getColumnName(VmCloudServerStatusTiming::getCloudServerId, true), vmList.stream().map(VmCloudServer::getId).toList());
                     batchWrapper.groupBy(true, ColumnNameUtil.getColumnName(VmCloudServerStatusTiming::getCloudServerId, true));
                     batchWrapper.orderByDesc(true, ColumnNameUtil.getColumnName(VmCloudServerStatusTiming::getId, true));
                     List<VmCloudServerStatusTiming> vmCloudServerStatusMeteringList = vmCloudServerStatusTimingMapper.selectList(batchWrapper);
-                    for (VmCloudServer vm : vms) {
-                        if(StringUtils.isEmpty(vm.getId())){
-                            throw new Fit2cloudException(404,"云主机["+vm.getInstanceName()+"]ID为空");
+                    for (VmCloudServer vm : vmList) {
+                        if (StringUtils.isEmpty(vm.getId())) {
+                            throw new Fit2cloudException(404, "云主机[" + vm.getInstanceName() + "]ID为空");
                         }
                         // 获得虚拟机的记录
                         List<VmCloudServerStatusTiming> vmMeteringList = vmCloudServerStatusMeteringList.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getCloudServerId(), vm.getId())).collect(Collectors.toList());
@@ -99,10 +110,11 @@ public class VmCloudServerStatusTimingServiceImpl extends ServiceImpl<VmCloudSer
 
                     }
                 }
+                LogUtil.debug("结束初始化云账号[" + accountId + "][" + regionId + "]云主机状态时间");
             });
         } catch (Exception e) {
+            LogUtil.error("云账号[" + accountId + "]初始化云主机状态时间失败:" + e.getMessage());
             e.printStackTrace();
-            LogUtil.error("初始化云主机状态时间失败:" + e.getMessage());
         }
     }
 

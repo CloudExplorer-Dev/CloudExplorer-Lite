@@ -56,6 +56,7 @@ public class OptimizationStrategyIgnoreResourceServiceImpl extends ServiceImpl<O
 
     /**
      * 批量插入忽视资源通过优化策略id
+     * 注意: resourceList 不止一个的时候，清空当前化策略的所有需要忽略的资源，最终当前优化策略所有忽略的资源以resourceIdList为准
      *
      * @param optimizationStrategyId 优化策略id
      * @param resourceIdList         资源id列表
@@ -66,7 +67,12 @@ public class OptimizationStrategyIgnoreResourceServiceImpl extends ServiceImpl<O
         if (Objects.isNull(optimizationStrategy)) {
             throw new Fit2cloudException(ErrorCodeConstants.NOT_EXISTS_OPTIMIZE_SUGGEST_STRATEGY.getCode(), ErrorCodeConstants.NOT_EXISTS_OPTIMIZE_SUGGEST_STRATEGY.getMessage());
         }
-        batchRemoveOptimizationStrategyIgnoreResource(optimizationStrategyId, resourceIdList);
+        // 清空优化策略所有不在resourceIdList中的所有数据
+        if (CollectionUtils.isNotEmpty(resourceIdList) && resourceIdList.size() > 1) {
+            optimizationStrategyIgnoreResourceMapper.delete(
+                    new LambdaQueryWrapper<OptimizationStrategyIgnoreResource>()
+                            .eq(OptimizationStrategyIgnoreResource::getOptimizationStrategyId, optimizationStrategyId));
+        }
         List<OptimizationStrategyIgnoreResource> insertList = resourceIdList.stream().map(resourceId -> new OptimizationStrategyIgnoreResource(UUID.randomUUID().toString().replaceAll("-", ""), optimizationStrategyId, resourceId)).collect(Collectors.toList());
         saveBatch(insertList);
         return true;

@@ -39,8 +39,6 @@ public class OptimizationRuleFieldProviderImpl implements IOptimizationRuleField
                     fieldList.add(avgMetricName);
                     OptimizationRuleField maxMetricName = new OptimizationRuleField(metric.getDescription() + "最大值", metric.getMetricName() + "@MAX", true, "%", OptimizationRuleFieldType.Number);
                     fieldList.add(maxMetricName);
-                    OptimizationRuleField minMetricName = new OptimizationRuleField(metric.getDescription() + "最小值", metric.getMetricName() + "@MIN", true, "%", OptimizationRuleFieldType.Number);
-                    fieldList.add(minMetricName);
                 });
         // 付费类型字段
         List<DefaultKeyValue<String, Object>> paymentOptionFieldList = new ArrayList<>();

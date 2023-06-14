@@ -73,26 +73,16 @@
       key="number_value"
       prop="value"
     >
-      <!--      <el-input-number-->
-      <!--        style="width: 100%"-->
-      <!--        :modelValue="modelValue.value"-->
-      <!--        @input="handler('value', $event)"-->
-      <!--        :precision="2"-->
-      <!--      />-->
       <el-space>
-        <LineNumber
-          special-step="10"
-          :show-btn="false"
+        <el-input
+          v-number="{ min: 1, max: _max, isNull: true, type: 'int' }"
           :modelValue="modelValue.value"
-          :min="1"
-          :max="100"
-          :step="1"
-          required
-          @change="handler('value', $event)"
           @input="handler('value', $event)"
         >
-          <template #unit> {{ activeField.unit }} </template>
-        </LineNumber>
+          <template #append>
+            <span>{{ activeField.unit }}</span>
+          </template>
+        </el-input>
       </el-space>
     </el-form-item>
     <el-form-item
@@ -141,6 +131,15 @@ const compares = computed(() => {
  */
 const activeField = computed(() => {
   return props.store.find((f) => f.field === props.modelValue.field);
+});
+const _max = computed(() => {
+  if (activeField.value?.unit === "天") {
+    return Number(36500);
+  }
+  if (activeField.value?.unit === "%") {
+    return Number(100);
+  }
+  return Number(100000000);
 });
 /**
  * 表单校验对象
@@ -223,5 +222,10 @@ defineExpose({ validate });
     width: 200px;
     margin-right: 0;
   }
+}
+:deep(.el-input-group__append) {
+  padding: 0px 8px 0 8px;
+  background-color: #eff0f1;
+  color: #1f2329;
 }
 </style>

@@ -10,14 +10,14 @@ export default {
       beforeUpdate(el: any, binding: any) {
         document.getElementsByTagName;
         const input: HTMLInputElement = el.getElementsByTagName("input")[0];
-        input.onkeyup = function () {
-          if (!checkValue(input.value, binding.value)) {
-            // 重置数据
-            input.value = resetNumber(input.value, binding.value);
-            // 下发事件
-            trigger(input, "input");
-          }
-        };
+        // input.onkeyup = function () {
+        //   if (!checkValue(input.value, binding.value)) {
+        //     // 重置数据
+        //     input.value = resetNumber(input.value, binding.value);
+        //     // 下发事件
+        //     trigger(input, "input");
+        //   }
+        // };
         input.onblur = function () {
           if (!checkValue(input.value, binding.value)) {
             // 重置数据

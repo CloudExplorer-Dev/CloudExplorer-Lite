@@ -74,7 +74,7 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response: any) => {
     if (response.data) {
-      if (response.data.code !== 200) {
+      if (response.data.code !== 200 && !(response.data instanceof Blob)) {
         ElMessage.error(response.data.message);
       } else {
         //取出header中返回的token
@@ -147,7 +147,10 @@ const promise: (
     request
       .then((response) => {
         // blob类型的返回状态是response.status
-        if (response.data.code === 200 || response.status == 200) {
+        if (
+          response.data.code === 200 ||
+          (response.data instanceof Blob && response.status === 200)
+        ) {
           resolve(response.data);
         } else {
           reject(response.data);
@@ -239,18 +242,36 @@ export const del: (
 };
 
 export const exportExcel: (
+  fileName: string,
   url: string,
-  params?: unknown,
+  params: any,
   loading?: NProgress | Ref<boolean>
-) => Promise<Result<any>> = (
+) => void = (
+  fileName: string,
   url: string,
-  params: unknown,
+  params: any,
   loading?: NProgress | Ref<boolean>
 ) => {
-  return promise(
+  promise(
     request({ url: url, method: "get", params, responseType: "blob" }),
     loading
-  );
+  )
+    .then((res: any) => {
+      if (res) {
+        const blob = new Blob([res], {
+          type: "application/vnd.ms-excel",
+        });
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        //释放内存
+        window.URL.revokeObjectURL(link.href);
+      }
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 };
 
 /**
