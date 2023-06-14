@@ -354,12 +354,8 @@ const next = () => {
  * 忽略资源操作
  */
 const ignoreServer = (ignoreServerIdList: Array<string>) => {
-  if (
-    !createOptimizationStrategyForm.value.optimizationScope &&
-    ignoreServerIdList?.length > 0
-  ) {
-    createOptimizationStrategyForm.value.ignoreResourceIdList =
-      ignoreServerIdList;
+  if ( !createOptimizationStrategyForm.value.optimizationScope ) {
+    createOptimizationStrategyForm.value.ignoreResourceIdList = ignoreServerIdList;
   }
 };
 

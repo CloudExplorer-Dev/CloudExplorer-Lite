@@ -204,8 +204,8 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
         }
         try {
             boolean result = saveOrUpdate(optimizationStrategy);
-            if (result && !strategy.getOptimizationScope() && CollectionUtils.isNotEmpty(strategy.getIgnoreResourceIdList())) {
-                return optimizationStrategyIgnoreResourceService.batchInsertIgnoreResourceByOptimizationStrategyId(optimizationStrategy.getId(), strategy.getIgnoreResourceIdList());
+            if (result && !strategy.getOptimizationScope()) {
+                return optimizationStrategyIgnoreResourceService.batchInsertIgnoreResourceByOptimizationStrategyId(optimizationStrategy.getId(), strategy.getIgnoreResourceIdList(), true);
             }
             // 改为优化所有资源时，取消所有已忽略的资源
             if (result && strategy.getOptimizationScope()) {

@@ -23,9 +23,10 @@ public interface IOptimizationStrategyIgnoreResourceService extends IService<Opt
      *
      * @param optimizationStrategyId 优化策略id
      * @param resourceIdList         资源id列表
+     * @param batchOperate           批量操作
      * @return boolean
      */
-    boolean batchInsertIgnoreResourceByOptimizationStrategyId(String optimizationStrategyId, List<String> resourceIdList);
+    boolean batchInsertIgnoreResourceByOptimizationStrategyId(String optimizationStrategyId, List<String> resourceIdList, boolean batchOperate);
 
 
     /**

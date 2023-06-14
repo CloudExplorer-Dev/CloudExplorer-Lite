@@ -62,19 +62,19 @@ public class OptimizationStrategyIgnoreResourceServiceImpl extends ServiceImpl<O
      * @param resourceIdList         资源id列表
      */
     @Override
-    public boolean batchInsertIgnoreResourceByOptimizationStrategyId(String optimizationStrategyId, List<String> resourceIdList) {
+    public boolean batchInsertIgnoreResourceByOptimizationStrategyId(String optimizationStrategyId, List<String> resourceIdList, boolean batchOperate) {
         OptimizationStrategy optimizationStrategy = optimizationStrategyMapper.selectById(optimizationStrategyId);
         if (Objects.isNull(optimizationStrategy)) {
             throw new Fit2cloudException(ErrorCodeConstants.NOT_EXISTS_OPTIMIZE_SUGGEST_STRATEGY.getCode(), ErrorCodeConstants.NOT_EXISTS_OPTIMIZE_SUGGEST_STRATEGY.getMessage());
         }
         // 清空优化策略所有不在resourceIdList中的所有数据
-        if (CollectionUtils.isNotEmpty(resourceIdList) && resourceIdList.size() > 1) {
-            optimizationStrategyIgnoreResourceMapper.delete(
-                    new LambdaQueryWrapper<OptimizationStrategyIgnoreResource>()
-                            .eq(OptimizationStrategyIgnoreResource::getOptimizationStrategyId, optimizationStrategyId));
+        if (batchOperate || CollectionUtils.isEmpty(resourceIdList)) {
+            deleteIgnoreResourceByOptimizationStrategyId(optimizationStrategyId);
         }
         List<OptimizationStrategyIgnoreResource> insertList = resourceIdList.stream().map(resourceId -> new OptimizationStrategyIgnoreResource(UUID.randomUUID().toString().replaceAll("-", ""), optimizationStrategyId, resourceId)).collect(Collectors.toList());
-        saveBatch(insertList);
+        if (CollectionUtils.isNotEmpty(insertList)) {
+            saveBatch(insertList);
+        }
         return true;
     }
 
