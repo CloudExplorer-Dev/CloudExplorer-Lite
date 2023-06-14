@@ -566,6 +566,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             vmCloudServer.setIpArray(JsonUtil.toJSONString(tempData.getIpArray()));
             vmCloudServer.setInstanceStatus(F2CInstanceStatus.WaitCreating.name());
             vmCloudServer.setApplyUser(currentUser.getUsername());
+            vmCloudServer.setRemark(tempData.getRemark());
             if (!CurrentUserUtils.isAdmin() && StringUtils.isNotBlank(sourceId)) {
                 vmCloudServer.setSourceId(sourceId);
             }

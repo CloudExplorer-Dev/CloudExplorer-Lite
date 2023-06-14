@@ -584,6 +584,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudServer.setAccountId(cloudAccountId);
         vmCloudServer.setInstanceUuid(f2CVirtualMachine.getInstanceUUID());
         vmCloudServer.setInstanceName(f2CVirtualMachine.getName());
+        vmCloudServer.setRemark(f2CVirtualMachine.getRemark());
         vmCloudServer.setRemoteIp(f2CVirtualMachine.getRemoteIP());
         vmCloudServer.setOsInfo(f2CVirtualMachine.getOsInfo());
         Optional.ofNullable(f2CVirtualMachine.getCreateTime()).ifPresent((createTime) -> vmCloudServer.setCreateTime(DateUtil.timestampToDatetime(createTime)));

@@ -359,15 +359,15 @@ public class VsphereVmClient extends VsphereClient {
                 }
             }
 
-
             // init VirtualMachineConfigSpec
             VirtualMachineConfigSpec config = new VirtualMachineConfigSpec();
             config.setName(vmName);
-            config.setAnnotation("Created-by-FIT2CLOUD-from-template:" + templateName);
             // 当用户输入备注的时候设置
-//            if (StringUtils.isNotBlank(request.getRemark())) {
-//                config.setAnnotation(request.getRemark());
-//            }
+            if (StringUtils.isNotBlank(request.getServerInfos().get(currentIndex).getRemark())) {
+                config.setAnnotation(request.getServerInfos().get(currentIndex).getRemark());
+            } else {
+                config.setAnnotation("Created-by-FIT2CLOUD-from-template:" + templateName);
+            }
             config.setMemoryMB(memory);
             config.setNumCPUs(cpu);
             config.setCpuHotAddEnabled(true);

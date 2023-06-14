@@ -91,7 +91,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     private String cluster;
 
     //模板
-    @Form(inputType = InputType.SingleSelect,
+    @Form(inputType = InputType.VsphereTemplateSelectForm,
             label = "模板",
             clazz = VmCloudImageServiceImpl.class,
             serviceMethod = true,
@@ -99,7 +99,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             textField = "imageName",
             valueField = "imageName", //由于vc还是拿name作为快速索引，所以不用mor作为查询值
             relationTrigger = "region",
-            propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"32px\"}}",
+            propsInfo = "{\"style\":{\"width\":\"100%\"}}",
             attrs = "{\"placeholder\":\"请选择一个模板\"}",
             group = 2,
             step = 1,
@@ -313,6 +313,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
         private String name;
 
         private String hostname;
+
+        private String remark;
 
         //username
         //password
