@@ -16,6 +16,7 @@ const message = {
       expired_time: "Expired Time",
       charge_type: "Charge Type",
       project: "Project",
+      remark: "Remark",
     },
     vm_tools_status: {
       not_Installed: "Not Installed",

@@ -920,7 +920,8 @@ public class VsphereSyncCloudApi {
                 .setMemory(request.getRam())
                 .setIpArray(new ArrayList<>())
                 .setInstanceType(instanceType)
-                .setInstanceTypeDescription(instanceType);
+                .setInstanceTypeDescription(instanceType)
+                .setRemark(request.getServerInfos().get(index).getRemark());
 
         return virtualMachine;
 

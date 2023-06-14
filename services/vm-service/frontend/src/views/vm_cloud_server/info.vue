@@ -60,6 +60,7 @@ onMounted(() => {
       { label: "创建人", value: infoVmCloudServer.value.applyUserName },
       { label: "创建时间", value: infoVmCloudServer.value.createTime },
       { label: "到期时间", value: infoVmCloudServer.value.expiredTime },
+      { label: "备注", value: infoVmCloudServer.value.remark },
     ];
 
     /**

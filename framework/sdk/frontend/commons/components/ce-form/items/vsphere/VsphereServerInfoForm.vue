@@ -15,7 +15,7 @@
           <el-row :gutter="12" class="info-row">
             <el-col :span="23">
               <el-row :gutter="12">
-                <el-col :span="12">
+                <el-col :span="8">
                   <el-form-item
                     :rules="{
                       message: '云主机名称' + '不能为空',
@@ -34,7 +34,7 @@
                     </el-input>
                   </el-form-item>
                 </el-col>
-                <el-col :span="12">
+                <el-col :span="8">
                   <el-form-item
                     :rules="[
                       {
@@ -58,6 +58,18 @@
                     >
                       <template #prefix>
                         <div>Hostname</div>
+                      </template>
+                    </el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item :prop="'[' + index + '].remark'">
+                    <el-input
+                      v-model.trim="item.remark"
+                      placeholder="请输入云主机备注"
+                    >
+                      <template #prefix>
+                        <div>云主机备注</div>
                       </template>
                     </el-input>
                   </el-form-item>
@@ -92,6 +104,13 @@
           <el-descriptions-item label="Hostname" width="33.33%">
             {{ o.hostname }}
           </el-descriptions-item>
+          <el-descriptions-item
+            label="云主机备注"
+            width="33.33%"
+            v-if="o.remark && o.remark.length > 0"
+          >
+            {{ o.remark }}
+          </el-descriptions-item>
           <el-descriptions-item width="33.33%"> </el-descriptions-item>
         </el-descriptions>
       </template>
@@ -103,11 +122,11 @@ import { computed, onMounted, ref, watch } from "vue";
 import { type FormInstance } from "element-plus";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
-import CeIcon from "@commons/components/ce-icon/index.vue";
 
 interface ServerInfo {
   name?: string;
   hostname?: string;
+  remark?: string;
 }
 
 const props = defineProps<{

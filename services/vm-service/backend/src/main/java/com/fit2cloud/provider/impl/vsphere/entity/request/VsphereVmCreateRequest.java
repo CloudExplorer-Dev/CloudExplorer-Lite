@@ -314,6 +314,8 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
 
         private String hostname;
 
+        private String remark;
+
         //username
         //password
         //hostname

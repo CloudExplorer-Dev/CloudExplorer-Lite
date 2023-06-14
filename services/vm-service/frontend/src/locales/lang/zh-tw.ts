@@ -16,9 +16,10 @@ const message = {
       expired_time: "到期時間",
       charge_type: "付費類型",
       project: "企業項目",
+      remark: "備注",
     },
     vm_tools_status: {
-      not_Installed: "未安装",
+      not_Installed: "未安裝",
       running: "運行中",
       not_running: "未運行",
     },

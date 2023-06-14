@@ -833,6 +833,13 @@ const buttons = ref([
       </template>
     </el-table-column>
     <el-table-column
+      prop="remark"
+      column-key="remark"
+      :label="$t('vm_cloud_server.label.remark', '备注')"
+      :show="false"
+      min-width="180px"
+    ></el-table-column>
+    <el-table-column
       prop="ipArray"
       column-key="ipArray"
       :label="$t('vm_cloud_server.label.ip_address')"
