@@ -24,11 +24,11 @@
       ref="table"
     >
       <template #toolbar>
-        <el-row style="width: 100%">
+        <el-row justify="space-around" style="width: 100%">
           <el-col :span="12">
             <span>资源明细</span>
           </el-col>
-          <el-col :span="12" :push="1">
+          <el-col :span="10" style="text-align: right">
             <el-radio-group
               class="custom-radio-group"
               v-model="ignoreResourceTag"
@@ -46,7 +46,7 @@
         column-key="instanceName"
         :label="$t('commons.name')"
         fixed
-        min-width="120px"
+        min-width="200px"
       >
         <template #default="scope">
           <span @click="showDetail(scope.row)" class="name-span-class">
@@ -145,7 +145,7 @@
         min-width="150"
         prop="cpuMonitoringValue.maxValue"
         label="CPU最大使用率"
-        :show="false"
+        :show="monitoringStrategy"
       >
         <template #default="scope">
           {{
@@ -155,6 +155,7 @@
                 )
               : "-"
           }}
+          {{ monitoringStrategy + "111" }}
         </template>
       </el-table-column>
       <el-table-column
@@ -189,37 +190,31 @@
         </template>
       </el-table-column>
       <fu-table-operations
-        :ellipsis="2"
+        :ellipsis="1"
         :columns="columns"
         :buttons="buttons"
         :label="$t('commons.operation')"
         fixed="right"
       />
       <template #buttons>
-        <CeTableColumnSelect :columns="columns" />
         <!-- 导出 -->
-        <el-dropdown size="small">
-          <el-button type="primary">
-            导出Excel<el-icon class="el-icon--right"><arrow-down /></el-icon>
+        <el-tooltip content="下载" placement="bottom">
+          <el-button @click="exportData('xlsx')">
+            <ce-icon
+              color="#646A73"
+              code="icon_bottom-align_outlined"
+            ></ce-icon>
           </el-button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="exportData('xlsx')"
-                >XLSX</el-dropdown-item
-              >
-              <el-dropdown-item @click="exportData('xls')"
-                >XLS</el-dropdown-item
-              >
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+        </el-tooltip>
+
+        <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import {
   PaginationConfig,
   TableConfig,
@@ -358,6 +353,10 @@ const tableConfig = ref<TableConfig>({
         label: t("commons.name", "名称"),
         value: "instanceName",
       },
+      {
+        label: t("vm_cloud_server.label.ip_address", "IP地址"),
+        value: "ipArray",
+      },
     ],
   },
   paginationConfig: new PaginationConfig(),
@@ -402,31 +401,20 @@ const exportData = (version: string) => {
   }
   if (checkedId.value) {
     OptimizationStrategyViewApi.exportServerData(
+      "云主机优化.xlsx",
       {
         ...params,
         currentPage: tableConfig.value.paginationConfig.currentPage,
         pageSize: tableConfig.value.paginationConfig.pageSize,
       },
       tableLoading
-    )
-      .then((res: object) => {
-        const blob = new Blob([res as BlobPart], {
-          type: "application/vnd.ms-excel",
-        });
-        const url = window.URL.createObjectURL(blob);
-        //创建a标签
-        const link = document.createElement("a");
-        link.href = url;
-        //重命名文件
-        link.download = "云主机优化." + version;
-        link.click();
-        URL.revokeObjectURL(url);
-      })
-      .catch((res) => {
-        ElMessage.success("导出失败" + res);
-      });
+    );
   }
 };
+
+const monitoringStrategy = computed<boolean>(() => {
+  return false;
+});
 
 const addIgnore = (row: VmCloudServerVO) => {
   ElMessageBox.confirm(

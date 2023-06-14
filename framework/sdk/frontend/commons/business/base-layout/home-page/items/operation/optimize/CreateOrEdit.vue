@@ -77,11 +77,14 @@
                   <el-space>
                     <div style="width: 36px">过去</div>
                     <LineNumber
+                      v-number="{
+                        min: 1,
+                        max: 36500,
+                        isNull: false,
+                        type: 'int',
+                      }"
                       special-step="10"
                       v-model.number="createOptimizationStrategyForm.days"
-                      :min="1"
-                      :max="24"
-                      :step="1"
                       required
                       @change="
                         formatNumber(createOptimizationStrategyForm.days)
@@ -349,8 +352,6 @@ const next = () => {
 
 /**
  * 忽略资源操作
- * @param optimizationScope
- * @param ignoreServerIdList
  */
 const ignoreServer = (ignoreServerIdList: Array<string>) => {
   if (
@@ -433,7 +434,6 @@ const toTree = (optimizationRule: Array<OptimizationRuleTree>): Array<Tree> => {
               value: {
                 field: i.field,
                 compare: i.compare,
-                esField: i.esField,
                 value: i.value,
               },
               id: nanoid(),
@@ -467,7 +467,7 @@ const mapTree = (tree?: Array<Tree>): Array<OptimizationRuleTree> => {
                 field: i.value.field,
                 compare: i.value.compare,
                 value: i.value.value,
-                esField: i.value.esField,
+                esField: monitoringField.value,
               }))
           : [],
         children,

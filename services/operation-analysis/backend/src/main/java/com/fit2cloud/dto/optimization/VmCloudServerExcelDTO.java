@@ -28,13 +28,13 @@ public class VmCloudServerExcelDTO {
     private String cloudProjectName;
     @ExcelProperty("申请用户名")
     private String applyUserName;
-    @ExcelProperty(value = "CPU使用率最大值", index = 5)
+    @ExcelProperty(value = "CPU使用率最大值(%)", index = 5)
     private Double cpuMaxValue;
-    @ExcelProperty(value = "CPU使用率平均值", index = 6)
+    @ExcelProperty(value = "CPU使用率平均值(%)", index = 6)
     private Double cpuAvgValue;
-    @ExcelProperty(value = "内存使用率最大值", index = 7)
+    @ExcelProperty(value = "内存使用率最大值(%)", index = 7)
     private Double memoryMaxValue;
-    @ExcelProperty(value = "内存使用率平均值", index = 8)
+    @ExcelProperty(value = "内存使用率平均值(%)", index = 8)
     private Double memoryAvgValue;
     @ExcelProperty(value = "优化建议", index = 4)
     private String content;

@@ -35,12 +35,12 @@ import com.fit2cloud.service.*;
 import com.google.common.base.Joiner;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -124,12 +124,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                 /*.eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())*/, updateWrapper);
         // 初始云主机状态时间
         try {
-            updateWrapper.clear();
-            updateWrapper.eq(VmCloudServer::getAccountId, saveBatchOrUpdateParams.getCloudAccountId())
-                    .eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())
-                    .notIn(VmCloudServer::getInstanceStatus, Arrays.asList(F2CInstanceStatus.Creating.name(), F2CInstanceStatus.Failed.name(), F2CInstanceStatus.WaitCreating.name(), F2CInstanceStatus.Deleted.name()))
-                    .in(CollectionUtils.isNotEmpty(vmCloudServers), VmCloudServer::getInstanceUuid, vmCloudServers.stream().map(VmCloudServer::getInstanceUuid).toList());
-            vmCloudServerStatusTimingService.batchInsertVmCloudServerStatusEvent(vmCloudServerService.list(updateWrapper), saveBatchOrUpdateParams.getSyncTime());
+            vmCloudServerStatusTimingService.batchInsertVmCloudServerStatusEvent(saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getRegion().getRegionId(), saveBatchOrUpdateParams.getSyncTime());
         } catch (Exception e) {
             e.printStackTrace();
         }

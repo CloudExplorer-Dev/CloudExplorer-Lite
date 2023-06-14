@@ -70,6 +70,7 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
         // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
         List<String> sourceId = permissionService.getSourceIds();
         wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
+        wrapper.orderByAsc(OptimizationStrategy::getCreateTime);
         IPage<OptimizationStrategyDTO> result = optimizationStrategyMapper.pageList(page, wrapper);
         result.getRecords().forEach(v -> {
             v.setOptimizationContent(getOptimizationContent(v));
@@ -147,6 +148,7 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
         // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
         List<String> sourceId = permissionService.getSourceIds();
         wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
+        wrapper.orderByAsc(OptimizationStrategy::getCreateTime);
         return optimizationStrategyMapper.selectList(wrapper);
     }
 

@@ -208,22 +208,24 @@ function getCheckedSearchParams(
 ): ListOptimizationStrategyRequest | undefined {
   return _.assign({ optimizationStrategyId: id }, tableSearchParams);
 }
-function changeCard (){
+function changeCard() {
   nextTick(() => {
     if (serverOptimizationCardRef.value) {
       const scoRef = _.find(
-          serverOptimizationCardRef.value,
-          (item) =>
-              item.getCurrentOptimizationStrategyId() ===
-              checkedId.value
+        serverOptimizationCardRef.value,
+        (item) => item.getCurrentOptimizationStrategyId() === checkedId.value
       );
       scoRef?.getOptimizeServerList();
     }
   });
 }
+function getCheckedOptimizationStrategy() {
+  return _.find(optimizationStrategyList.value, { id: checkedId.value });
+}
 defineExpose({
   getCheckedSearchParams,
-  changeCard
+  changeCard,
+  getCheckedOptimizationStrategy,
 });
 </script>
 

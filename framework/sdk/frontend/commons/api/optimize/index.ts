@@ -71,14 +71,17 @@ export function pageOptimizationStrategyServerResourceList(
 
 /**
  * 导出云主机优化数据
- * @param req
- * @param loading
+ * @param fileName 文件名称
+ * @param req 查询参数
+ * @param loading 表格loading
  */
 export function exportServerData(
+  fileName: string,
   req: PageOptimizationStrategyResourceRequest,
   loading?: Ref<boolean>
 ) {
-  return exportExcel(
+  exportExcel(
+    fileName,
     "api/optimization_strategy_resource/server/download/" + req.version,
     req,
     loading

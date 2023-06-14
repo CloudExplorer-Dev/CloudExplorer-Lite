@@ -29,7 +29,7 @@
               忽略
             </el-button>
           </el-col>
-          <el-col :span="12" :push="1">
+          <el-col :span="11" style="text-align: right">
             <el-radio-group
               class="custom-radio-group"
               v-model="ignoreResourceTag"
@@ -122,7 +122,7 @@
       </el-table-column>
 
       <fu-table-operations
-        :ellipsis="2"
+        :ellipsis="1"
         :columns="columns"
         :buttons="buttons"
         :label="$t('commons.operation')"
@@ -268,6 +268,21 @@ const search = (condition: TableSearch) => {
   params.optimizationStrategyId = props.createOptimizationStrategyForm.id;
   params.ignore = ignoreResourceTag.value;
   if (tableData.value) {
+    filterTableData.value = tableData.value.filter((item) => {
+      if (params.instanceName && params.ipArray) {
+        return (
+          item.instanceName?.includes(params.instanceName) &&
+          item.ipArray?.toString().includes(params.ipArray)
+        );
+      }
+      if (params.instanceName || params.ipArray) {
+        return (
+          item.instanceName?.includes(params.instanceName) ||
+          item.ipArray?.toString().includes(params.ipArray)
+        );
+      }
+      return true;
+    });
     const startIndex =
       (tableConfig.value.paginationConfig.currentPage - 1) *
       tableConfig.value.paginationConfig.pageSize;
@@ -275,21 +290,21 @@ const search = (condition: TableSearch) => {
       tableConfig.value.paginationConfig.currentPage *
       tableConfig.value.paginationConfig.pageSize;
     tableConfig.value.paginationConfig?.setTotal(
-      tableData.value.length,
+      filterTableData.value.length,
       tableConfig.value.paginationConfig
     );
     tableConfig.value.paginationConfig?.setCurrentPage(
       tableConfig.value.paginationConfig.currentPage,
       tableConfig.value.paginationConfig
     );
-    filterTableData.value = tableData.value.slice(startIndex, endIndex);
+    filterTableData.value = filterTableData.value.slice(startIndex, endIndex);
   }
 };
 /**
  * 监听表格原始数据的变化
  */
 watch(tableData, () => {
-  search(new TableSearch());
+  search(table?.value.getTableSearch());
 });
 /**
  * 忽略数据

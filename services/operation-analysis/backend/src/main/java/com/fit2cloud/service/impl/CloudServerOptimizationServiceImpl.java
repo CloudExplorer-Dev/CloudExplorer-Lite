@@ -33,9 +33,10 @@ import com.fit2cloud.utils.CustomCellWriteWidthConfig;
 import com.fit2cloud.utils.EasyExcelUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import jakarta.annotation.Resource;
-import jakarta.validation.constraints.NotNull;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -47,7 +48,6 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -197,10 +197,12 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
             if (CollectionUtils.isNotEmpty(vmCloudServerMonitoringDataList)) {
                 List<VmCloudServerDTO> monitoringDataList = vmCloudServerMonitoringDataList.stream().filter(a -> StringUtils.equalsIgnoreCase(v.getInstanceUuid(), a.getInstanceUuid())).toList();
                 if (CollectionUtils.isNotEmpty(monitoringDataList)) {
-                    vmCloudServerExcelDTO.setCpuAvgValue(monitoringDataList.get(0).getCpuMonitoringValue().getAvgValue().doubleValue());
-                    vmCloudServerExcelDTO.setCpuMaxValue(monitoringDataList.get(0).getCpuMonitoringValue().getMaxValue().doubleValue());
-                    vmCloudServerExcelDTO.setMemoryMaxValue(monitoringDataList.get(0).getMemoryMonitoringValue().getMaxValue().doubleValue());
-                    vmCloudServerExcelDTO.setMemoryAvgValue(monitoringDataList.get(0).getMemoryMonitoringValue().getAvgValue().doubleValue());
+                    MonitoringDataValueDTO cpuValue = monitoringDataList.get(0).getCpuMonitoringValue();
+                    MonitoringDataValueDTO memoryValue = monitoringDataList.get(0).getMemoryMonitoringValue();
+                    vmCloudServerExcelDTO.setCpuAvgValue(Objects.nonNull(cpuValue) ? cpuValue.getAvgValue().doubleValue() : null);
+                    vmCloudServerExcelDTO.setCpuMaxValue(Objects.nonNull(cpuValue) ? cpuValue.getMaxValue().doubleValue() : null);
+                    vmCloudServerExcelDTO.setMemoryMaxValue(Objects.nonNull(memoryValue) ? memoryValue.getMaxValue().doubleValue() : null);
+                    vmCloudServerExcelDTO.setMemoryAvgValue(Objects.nonNull(memoryValue) ? memoryValue.getAvgValue().doubleValue() : null);
                 }
             }
             if (!request.isIgnore()) {
@@ -583,8 +585,10 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
                 wrapper.or(checkFieldCondition(optimizationRuleFieldCondition.getField(), optimizationRuleFieldCondition.getValue(), VmCloudServer.class), a1 -> vmCloudServerConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, a1));
                 wrapper.or(checkFieldCondition(optimizationRuleFieldCondition.getField(), optimizationRuleFieldCondition.getValue(), VmCloudServerStatusTiming.class), a2 -> vmCloudServerStatusTimingConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, a2));
             }
-            resourceIdList.addAll(vmCloudServerMapper.selectList(wrapper).stream().map(VmCloudServer::getId).toList());
         });
+        if (StringUtils.isNotEmpty(wrapper.getSqlSegment())) {
+            resourceIdList.addAll(vmCloudServerMapper.selectList(wrapper).stream().map(VmCloudServer::getId).toList());
+        }
     }
 
     /**
@@ -696,3 +700,4 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
         return wrapper;
     }
 }
+
