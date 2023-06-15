@@ -61,7 +61,7 @@ public class BaseBillingPolicyController {
     private ResultHolder<List<InstanceBill>> listInstanceBill(ListInstanceBillRequest request) {
         ChargingModuleInfo billSettings = ChargingConfig.getBillSettings();
         List<InstanceBill> instanceBills = billSettings.getBillSettings().parallelStream()
-                .map(billSetting -> SimpleBillingGeneration.of(billSetting).generation(request.getCloudAccountId(), request.getMonth(), request.getGranularity()))
+                .map(billSetting -> SimpleBillingGeneration.of(billSetting).generation(request.getCloudAccountId(), request.getMonth(), request.getGranularity(), false))
                 .flatMap(List::stream)
                 .toList();
         return ResultHolder.success(instanceBills);

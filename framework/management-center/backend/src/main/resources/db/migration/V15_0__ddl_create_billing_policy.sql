@@ -1,20 +1,20 @@
 SET SESSION innodb_lock_wait_timeout = 7200;
 
-CREATE TABLE IF NOT EXISTS `bill_policy` (
-                               `id` varchar(255) NOT NULL COMMENT '此id 是一个策略的生命周期',
+CREATE TABLE `bill_policy` (
+                               `id` varchar(255) NOT NULL COMMENT '主键id',
                                `name` varchar(255) DEFAULT NULL COMMENT '策略名称',
-                               `create_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
-                               `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间'
+                               `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                               `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                               PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS `bill_policy_cloud_account_mapping` (
-                                                     `id` varchar(255) COLLATE utf8mb4_bin NOT NULL,
+CREATE TABLE `bill_policy_cloud_account_mapping` (
+                                                     `id` varchar(255) NOT NULL,
                                                      `bill_policy_id` varchar(255) DEFAULT NULL COMMENT '策略id',
                                                      `cloud_account_id` varchar(255) DEFAULT NULL COMMENT '云账号id',
                                                      `create_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
                                                      `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-                                                     PRIMARY KEY (`id`),
-                                                     UNIQUE KEY `cloud_account_id` (`cloud_account_id`)
+                                                     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `bill_policy_details` (

@@ -22,10 +22,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -43,7 +40,8 @@ public class PrivateLocalCloudClient {
         IBaseUserService userService = SpringUtil.getBean(IBaseUserService.class);
         UserDto user = userService.getUserByIdOrEmail(userName);
         KeyValue<String, String> jwt = JwtTokenUtils.createJwtToken(user);
-        SpringUtil.getBean(TokenPoolService.class).saveJwt(user.getId(), jwt.getKey());
+        // 插入redis
+        SpringUtil.getBean(TokenPoolService.class).saveJwt(user.getId(), jwt.getKey()).toCompletableFuture().join();
         this.jwt = jwt;
     }
 
@@ -95,6 +93,7 @@ public class PrivateLocalCloudClient {
      */
     public static CloudBill toCloudBill(InstanceBill bill, BillRequest request) {
         CloudBill cloudBill = new CloudBill();
+        cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
         cloudBill.setBillMode(bill.getBillMode().name());
         cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(bill.getBillingCycle(), "yyyy-MM"));
         cloudBill.setDeductionDate(CommonUtil.getLocalDateTime(bill.getDeductionTime(), "yyyy-MM-dd"));

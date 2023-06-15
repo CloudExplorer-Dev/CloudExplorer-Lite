@@ -4,6 +4,7 @@
       '--ce-main-top-height': topHeight + 'px',
       '--ce-main-content-padding-bottom': '0px',
       '--ce-main-content-margin-bottom': '0px',
+      '--ce-main-content-padding-left': '0px',
     }"
   >
     <template #breadcrumb>
@@ -12,9 +13,10 @@
     <template #top>
       <el-alert
         style="--el-alert-bg-color: rgba(51, 112, 255, 0.15)"
-        title="当前计费策略仅对 VMware、OpenStack 等私有云资源进行计费规则设置。具体账单需到 云账单 模块进行查看。"
+        title="当前计费策略仅对VMware 、OpenStack等私有云资源进行资源计费，其他与公有云一样需在云账号中同步账单，在分账设置中进行分账。"
         type="info"
         show-icon
+        @close="topHeight = 0"
       />
     </template>
 
@@ -33,7 +35,10 @@
           :prefix-icon="Search"
           class="input"
         />
-        <div class="billing_policy_list">
+        <div
+          v-if="billingPolicyList && billingPolicyList.length > 0"
+          class="billing_policy_list"
+        >
           <div
             @click="selectedPolicy(policy)"
             :class="
@@ -68,175 +73,42 @@
             </el-dropdown>
           </div>
         </div>
-      </div>
-      <div class="right_content" v-loading="loading">
-        <div class="header">
-          <span class="title"> {{ activeBillingPolicy?.name }}</span>
-        </div>
-        <div class="line"></div>
-        <div style="overflow-y: auto; height: calc(100% - 106px)">
-          <base-container style="--ce-base-container-height: 106px">
-            <template #header>
-              <span>{{ $t("commons.basic_info", "基本信息") }}</span>
-            </template>
-            <template #content
-              ><el-form
-                v-if="activeBillingPolicy"
-                label-position="top"
-                label-width="100px"
-              >
-                <el-row>
-                  <el-col :span="6">
-                    <el-form-item>
-                      <template #label>
-                        计费策略名称
-                        <el-icon
-                          @click="openReName(activeBillingPolicy)"
-                          class="click-icon"
-                          ><EditPen /></el-icon
-                      ></template>
-                      {{ activeBillingPolicy?.name }}</el-form-item
-                    ></el-col
-                  >
-                  <el-col :span="6"
-                    ><el-form-item label="创建时间"
-                      >{{ activeBillingPolicy?.createTime }}
-                    </el-form-item></el-col
-                  >
-                  <el-col :span="6"
-                    ><el-form-item label="更新时间">
-                      {{ activeBillingPolicy?.updateTime }}
-                    </el-form-item></el-col
-                  >
-                  <el-col :span="6">
-                    <el-form-item>
-                      <template #label>
-                        关联云账号
-                        <el-icon
-                          class="click-icon"
-                          @click="openLinkCloudAccount(activeBillingPolicy)"
-                          ><EditPen /></el-icon
-                      ></template>
-                      <CloudAccountView :cloud-account-list="linkCloudAccount">
-                      </CloudAccountView> </el-form-item
-                  ></el-col>
-                </el-row>
-              </el-form>
-            </template>
-          </base-container>
-          <el-tabs type="border-card">
-            <el-tab-pane
-              v-for="(policy, index) in billingPolicyDetailsList"
-              :label="policy.resourceName"
-              :key="index"
-            >
-              <base-container style="--ce-base-container-height: auto">
-                <template #header>
-                  <span>按单价计费规则</span>
-                </template>
-                <template #content>
-                  <el-row :gutter="16">
-                    <el-col :span="12">
-                      <BillingRuleCard
-                        billing-mode="ON_DEMAND"
-                        :field-list="policy.unitPriceOnDemandBillingPolicy"
-                        :field-meta="policy.billingFieldMeta"
-                      ></BillingRuleCard
-                    ></el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><BillingRuleCard
-                        billing-mode="MONTHLY"
-                        :field-list="policy.unitPriceMonthlyBillingPolicy"
-                        :field-meta="policy.billingFieldMeta"
-                      ></BillingRuleCard
-                    ></el-col>
-                  </el-row>
-                </template>
-              </base-container>
-              <base-container style="--ce-base-container-height: auto">
-                <template #header>
-                  <span>按套餐计费</span>
-                </template>
-                <template #content>
-                  <BillingPackage
-                    :resource-type="policy.resourceType"
-                    :add-package-billing="addPackageBilling"
-                    :edit-package-billing="editPackageBilling"
-                    :delete-package-billing="deletePackageBilling"
-                    :monthly-billing-policy="
-                      policy.unitPriceMonthlyBillingPolicy
-                    "
-                    :on-demand-billing-policy="
-                      policy.unitPriceOnDemandBillingPolicy
-                    "
-                    :field-meta="policy.billingFieldMeta"
-                    :package-price-billing="policy.packagePriceBillingPolicy"
-                  ></BillingPackage>
-                </template>
-              </base-container>
-              <base-container
-                v-if="policy.globalConfigMetaForms"
-                style="--ce-base-container-height: auto"
-              >
-                <template #header>
-                  <span>计费设置</span>
-                </template>
-                <template #content>
-                  <CeForm
-                    label-suffix=""
-                    require-asterisk-position="right"
-                    label-position="top"
-                    :form-view-data="policy.globalConfigMetaForms"
-                    v-model="policy.globalConfigMeta"
-                    :otherParams="{}"
-                  ></CeForm>
-                </template>
-              </base-container>
-            </el-tab-pane>
-          </el-tabs>
-        </div>
-        <div class="footer">
-          <el-button type="primary" @click="save">保存</el-button>
+        <div class="empty_content" v-else>
+          没有私有云计费策略，请点击上方蓝色按钮创建
         </div>
       </div>
+      <RightContent
+        :billing-policy="activeBillingPolicy"
+        :operate="operate"
+      ></RightContent>
     </div>
-    <LinkCloudAccount ref="linkCloudAccountRef"></LinkCloudAccount>
+    <LinkCloudAccount
+      ref="linkCloudAccountRef"
+      @refrece="bus.emit('refrece:cloud_account', $event)"
+    ></LinkCloudAccount>
     <ReName @refrece="refrece" ref="reNameRef"></ReName>
-    <AddBillingPolicy
-      ref="addBillingPolicyRef"
-      @refrece="refrece"
-    ></AddBillingPolicy>
   </layout-content>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { Search } from "@element-plus/icons-vue";
 import billingPolicyApi from "@/api/billing_policy/index";
-import type {
-  BillingPolicy,
-  BillingPolicyDetails,
-  CloudAccountResponse,
-  PackagePriceBillingPolicy,
-} from "@/api/billing_policy/type";
+import type { BillingPolicy } from "@/api/billing_policy/type";
 import LinkCloudAccount from "@/views/billing_policy/components/LinkCloudAccount.vue";
 import ReName from "@/views/billing_policy/components/ReName.vue";
-import BillingRuleCard from "@/views/billing_policy/components/BillingRuleCard.vue";
-import BillingPackage from "@/views/billing_policy/components/BillingPackage.vue";
-import AddBillingPolicy from "@/views/billing_policy/components/AddBillingPolicy.vue";
-import CloudAccountView from "@/views/billing_policy/components/CloudAccountView.vue";
 import AddPolicyIcon from "@/views/billing_policy/components/AddPolicyIcon.vue";
-import CeForm from "@commons/components/ce-form/index.vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { nanoid } from "nanoid";
+import RightContent from "@/views/billing_policy/components/RightContent.vue";
+import { ElMessageBox } from "element-plus";
 
+import bus from "@commons/bus";
 const topHeight = ref<number>(40);
 const filterText = ref<string>();
 const billingPolicyList = ref<Array<BillingPolicy>>([]);
 const activeBillingPolicyId = ref<string>();
 const linkCloudAccountRef = ref<InstanceType<typeof LinkCloudAccount>>();
 const reNameRef = ref<InstanceType<typeof ReName>>();
-const addBillingPolicyRef = ref<InstanceType<typeof AddBillingPolicy>>();
-const billingPolicyDetailsList = ref<Array<BillingPolicyDetails>>([]);
+const operate = ref<"VIEW" | "EDIT" | "CREATE">("VIEW");
+
 /**
  * 选中的账单策略
  */
@@ -250,7 +122,7 @@ const activeBillingPolicy = computed(() => {
 });
 
 // 加载器
-const loading = ref<boolean>(false);
+
 const listLoading = ref<boolean>(false);
 
 // 打开关联云账号页面
@@ -258,27 +130,14 @@ const openLinkCloudAccount = (policy: BillingPolicy) => {
   linkCloudAccountRef.value?.open(policy.id);
 };
 
-const linkCloudAccount = ref<Array<CloudAccountResponse>>([]);
-
 // 打开重命名页面
 const openReName = (policy: BillingPolicy) => {
   reNameRef.value?.open(policy);
 };
 
 const openAddPolicy = () => {
-  addBillingPolicyRef.value?.open();
+  bus.emit("update:operate", "CREATE");
 };
-
-watch(activeBillingPolicyId, () => {
-  if (activeBillingPolicyId.value) {
-    refreceDetails(activeBillingPolicyId.value);
-    billingPolicyApi
-      .listCloudAccount(activeBillingPolicyId.value)
-      .then((ok) => {
-        linkCloudAccount.value = ok.data.filter((s) => s.selected);
-      });
-  }
-});
 
 // 删除策略
 const deletePolicy = (policy: BillingPolicy) => {
@@ -288,33 +147,8 @@ const deletePolicy = (policy: BillingPolicy) => {
     type: "warning",
   }).then(() => {
     billingPolicyApi.deleteById(policy.id).then(() => {
-      refreceList(policy.id);
+      refreceList();
     });
-  });
-};
-const save = () => {
-  const billingPolicyId = activeBillingPolicyId.value;
-  if (billingPolicyId) {
-    billingPolicyApi
-      .updatePolicy(billingPolicyId, billingPolicyDetailsList.value)
-      .then(() => {
-        refreceDetails(billingPolicyId);
-        ElMessage.success("保存成功");
-      })
-      .catch((e) => {
-        ElMessage.success("保存失败", e);
-      });
-  }
-};
-// 添加套餐计费
-const addPackageBilling = (
-  resourceType: string,
-  packagePriceBillingPolicy: PackagePriceBillingPolicy
-) => {
-  billingPolicyDetailsList.value.forEach((item) => {
-    if (item.resourceType === resourceType) {
-      item.packagePriceBillingPolicy.push(packagePriceBillingPolicy);
-    }
   });
 };
 
@@ -335,64 +169,38 @@ const refreceList = (policyId?: string) => {
 };
 
 /**
- * 刷新详情
- * @param policyId 策略id
- */
-const refreceDetails = (policyId: string) => {
-  billingPolicyApi.details(policyId, loading).then((ok) => {
-    ok.data.billingPolicyDetailsList.forEach((item) => {
-      item.packagePriceBillingPolicy.forEach((p) => (p.id = nanoid()));
-    });
-    billingPolicyDetailsList.value = ok.data.billingPolicyDetailsList;
-  });
-};
-/**
  * 刷新
  * @param policyId 策略id
  */
 const refrece = (policyId?: string) => {
   refreceList(policyId);
 };
-/**
- * 修改套餐计费
- */
-const editPackageBilling = (
-  resourceType: string,
-  id: string,
-  packagePriceBillingPolicy: PackagePriceBillingPolicy
-) => {
-  billingPolicyDetailsList.value.forEach((item) => {
-    if (item.resourceType === resourceType) {
-      item.packagePriceBillingPolicy.forEach((policy) => {
-        if (policy.id === id) {
-          policy.billPolicyFields = packagePriceBillingPolicy.billPolicyFields;
-          policy.monthly = packagePriceBillingPolicy.monthly;
-          policy.name = packagePriceBillingPolicy.name;
-          policy.onDemand = packagePriceBillingPolicy.onDemand;
-        }
-      });
-    }
-  });
-};
-
-/**
- * 删除套餐计费
- */
-const deletePackageBilling = (resourceType: string, id: string) => {
-  billingPolicyDetailsList.value.forEach((item) => {
-    if (item.resourceType === resourceType) {
-      item.packagePriceBillingPolicy = item.packagePriceBillingPolicy.filter(
-        (p) => p.id !== id
-      );
-    }
-  });
-};
 
 const selectedPolicy = (policy: BillingPolicy) => {
+  if (operate.value === "EDIT" || operate.value === "CREATE") {
+    operate.value = "VIEW";
+  }
   activeBillingPolicyId.value = policy.id;
+  bus.emit("closePricePreview");
 };
 
 onMounted(() => {
+  bus.on("update:billing_policy", (policyId: string) => {
+    refreceList(policyId);
+  });
+  bus.on("update:operate", ($event: "VIEW" | "EDIT" | "CREATE") => {
+    operate.value = $event;
+    if ($event === "CREATE") {
+      activeBillingPolicyId.value = undefined;
+    }
+    if (
+      $event === "VIEW" &&
+      !activeBillingPolicyId.value &&
+      billingPolicyList.value.length > 0
+    ) {
+      activeBillingPolicyId.value = billingPolicyList.value[0].id;
+    }
+  });
   refrece();
 });
 </script>
@@ -410,8 +218,18 @@ onMounted(() => {
   .left_content {
     box-sizing: border-box;
     padding: 0 24px 0 0;
-    width: 240px;
+    width: 216px;
     height: 100%;
+    .empty_content {
+      margin-top: 25px;
+      background: #f7f9fc;
+      border-radius: 4px;
+      color: rgba(143, 149, 158, 1);
+      font-weight: 400;
+      font-size: 12px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
     .title_content {
       display: flex;
       align-items: center;
@@ -455,43 +273,5 @@ onMounted(() => {
       }
     }
   }
-  .right_content {
-    width: calc(100% - 245px);
-    box-sizing: border-box;
-    padding-left: 24px;
-    height: 100%;
-    border-left: 1px solid rgba(31, 35, 41, 0.15);
-
-    .header {
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      .title {
-        color: #1f2329;
-        font-weight: 500;
-        font-size: 16px;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-      }
-    }
-    .content {
-      overflow-y: auto;
-      height: 100%;
-    }
-    .footer {
-      border-top: 1px solid #d5d6d8;
-      width: 100%;
-      height: 50px;
-      display: flex;
-      justify-content: right;
-      align-items: center;
-    }
-  }
-}
-.click-icon {
-  color: #3370ff;
-  cursor: pointer;
 }
 </style>

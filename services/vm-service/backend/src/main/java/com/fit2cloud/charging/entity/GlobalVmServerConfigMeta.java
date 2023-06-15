@@ -20,6 +20,6 @@ public class GlobalVmServerConfigMeta {
     /**
      * 关机不计费
      */
-    @Form(label = "关机不计费", inputType = InputType.SwitchBtn, defaultJsonValue = true, defaultValue = "true", propsInfo = "{\"style\":{\"width\":\"40px\"}}")
+    @Form(label = "关机不计费", inputType = InputType.SwitchBtn, defaultJsonValue = true, defaultValue = "true", propsInfo = "{\"style\":{\"width\":\"40px\"},\"elFormItemStyle\":{\"width\":\"120px\"}}")
     private boolean shutdownNotBilling;
 }

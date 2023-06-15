@@ -1,13 +1,14 @@
 package com.fit2cloud.common.charging.generation.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fit2cloud.base.entity.*;
 import com.fit2cloud.base.entity.json_entity.BillingField;
 import com.fit2cloud.base.entity.json_entity.PackagePriceBillingPolicy;
+import com.fit2cloud.base.mapper.BaseBillPolicyDetailsMapper;
 import com.fit2cloud.base.mapper.BaseResourceInstanceMapper;
 import com.fit2cloud.base.mapper.BaseResourceInstanceStateMapper;
 import com.fit2cloud.base.service.IBaseBillPolicyCloudAccountMappingService;
-import com.fit2cloud.base.service.IBaseBillPolicyDetailsService;
 import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.base.service.IBaseWorkspaceService;
 import com.fit2cloud.common.charging.constants.BillModeConstants;
@@ -19,6 +20,8 @@ import com.fit2cloud.common.charging.entity.UnitPrice;
 import com.fit2cloud.common.charging.generation.BillingGeneration;
 import com.fit2cloud.common.charging.policy.BillingPolicy;
 import com.fit2cloud.common.charging.setting.BillSetting;
+import com.fit2cloud.common.provider.util.CommonUtil;
+import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,8 +32,11 @@ import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 
 /**
  * {@code @Author:张少虎}
@@ -58,11 +64,15 @@ public class SimpleBillingGeneration implements BillingGeneration {
     }
 
     @Override
-    public List<InstanceBill> generation(String cloudAccountId, String month, BillingGranularityConstants granularity) {
+    public List<InstanceBill> generation(String cloudAccountId,
+                                         String month,
+                                         InstanceState.Time start,
+                                         InstanceState.Time end,
+                                         BillingGranularityConstants granularity,
+                                         boolean isNowBilling) {
         BaseResourceInstanceMapper resourceInstanceMapper = SpringUtil.getBean(BaseResourceInstanceMapper.class);
         BaseResourceInstanceStateMapper resourceInstanceStateMapper = SpringUtil.getBean(BaseResourceInstanceStateMapper.class);
-        IBaseBillPolicyDetailsService baseBillPolicyDetailsService = SpringUtil.getBean(IBaseBillPolicyDetailsService.class);
-        IBaseBillPolicyCloudAccountMappingService baseBillPolicyCloudAccountMappingService = SpringUtil.getBean(IBaseBillPolicyCloudAccountMappingService.class);
+
         // 资源实例状态
         List<ResourceInstanceState> resourceInstanceStates = resourceInstanceStateMapper
                 .selectList(new LambdaQueryWrapper<ResourceInstanceState>()
@@ -70,15 +80,16 @@ public class SimpleBillingGeneration implements BillingGeneration {
                         .eq(ResourceInstanceState::getMonth, month)
                         .eq(ResourceInstanceState::getCloudAccountId, cloudAccountId)
                 );
-        List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappings = baseBillPolicyCloudAccountMappingService.list(new LambdaQueryWrapper<BillPolicyCloudAccountMapping>()
-                .eq(BillPolicyCloudAccountMapping::getCloudAccountId, cloudAccountId));
+        // 策略与云账号映射
+        List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappings = listBillPolicyCloudAccountMapping(isNowBilling, cloudAccountId);
         if (CollectionUtils.isEmpty(billPolicyCloudAccountMappings)) {
             return List.of();
         }
-        List<BillPolicyDetails> billPolicyDetailsList = baseBillPolicyDetailsService.list(new LambdaQueryWrapper<BillPolicyDetails>()
-                .in(BillPolicyDetails::getBillPolicyId, billPolicyCloudAccountMappings.stream()
-                        .map(BillPolicyCloudAccountMapping::getBillPolicyId).toList())
-                .eq(BillPolicyDetails::getResourceType, setting.getResourceInstanceType()));
+        // 策略详情
+        List<BillPolicyDetails> billPolicyDetailsList = listBillPolicyDetails(billPolicyCloudAccountMappings
+                .stream()
+                .map(BillPolicyCloudAccountMapping::getBillPolicyId).distinct().toList(), isNowBilling);
+
         if (CollectionUtils.isEmpty(billPolicyDetailsList)) {
             return List.of();
         }
@@ -90,7 +101,49 @@ public class SimpleBillingGeneration implements BillingGeneration {
                 resourceInstanceStates,
                 resourceInstances,
                 billPolicyDetailsList,
-                granularity);
+                billPolicyCloudAccountMappings,
+                start,
+                end,
+                granularity
+        );
+    }
+
+    private List<BillPolicyDetails> listBillPolicyDetails(List<String> billPolicyIdList, boolean isNowBilling) {
+        BaseBillPolicyDetailsMapper baseBillPolicyDetailsMapper = SpringUtil.getBean(BaseBillPolicyDetailsMapper.class);
+        if (isNowBilling) {
+            return baseBillPolicyDetailsMapper.listLast(new QueryWrapper<BillPolicyDetails>()
+                    .in(ColumnNameUtil.getColumnName(BillPolicyDetails::getBillPolicyId, "bill_policy_details"), billPolicyIdList)
+                    .eq(ColumnNameUtil.getColumnName(BillPolicyDetails::getResourceType, "bill_policy_details"), setting.getResourceInstanceType()));
+        } else {
+            return baseBillPolicyDetailsMapper.selectList(new LambdaQueryWrapper<BillPolicyDetails>()
+                    .in(BillPolicyDetails::getBillPolicyId, billPolicyIdList)
+                    .eq(BillPolicyDetails::getResourceType, setting.getResourceInstanceType()));
+
+        }
+    }
+
+    private List<BillPolicyCloudAccountMapping> listBillPolicyCloudAccountMapping(boolean isNowBilling, String cloudAccountId) {
+
+        IBaseBillPolicyCloudAccountMappingService baseBillPolicyCloudAccountMappingService = SpringUtil.getBean(IBaseBillPolicyCloudAccountMappingService.class);
+        if (isNowBilling) {
+
+            return baseBillPolicyCloudAccountMappingService.listLast(new QueryWrapper<BillPolicyCloudAccountMapping>()
+                    .eq(ColumnNameUtil.getColumnName(BillPolicyCloudAccountMapping::getCloudAccountId, true), cloudAccountId));
+        } else {
+            return baseBillPolicyCloudAccountMappingService.list(new LambdaQueryWrapper<BillPolicyCloudAccountMapping>()
+                    .eq(BillPolicyCloudAccountMapping::getCloudAccountId, cloudAccountId));
+        }
+
+    }
+
+    @Override
+    public List<InstanceBill> generation(String cloudAccountId,
+                                         String generationDate,
+                                         BillingGranularityConstants granularity,
+                                         boolean isNowBilling) {
+        GenerationDate generationDateObj = new GenerationDate(generationDate);
+        Region region = generationDateObj.getRegion();
+        return generation(cloudAccountId, generationDateObj.getMonth(), region.start, region.end, granularity, isNowBilling);
     }
 
 
@@ -108,6 +161,9 @@ public class SimpleBillingGeneration implements BillingGeneration {
                                           List<ResourceInstanceState> resourceInstanceStates,
                                           List<ResourceInstance> resourceInstances,
                                           List<BillPolicyDetails> billPolicyDetails,
+                                          List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappings,
+                                          InstanceState.Time start,
+                                          InstanceState.Time end,
                                           BillingGranularityConstants granularity) {
         return resourceInstanceStates.parallelStream().flatMap(resourceInstanceState -> {
             String resourceId = resourceInstanceState.getResourceId();
@@ -118,7 +174,7 @@ public class SimpleBillingGeneration implements BillingGeneration {
                             .filter(resourceInstance -> StringUtils.equals(resourceInstance.getResourceId(), resourceId))
                             .toList();
             // 实例变化
-            List<Region> region = getRegion(resourceInstanceList, billPolicyDetails);
+            List<Region> region = getRegion(resourceInstanceList, billPolicyDetails, billPolicyCloudAccountMappings, month, start, end);
             // 实例状态
             InstanceState instanceState = new InstanceState(resourceInstanceState.getInstanceState());
             return region.stream()
@@ -144,11 +200,20 @@ public class SimpleBillingGeneration implements BillingGeneration {
         // 套餐策略
         Optional<PackagePriceBillingPolicy> firstPackagePolicy = getFirstPackagePolicy(regionInstance.resourceInstance, policy.getPackagePriceBillingPolicy());
         List<BillingField> billingFields = new ArrayList<>();
+        HashMap<String, Integer> billMeta = new HashMap<>();
         if (firstPackagePolicy.isPresent()) {
             PackagePriceBillingPolicy usePackagePolicy = firstPackagePolicy.get();
             billingFields = packagePolicyToBillingField(usePackagePolicy, regionInstance.resourceInstance.getBillMode());
+            // 套餐价数量为1
+            for (BillingField billingField : billingFields) {
+                billMeta.put(billingField.getField(), 1);
+            }
         } else {
-            billingFields = regionInstance.resourceInstance.getBillMode().equals(BillModeConstants.MONTHLY) ? policy.getUnitPriceMonthlyBillingPolicy() : policy.getUnitPriceOnDemandBillingPolicy();
+            billingFields = regionInstance.resourceInstance.getBillMode().equals(BillModeConstants.MONTHLY) ?
+                    policy.getUnitPriceMonthlyBillingPolicy() :
+                    policy.getUnitPriceOnDemandBillingPolicy();
+            // 数量为自己的数量
+            billMeta.putAll(regionInstance.resourceInstance.getMeta());
         }
         // 获取粒度时间账单
         List<DefaultKeyValue<String, BigDecimal>> billing = billing(instanceState,
@@ -158,7 +223,7 @@ public class SimpleBillingGeneration implements BillingGeneration {
                 regionInstance.resourceInstance.getBillMode().equals(BillModeConstants.MONTHLY) ? setting.getMonthlyPolicy() : setting.getOnDemandPolicy(),
                 regionInstance.billPolicy.getGlobalConfigMeta(),
                 setting.stateBilling(),
-                regionInstance.resourceInstance.getMeta(),
+                billMeta,
                 billingFields,
                 granularity);
         // 生成账单数据
@@ -233,8 +298,9 @@ public class SimpleBillingGeneration implements BillingGeneration {
         return packagePriceBillingPolicyList.stream().filter(packagePriceBillingPolicy -> packagePriceBillingPolicy
                 .getBillPolicyFields()
                 .stream()
-                .anyMatch(packageField -> instance.getMeta().get(packageField.getField()).equals(packageField.getNumber())
-                )).findFirst();
+                .allMatch(packageField -> instance.getMeta().get(packageField.getField()).equals(packageField.getNumber())
+                )).filter(policy -> instance.getBillMode().equals(BillModeConstants.MONTHLY) ? Objects.nonNull(policy.getMonthly()) : Objects.nonNull(policy.getOnDemand())
+        ).findFirst();
     }
 
     /**
@@ -246,52 +312,104 @@ public class SimpleBillingGeneration implements BillingGeneration {
      */
     private static List<Region> getRegion(
             List<ResourceInstance> resourceInstances,
-            List<BillPolicyDetails> billPolicies) {
+            List<BillPolicyDetails> billPolicies,
+            List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappings,
+            String month,
+            InstanceState.Time startTime,
+            InstanceState.Time endTime) {
+
         if (CollectionUtils.isEmpty(resourceInstances) || CollectionUtils.isEmpty(billPolicies)) {
             return List.of();
         }
-        // 排序
-        resourceInstances = resourceInstances
-                .stream()
-                .sorted(Comparator.comparing(ResourceInstance::getCreateTime))
-                .toList();
-        // 排序
-        billPolicies = billPolicies
-                .stream()
-                .sorted(Comparator.comparing(BillPolicyDetails::getCreateTime))
-                .toList();
-        // 加载到时间线中
-        List<TimeLine<Object>> timeLines = new ArrayList<>();
-        timeLines.addAll(resourceInstances.stream().map(r -> new TimeLine<Object>(r, r.getCreateTime())).toList());
-        timeLines.addAll(billPolicies.stream().map(policy -> new TimeLine<Object>(policy, policy.getCreateTime())).toList());
-        // 排序
+
+        // 加载数据到时间线 开始
+        List<TimeLine<Object>> sourceTimeLines = new ArrayList<>();
+        sourceTimeLines.addAll(resourceInstances.stream().map(r -> new TimeLine<Object>(r, r.getCreateTime(), Status.NODE)).toList());
+        sourceTimeLines.addAll(billPolicies.stream().map(policy -> new TimeLine<Object>(policy, policy.getCreateTime(), Status.NODE)).toList());
+        LocalDateTime regionStart = getLocalDateTime(month, startTime, true);
+        LocalDateTime regionEnd = getLocalDateTime(month, endTime, false);
+        sourceTimeLines.add(new TimeLine<>("start", regionStart, Status.NODE));
+        sourceTimeLines.add(new TimeLine<>("end", regionEnd, Status.NODE));
+        // billPolicyCloudAccountMappings 云账号策略变更的时间线 如果 策略id为null则表示当前云账号未挂到任何一个策略上,顾不计费
+        sourceTimeLines.addAll(billPolicyCloudAccountMappings.stream().map(billPolicyCloudAccountMapping -> {
+            return new TimeLine<Object>(billPolicyCloudAccountMapping, billPolicyCloudAccountMapping.getCreateTime(), StringUtils.isNotEmpty(billPolicyCloudAccountMapping.getBillPolicyId()) ? Status.START : Status.END);
+        }).toList());
+
+
+        List<TimeLine<Object>> timeLines = sourceTimeLines.stream().filter(time -> time.createTime.compareTo(regionStart) >= 0 && time.createTime.compareTo(regionEnd) <= 0).toList();
+
+        // 排序时间线
         timeLines = timeLines.stream().sorted(Comparator.comparing(TimeLine::getCreateTime)).toList();
-
-
+        // 处理时间线数据
         List<Region> result = new ArrayList<>();
-        ResourceInstance currentResourceInstance = resourceInstances.get(0);
-        BillPolicyDetails currentPolicy = billPolicies.get(0);
+        ResourceInstance currentResourceInstance = resourceInstances.stream().min(Comparator.comparing(ResourceInstance::getCreateTime)).get();
+
+        BillPolicyCloudAccountMapping currentPolicyCloudAccountMapping = billPolicyCloudAccountMappings.stream().min(Comparator.comparing(BillPolicyCloudAccountMapping::getCreateTime)).get();
+
+        Status currentStatus = sourceTimeLines.stream().filter(time -> time.createTime.isAfter(regionStart))
+                .findFirst()
+                .map(s -> Status.NODE)
+                .orElse(Status.END);
+
+        Map<String, BillPolicyDetails> currentPolicyMap = new HashMap<>();
+
+        Map<String, List<BillPolicyDetails>> collect = billPolicies.stream().collect(Collectors.groupingBy(BillPolicyDetails::getBillPolicyId));
+
+        for (Map.Entry<String, List<BillPolicyDetails>> stringListEntry : collect.entrySet()) {
+            currentPolicyMap.put(stringListEntry.getKey(), stringListEntry.getValue().stream().min(Comparator.comparing(BillPolicyDetails::getCreateTime)).get());
+        }
+
         for (int i = 0; i < timeLines.size(); i++) {
             TimeLine<Object> pre = timeLines.get(i);
             if (pre.instance instanceof ResourceInstance resourceInstance) {
                 currentResourceInstance = resourceInstance;
             }
             if (pre.instance instanceof BillPolicyDetails billPolicyDetails) {
-                currentPolicy = billPolicyDetails;
+                currentPolicyMap.put(billPolicyDetails.getBillPolicyId(), billPolicyDetails);
+            }
+            if (pre.instance instanceof BillPolicyCloudAccountMapping billPolicyCloudAccountMapping) {
+                currentPolicyCloudAccountMapping = billPolicyCloudAccountMapping;
+            }
+            if (pre.status.equals(Status.START)) {
+                currentStatus = pre.status;
             }
             if (i + 1 < timeLines.size()) {
                 TimeLine<Object> next = timeLines.get(i + 1);
-                InstanceState.Time start = i == 0 ? InstanceState.Time.of(1, 0, 0) : InstanceState.Time.of(pre.getCreateTime().getDayOfMonth(), pre.getCreateTime().getHour(), pre.getCreateTime().getMinute());
-                InstanceState.Time end = InstanceState.Time.of(next.getCreateTime().getDayOfMonth(), next.getCreateTime().getHour(), next.getCreateTime().getMinute());
-                result.add(new Region(start, end, currentResourceInstance, currentPolicy));
-            } else {
+                if (currentStatus.equals(Status.END)) {
+                    continue;
+                }
                 InstanceState.Time start = InstanceState.Time.of(pre.getCreateTime().getDayOfMonth(), pre.getCreateTime().getHour(), pre.getCreateTime().getMinute());
-                result.add(new Region(start, null, currentResourceInstance, currentPolicy));
+                InstanceState.Time end = InstanceState.Time.of(next.getCreateTime().getDayOfMonth(), next.getCreateTime().getHour(), next.getCreateTime().getMinute());
+                result.add(new Region(start, end, currentResourceInstance, currentPolicyMap.get(currentPolicyCloudAccountMapping.getBillPolicyId())));
+                if (next.status.equals(Status.END)) {
+                    currentStatus = Status.END;
+                }
             }
+
         }
-        return result;
+        return filterRegion(result);
     }
 
+    private static List<Region> filterRegion(List<Region> regions) {
+        // 如果存在开始时间一样的Region 则使用后面的Region
+        return regions.stream().filter(region -> !region.end.toString().equals(region.start.toString())).toList();
+    }
+
+    private static LocalDateTime getLocalDateTime(String month,
+                                                  InstanceState.Time time,
+                                                  boolean min) {
+        if (Objects.isNull(time)) {
+            LocalDateTime localDateTime = CommonUtil.getLocalDateTime(month, "yyyy-MM");
+            if (min) {
+                return localDateTime.with(TemporalAdjusters.firstDayOfMonth());
+            } else {
+                return LocalDateTime.of(localDateTime.with(TemporalAdjusters.lastDayOfMonth()).toLocalDate(), LocalTime.MAX);
+            }
+        }
+        String format = "%s-%s %s:%s";
+        String formatted = format.formatted(month, time.getDay(), time.getHour(), time.getMinute());
+        return CommonUtil.getLocalDateTime(formatted, "yyyy-MM-dd HH:mm");
+    }
 
     /**
      * 计费
@@ -383,11 +501,81 @@ public class SimpleBillingGeneration implements BillingGeneration {
          */
         private LocalDateTime createTime;
 
+        private Status status;
+
         private T instance;
 
-        public TimeLine(T instance, LocalDateTime createTime) {
+        public TimeLine(T instance, LocalDateTime createTime, Status status) {
             this.createTime = createTime;
             this.instance = instance;
+            this.status = status;
         }
+    }
+
+    private static enum Status {
+        /**
+         * 开始标志
+         */
+        START,
+        /**
+         * 节点标志
+         */
+        NODE,
+        /**
+         * 结束标志
+         */
+        END
+    }
+
+    private static class GenerationDate {
+
+        private final String generationDate;
+        private final LocalDateTime localDateTime;
+
+        private final GenerationDateType type;
+
+        public GenerationDate(String generationDate) {
+            this.generationDate = generationDate;
+            if (generationDate.length() == 7) {
+                this.localDateTime = CommonUtil.getLocalDateTime(generationDate, "yyyy-MM");
+                this.type = GenerationDateType.MONTH;
+            } else if (generationDate.length() == 10) {
+                this.localDateTime = CommonUtil.getLocalDateTime(generationDate, "yyyy-MM-dd");
+                this.type = GenerationDateType.DAY;
+            } else if (generationDate.length() == 13) {
+                this.localDateTime = CommonUtil.getLocalDateTime(generationDate, "yyyy-MM-dd HH");
+                this.type = GenerationDateType.HOUR;
+
+            } else {
+                throw new RuntimeException("参数错误");
+            }
+        }
+
+        private String getMonth() {
+            return generationDate.substring(0, 7);
+        }
+
+        private Region getRegion() {
+            if (type.equals(GenerationDateType.MONTH)) {
+                return new Region(null, null, null, null);
+            } else if (type.equals(GenerationDateType.DAY)) {
+                InstanceState.Time start = InstanceState.Time.of(localDateTime.getDayOfMonth(), localDateTime.getHour(), localDateTime.getMinute());
+                LocalDateTime endLocalDateTime = localDateTime.plusDays(1);
+                InstanceState.Time end = InstanceState.Time.of(endLocalDateTime.getDayOfMonth(), endLocalDateTime.getHour(), endLocalDateTime.getMinute());
+                return new Region(start, end, null, null);
+            } else {
+                InstanceState.Time start = InstanceState.Time.of(localDateTime.getDayOfMonth(), localDateTime.getHour(), localDateTime.getMinute());
+                LocalDateTime endLocalDateTime = localDateTime.plusHours(1);
+                InstanceState.Time end = InstanceState.Time.of(endLocalDateTime.getDayOfMonth(), endLocalDateTime.getHour(), endLocalDateTime.getMinute());
+                return new Region(start, end, null, null);
+            }
+        }
+
+    }
+
+    private static enum GenerationDateType {
+        MONTH,
+        DAY,
+        HOUR
     }
 }

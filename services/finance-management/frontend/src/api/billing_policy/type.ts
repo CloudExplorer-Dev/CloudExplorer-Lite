@@ -89,6 +89,8 @@ interface BillingFieldMeta {
    * 其他元数据
    */
   meta: SimpleMap<any>;
+
+  order: number;
 }
 interface BillingPolicyDetails {
   /**
@@ -123,13 +125,37 @@ interface BillingPolicyDetails {
   globalConfigMeta: SimpleMap<any>;
 }
 interface BillingPolicyDetailsResponse {
+  /**
+   * 策略id
+   */
+  id: string;
+  /**
+   * 策略名称
+   */
   name: string;
+  /**
+   * 策略详情
+   */
   billingPolicyDetailsList: Array<BillingPolicyDetails>;
 }
 
-interface CreateBillingPolicyRequest {
+interface OperateBillingPolicyRequest {
+  /**
+   * 主键
+   */
+  id?: string;
+  /**
+   * 名称
+   */
   name: string;
-  linkCloudAccountIds: Array<string>;
+  /**
+   *关联云账号列表
+   */
+  cloudAccountList: Array<string>;
+  /**
+   * 策略详情
+   */
+  billingPolicyDetailsList: Array<BillingPolicyDetails>;
 }
 interface LinkCloudAccountRequest {
   /**
@@ -159,7 +185,7 @@ export type {
   BillingField,
   BillingFieldMeta,
   PackagePriceBillingPolicy,
-  CreateBillingPolicyRequest,
+  OperateBillingPolicyRequest,
   LinkCloudAccountRequest,
   CloudAccountResponse,
 };

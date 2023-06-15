@@ -5,7 +5,7 @@ import type Result from "@commons/request/Result";
 import type {
   BillingPolicy,
   BillingPolicyDetailsResponse,
-  CreateBillingPolicyRequest,
+  OperateBillingPolicyRequest,
   LinkCloudAccountRequest,
   CloudAccountResponse,
   BillingPolicyDetails,
@@ -28,16 +28,20 @@ const list: (
  * @returns
  */
 const details: (
-  billingPolicyId: string,
+  billingPolicyId?: string,
   loading?: Ref<boolean>
 ) => Promise<Result<BillingPolicyDetailsResponse>> = (
   billingPolicyId,
   loading
 ) => {
-  return get(`/api/billing_policy/details/${billingPolicyId}`, {}, loading);
+  return get(
+    `/api/billing_policy/details/${billingPolicyId ? billingPolicyId : ""}`,
+    {},
+    loading
+  );
 };
 const create: (
-  request: CreateBillingPolicyRequest,
+  request: OperateBillingPolicyRequest,
   loading?: Ref<boolean>
 ) => Promise<Result<BillingPolicy>> = (request, loading) => {
   return post("/api/billing_policy", {}, request, loading);
@@ -106,17 +110,12 @@ const deleteById: (
 };
 
 const updatePolicy: (
-  billing_policy_id: string,
-  request: Array<BillingPolicyDetails>,
+  request: OperateBillingPolicyRequest,
   loading?: Ref<boolean>
-) => Promise<Result<any>> = (billing_policy_id, request, loading) => {
-  return put(
-    `/api/billing_policy/${billing_policy_id}`,
-    {},
-    { billingPolicyDetailsList: request },
-    loading
-  );
+) => Promise<Result<any>> = (request, loading) => {
+  return put(`/api/billing_policy/${request.id}`, {}, request, loading);
 };
+
 export default {
   list,
   details,

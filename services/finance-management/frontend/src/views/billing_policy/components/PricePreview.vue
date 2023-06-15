@@ -1,5 +1,7 @@
 <template>
-  <div class="header">费用预览</div>
+  <div class="header">
+    费用预览 <el-icon @click="close"><CircleClose /></el-icon>
+  </div>
   <div class="content">
     <el-form label-position="top" label-width="100px">
       <el-form-item v-for="item in fieldList" :key="item.field">
@@ -110,6 +112,11 @@ const previewSizeList = (field: string) => {
     return [2, 4, 8, 16];
   }
 };
+const emit = defineEmits(["close"]);
+
+const close = () => {
+  emit("close");
+};
 </script>
 <style lang="scss" scoped>
 :deep(.el-radio__input) {
@@ -121,6 +128,11 @@ const previewSizeList = (field: string) => {
 .header {
   padding: 16px 16px 0 16px;
   box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  i {
+    cursor: pointer;
+  }
 }
 .content {
   padding: 16px 16px 0 16px;

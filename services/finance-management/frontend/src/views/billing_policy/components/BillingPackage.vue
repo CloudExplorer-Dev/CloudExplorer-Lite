@@ -1,6 +1,8 @@
 <template>
   <div>
-    <el-button type="primary" @click="openAddPackage">添加套餐</el-button>
+    <el-button type="primary" @click="openAddPackage" :disabled="disabled"
+      >添加套餐</el-button
+    >
     <el-table :data="tableData" style="width: 100%">
       <el-table-column prop="name" label="套餐名称" />
       <el-table-column
@@ -79,6 +81,8 @@ const props = defineProps<{
    * 资源类型
    */
   resourceType: string;
+
+  disabled: boolean;
 }>();
 /**
  * 操作套餐计费组件
@@ -156,16 +160,19 @@ const editPackageBilling = (
  *表单动态字段
  */
 const tableDynamicFieldList = computed(() => {
-  return Object.keys(props.fieldMeta).map((key) => {
-    return {
-      prop: key,
-      label:
-        props.fieldMeta[key].fieldLabel +
-        "(" +
-        props.fieldMeta[key].unitLabel +
-        ")",
-    };
-  });
+  return Object.keys(props.fieldMeta)
+    .map((key) => {
+      return {
+        prop: key,
+        label:
+          props.fieldMeta[key].fieldLabel +
+          "(" +
+          props.fieldMeta[key].unitLabel +
+          ")",
+        order: props.fieldMeta[key].order,
+      };
+    })
+    .sort((pre, next) => pre.order - next.order);
 });
 
 /**
@@ -215,14 +222,14 @@ const tableOperations = new TableOperations(
       "primary",
       openUpdateBilling,
       "EditPen",
-      undefined
+      () => props.disabled
     ),
     TableOperations.buildButtons().newInstance(
       "删除",
       "primary",
       deleteBilling,
       "Delete",
-      undefined
+      () => props.disabled
     ),
   ],
   "label"

@@ -28,9 +28,9 @@ public class Charging implements ChargingConfig.Config {
 
         SimpleBillingSetting vmServer = SimpleBillingSetting.of("ECS", "云主机", new VmServerInstanceRecordMappingHandler(),
                 Map.of("cpu", new BillingFieldMeta(new BigDecimal("0.05"), new BigDecimal("30"), "CPU", "核", "元",
-                                Map.of("previewList", List.of(2, 4, 8, 16))),
+                                Map.of("previewList", List.of(2, 4, 8, 16)), 0),
                         "memory", new BillingFieldMeta(new BigDecimal("0.05"), new BigDecimal("30"), "内存", "GB", "元",
-                                Map.of("previewList", List.of(2, 4, 8, 16, 32))
+                                Map.of("previewList", List.of(2, 4, 8, 16, 32)), 1
                         )
                 ),
                 ((config, state) -> {
@@ -52,7 +52,7 @@ public class Charging implements ChargingConfig.Config {
 
         SimpleBillingSetting vmDisk = SimpleBillingSetting.of("DISK", "磁盘", new VmCloudDiskInstanceRecordMappingHandler(),
                 Map.of("size", new BillingFieldMeta(new BigDecimal("0.01"), new BigDecimal("5"), "磁盘", "GB", "元",
-                        Map.of("previewList", List.of(20, 50, 100, 200)))),
+                        Map.of("previewList", List.of(20, 50, 100, 200)), 0)),
                 ((config, state) -> !List.of(VmDiskStateConstants.NotCreate.getCode(), VmDiskStateConstants.deleted.getCode()).contains(state.code())), null);
         return List.of(vmServer, vmDisk);
     }

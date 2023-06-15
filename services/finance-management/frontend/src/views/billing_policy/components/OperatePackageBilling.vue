@@ -3,7 +3,7 @@
     v-model="drawer"
     :title="packagePriceBillingId ? '编辑套餐' : '添加套餐'"
     direction="rtl"
-    style="width: 600px"
+    size="600px"
     :before-close="close"
   >
     <el-form
@@ -26,6 +26,7 @@
           >
             <el-col :span="12" v-for="(col, index) in row" :key="index">
               <el-form-item
+                :key="col.field"
                 :label="col.fieldLabel"
                 :rules="requiredVerification(col.fieldLabel)"
                 :prop="`config.${col.field}`"
@@ -184,9 +185,13 @@ const packageConfigFieldList = computed(() => {
   const fieldList = Object.keys(props.fieldMeta).map((key) => {
     return { field: key, ...props.fieldMeta[key] };
   });
+  fieldList.sort((pre, next) => pre.order - next.order);
   return splitArray(fieldList, 2);
 });
 
+const checkNumber = (number: string | number) => {
+  return /^(\d+|\d+\.\d+|\d+\.)$/.test(number.toString());
+};
 /**
  * 包年包月费用预测
  */
@@ -194,7 +199,11 @@ const monthlyPrice = computed(() => {
   return props.monthlyBillingPolicy
     .map((field) => {
       return form.value.config[field.field] && field.price
-        ? new Decimal(form.value.config[field.field]).mul(field.price)
+        ? new Decimal(
+            checkNumber(form.value.config[field.field])
+              ? form.value.config[field.field]
+              : 0
+          ).mul(field.price)
         : new Decimal(0);
     })
     .reduce((pre, next) => pre.add(next))
@@ -208,7 +217,11 @@ const onDemandPrice = computed(() => {
   return props.onDemandBillingPolicy
     .map((field) => {
       return form.value.config[field.field] && field.price
-        ? new Decimal(form.value.config[field.field]).mul(field.price)
+        ? new Decimal(
+            checkNumber(form.value.config[field.field])
+              ? form.value.config[field.field]
+              : 0
+          ).mul(field.price)
         : new Decimal(0);
     })
     .reduce((pre, next) => pre.add(next))
@@ -231,7 +244,9 @@ const currentDays = () => {
  */
 const monthPriceView = computed(() => {
   return form.value.price.onDemand || form.value.price.onDemand === 0
-    ? new Decimal(form.value.price.onDemand)
+    ? new Decimal(
+        checkNumber(form.value.price.onDemand) ? form.value.price.onDemand : 0
+      )
         .mul(new Decimal(24))
         .mul(currentDays())
         .toFixed(3)
@@ -243,11 +258,14 @@ const monthPriceView = computed(() => {
  */
 const hourProceView = computed(() => {
   return form.value.price.monthly || form.value.price.monthly === 0
-    ? new Decimal(form.value.price.monthly)
+    ? new Decimal(
+        checkNumber(form.value.price.monthly) ? form.value.price.monthly : 0
+      )
         .div(new Decimal(24).mul(new Decimal(currentDays())))
         .toFixed(3)
     : "-";
 });
+
 /**
  * 必填字段校验
  * @param fieldLabel 字段提示
@@ -282,7 +300,7 @@ const operate = () => {
       billPolicyFields: Object.keys(props.fieldMeta).map((key) => {
         return {
           field: key,
-          number: form.value.config[key],
+          number: parseInt(form.value.config[key].toString()),
         };
       }),
     };

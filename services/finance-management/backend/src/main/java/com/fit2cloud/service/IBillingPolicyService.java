@@ -3,7 +3,6 @@ package com.fit2cloud.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.BillPolicy;
 import com.fit2cloud.base.entity.BillPolicyCloudAccountMapping;
-import com.fit2cloud.controller.request.AddBillingPolicyRequest;
 import com.fit2cloud.controller.request.BillingPolicyRequest;
 import com.fit2cloud.controller.request.LinkCloudAccountRequest;
 import com.fit2cloud.controller.response.BillingPolicyDetailsResponse;
@@ -48,7 +47,7 @@ public interface IBillingPolicyService extends IService<BillPolicy> {
      *
      * @param request 请求对象
      */
-    BillPolicy createBillingPolicy(AddBillingPolicyRequest request);
+    BillPolicy createBillingPolicy(BillingPolicyRequest request);
 
     /**
      * 关联云账号
