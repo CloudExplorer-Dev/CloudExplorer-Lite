@@ -16,4 +16,9 @@ import java.util.List;
  */
 public interface IBaseResourceInstanceService extends IService<ResourceInstance> {
     List<ResourceInstance> listLastResourceInstance(Wrapper<ResourceInstance> wrapper);
+
+    /**
+     * 清除已删除云账号的实例
+     */
+    void cleanDeletedCloudAccount();
 }

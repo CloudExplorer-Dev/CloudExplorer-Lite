@@ -3,6 +3,7 @@ package com.fit2cloud.service;
 import com.fit2cloud.common.utils.JwtTokenUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RBucket;
+import org.redisson.api.RFuture;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
@@ -22,14 +23,15 @@ public class TokenPoolService {
         return JWT_TOKEN + userId + ":" + jwtId;
     }
 
-    public void saveJwt(String userId, String jwtId) {
+    public RFuture<Void> saveJwt(String userId, String jwtId) {
         String key = getKey(userId, jwtId);
         try {
             int expireMinutes = JwtTokenUtils.JWT_EXPIRE_MINUTES;
             RBucket<String> bucket = redissonClient.getBucket(key);
-            bucket.setAsync(jwtId, expireMinutes, TimeUnit.MINUTES);
+            return bucket.setAsync(jwtId, expireMinutes, TimeUnit.MINUTES);
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

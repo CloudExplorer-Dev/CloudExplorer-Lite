@@ -1,5 +1,5 @@
 <template>
-  <div class="content">
+  <div class="cloud-account-content">
     <el-row
       class="row"
       :gutter="16"
@@ -8,7 +8,7 @@
     >
       <el-col
         class="col"
-        :span="8"
+        :span="24 / rowNumber"
         v-for="cloudAccount in row"
         :key="cloudAccount.id"
       >
@@ -42,16 +42,23 @@ import type { CloudAccount } from "@commons/api/cloud_account/type";
 import { split } from "@commons/utils/commons";
 import type { SimpleMap } from "@commons/api/base/type";
 
-const props = defineProps<{
-  /**
-   * 云账号列表
-   */
-  cloudAccountList: Array<CloudAccount>;
-  /**
-   *选中数据
-   */
-  modelValue: Array<string>;
-}>();
+const props = withDefaults(
+  defineProps<{
+    /**
+     * 云账号列表
+     */
+    cloudAccountList: Array<CloudAccount>;
+    /**
+     *选中数据
+     */
+    modelValue: Array<string>;
+
+    rowNumber?: number;
+  }>(),
+  {
+    rowNumber: 3,
+  }
+);
 const emit = defineEmits(["update:modelValue"]);
 const changeValue = (cloudAccountId: string) => {
   const active = !props.modelValue.includes(cloudAccountId);
@@ -84,26 +91,27 @@ const rowCloudAccountList = computed(() => {
   if (!props.cloudAccountList) {
     return [];
   }
-  const rowData = split(
+ return split(
     props.cloudAccountList,
-    Math.ceil(props.cloudAccountList.length / 4)
+    Math.ceil(props.cloudAccountList.length / props.rowNumber)
   );
-  return rowData;
 });
 </script>
 <style lang="scss" scoped>
-.content {
+.cloud-account-content {
   display: flex;
   flex-wrap: wrap;
   width: 100%;
   .row {
     width: 100%;
-
     .col {
       margin-top: 11px;
     }
     &:first-child {
-      margin-top: 16px;
+      margin-top: 0;
+      .col {
+        margin-top: 0;
+      }
     }
     .active {
       background: #f5f8ff;

@@ -48,16 +48,21 @@ const form = ref<{
 }>({
   name: "",
 });
+
 const emit = defineEmits(["refrece"]);
 const reName = () => {
-  // from.value?.validate().then(() => {
-  if (billingPolicyId.value) {
-    billingPolicyApi.reName(billingPolicyId.value, form.value.name).then(() => {
-      emit("refrece", billingPolicyId.value);
-      close();
-    });
-  }
-  // });
+  from.value?.validate().then(() => {
+    if (billingPolicyId.value) {
+      billingPolicyApi
+        .reName(billingPolicyId.value, form.value.name)
+        .then((ok) => {
+          if (ok.code !== 500) {
+            emit("refrece", billingPolicyId.value);
+            close();
+          }
+        });
+    }
+  });
 };
 const dialogVisible = ref<boolean>(false);
 const open = (policy: BillingPolicy) => {

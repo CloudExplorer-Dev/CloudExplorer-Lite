@@ -45,9 +45,9 @@ public class BillingPolicyController {
     }
 
     @Operation(summary = "策略详情")
-    @GetMapping("/details/{billing_policy_id}")
-    public ResultHolder<BillingPolicyDetailsResponse> detailsBillingPolicy(@CustomValidated(mapper = BaseBillPolicyMapper.class, handler = ExistHandler.class, field = "id", message = "计费策略id不存在", exist = false)
-                                                                           @PathVariable("billing_policy_id") String billingPolicyId) {
+    @GetMapping(value = {"/details/{billing_policy_id}", "/details/"})
+    public ResultHolder<BillingPolicyDetailsResponse> detailsBillingPolicy(@CustomValidated(mapper = BaseBillPolicyMapper.class, handler = ExistHandler.class, field = "id", message = "计费策略id不存在", exist = false, ifNullPass = true)
+                                                                           @PathVariable(required = false, value = "billing_policy_id") String billingPolicyId) {
         BillingPolicyDetailsResponse billingPolicyDetailsResponse = billingPolicyService.detailsBillingPolicy(billingPolicyId);
         return ResultHolder.success(billingPolicyDetailsResponse);
     }
@@ -82,7 +82,7 @@ public class BillingPolicyController {
 
     @Operation(summary = "创建策略")
     @PostMapping()
-    public ResultHolder<BillPolicy> createBillingPolicy(@Validated @RequestBody AddBillingPolicyRequest request) {
+    public ResultHolder<BillPolicy> createBillingPolicy(@Validated @RequestBody BillingPolicyRequest request) {
         BillPolicy billingPolicy = billingPolicyService.createBillingPolicy(request);
         return ResultHolder.success(billingPolicy);
     }

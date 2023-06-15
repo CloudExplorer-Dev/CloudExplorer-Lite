@@ -7,6 +7,7 @@ import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.base.entity.BillPolicy;
 import com.fit2cloud.base.entity.BillPolicyCloudAccountMapping;
 import com.fit2cloud.base.entity.BillPolicyDetails;
+import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.json_entity.BillingField;
 import com.fit2cloud.base.entity.json_entity.PackagePriceBillingPolicy;
 import com.fit2cloud.base.mapper.BaseBillPolicyDetailsMapper;
@@ -17,10 +18,10 @@ import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.charging.constants.UnitPriceConstants;
 import com.fit2cloud.common.charging.entity.BillingFieldMeta;
 import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.ServiceUtil;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.AddBillingPolicyRequest;
 import com.fit2cloud.controller.request.BillingPolicyRequest;
 import com.fit2cloud.controller.request.LinkCloudAccountRequest;
 import com.fit2cloud.controller.response.BillingPolicyDetailsResponse;
@@ -28,7 +29,6 @@ import com.fit2cloud.controller.response.CloudAccountResponse;
 import com.fit2cloud.dto.charging.BillingFieldMetaSetting;
 import com.fit2cloud.service.IBillingPolicyService;
 import jakarta.annotation.Resource;
-import jakarta.validation.constraints.NotNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,15 +38,16 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -90,63 +91,48 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
 
     @Override
     public List<CloudAccountResponse> listCloudAccountByPolicy(String billingPolicy) {
-        List<BillPolicyCloudAccountMapping> list = billPolicyCloudAccountMappingService
-                .list(new LambdaQueryWrapper<BillPolicyCloudAccountMapping>()
-                        .eq(StringUtils.isNotEmpty(billingPolicy), BillPolicyCloudAccountMapping::getBillPolicyId, billingPolicy));
+        List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappingList = billPolicyCloudAccountMappingService
+                .listLast(new LambdaQueryWrapper<>());
+
         return cloudAccountService.list().stream().map(cloudAccount -> {
             CloudAccountResponse cloudAccountResponse = new CloudAccountResponse();
             BeanUtils.copyProperties(cloudAccount, cloudAccountResponse);
             cloudAccountResponse.setPublicCloud(PlatformConstants.valueOf(cloudAccount.getPlatform()).getPublicCloud());
-            list.stream().filter(cb -> StringUtils.equals(cb.getCloudAccountId(), cloudAccount.getId()))
-                    .findFirst().ifPresent(cb -> {
-                        cloudAccountResponse.setSelected(true);
-                    });
+            billPolicyCloudAccountMappingList.stream().filter(cb -> StringUtils.equals(cb.getCloudAccountId(), cloudAccount.getId()) &&
+                            StringUtils.equals(billingPolicy, cb.getBillPolicyId()))
+                    .findFirst().ifPresent(cb -> cloudAccountResponse.setSelected(StringUtils.isNotEmpty(cb.getBillPolicyId())));
             return cloudAccountResponse;
         }).toList();
 
     }
 
     @Override
+    @Transactional
     public void updateBillingPolicy(String billingPolicyId, BillingPolicyRequest request) {
         if (StringUtils.isNotEmpty(request.getName())) {
-            BillPolicy billPolicy = new BillPolicy();
-            billPolicy.setName(request.getName());
-            billPolicy.setId(billingPolicyId);
-            updateById(billPolicy);
+            BillPolicy billPolicy = this.getOne(new LambdaQueryWrapper<BillPolicy>()
+                    .ne(BillPolicy::getId, billingPolicyId)
+                    .eq(BillPolicy::getName, request.getName()));
+            if (Objects.isNull(billPolicy)) {
+                BillPolicy newBillPolicy = new BillPolicy();
+                newBillPolicy.setName(request.getName());
+                newBillPolicy.setId(billingPolicyId);
+                updateById(newBillPolicy);
+            } else {
+                throw new Fit2cloudException(222, "策略名称已存在");
+            }
         }
         LocalDateTime currentTime = LocalDateTime.now();
-        if (CollectionUtils.isNotEmpty(request.getBillingPolicyDetailsList())) {
-            // 最后一条信息
-            List<BillPolicyDetails> lastList = baseBillPolicyDetailsMapper.listLast(new LambdaQueryWrapper<BillPolicyDetails>()
-                    .eq(BillPolicyDetails::getBillPolicyId, billingPolicyId));
-            request.getBillingPolicyDetailsList()
-                    .stream()
-                    .map(billingPolicyDetails -> toBillPolicyDetails(billingPolicyId, currentTime, billingPolicyDetails))
-                    .forEach(billPolicyDetails -> {
-                        // 查询到资源类型相同的资源
-                        Optional<BillPolicyDetails> first = lastList
-                                .stream().
-                                filter(last -> StringUtils.equals(last.getResourceType(), billPolicyDetails.getResourceType()))
-                                .findFirst();
-
-                        // 如果存在,对比是否发生了改变  改变了插入一条数据
-                        if (first.isPresent()) {
-                            if (!first.get().equals(billPolicyDetails)) {
-                                billPolicyDetailsService.save(billPolicyDetails);
-                            }
-                        } else {
-                            // 不存在直接插入
-                            billPolicyDetailsService.save(billPolicyDetails);
-                        }
-                    });
-
-        }
-
+        updateBillingPolicyDetails(request.getBillingPolicyDetailsList(), billingPolicyId, currentTime);
+        linkCloudAccount(billingPolicyId, request.getCloudAccountList());
     }
 
 
     @Override
     public BillingPolicyDetailsResponse detailsBillingPolicy(String billingPolicyId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        securityContextWorkThreadPool.setSecurityContextHolderStrategy(SecurityContextHolder.getContextHolderStrategy());
+
         // 查询所有微服务的计费策略设置
         List<BillingFieldMetaSetting> billingFieldMetaSettings = ServiceUtil.getServices("gateway", ServerInfo.module)
                 .stream()
@@ -155,13 +141,16 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
                 .map(ResultHolder::getData)
                 .flatMap(List::stream)
                 .toList();
-        BillPolicy billPolicy = getById(billingPolicyId);
         // 查询最新的计费策略详情
-        List<BillPolicyDetails> billPolicyDetailsList = baseBillPolicyDetailsMapper.listLast(new LambdaQueryWrapper<BillPolicyDetails>()
-                .eq(BillPolicyDetails::getBillPolicyId, billingPolicyId));
+        List<BillPolicyDetails> billPolicyDetailsList = new ArrayList<>();
         // 构建计费策略详情返回值
         BillingPolicyDetailsResponse billingPolicyDetailsResponse = new BillingPolicyDetailsResponse();
-        billingPolicyDetailsResponse.setName(billPolicy.getName());
+        if (StringUtils.isNotEmpty(billingPolicyId)) {
+            BillPolicy billPolicy = getById(billingPolicyId);
+            billingPolicyDetailsResponse.setName(billPolicy.getName());
+            billPolicyDetailsList.addAll(baseBillPolicyDetailsMapper.listLast(new LambdaQueryWrapper<BillPolicyDetails>()
+                    .eq(BillPolicyDetails::getBillPolicyId, billingPolicyId)));
+        }
         // 构建计费详情
         List<BillingPolicyDetailsResponse.BillingPolicyDetails> billingPolicyDetails = billingFieldMetaSettings
                 .stream()
@@ -185,7 +174,7 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
 
 
     @Override
-    public BillPolicy createBillingPolicy(AddBillingPolicyRequest request) {
+    public BillPolicy createBillingPolicy(BillingPolicyRequest request) {
         LocalDateTime currentTime = LocalDateTime.now();
         BillPolicy billPolicy = new BillPolicy();
         billPolicy.setName(request.getName());
@@ -210,19 +199,13 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
         // 插入计费详情
         billPolicyDetailsService.saveBatch(billPolicyDetailsList);
 
-        if (CollectionUtils.isNotEmpty(request.getLinkCloudAccountIds())) {
-            // 转变策略与云账号映射数据
-            List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappings = request
-                    .getLinkCloudAccountIds()
-                    .stream()
-                    .map(cloudAccountId -> buildBillPolicyCloudAccountMapping(currentTime, billPolicy.getId(), cloudAccountId))
-                    .toList();
-            // 删除策略云账号关联关系
-            billPolicyCloudAccountMappingService.remove(new LambdaQueryWrapper<BillPolicyCloudAccountMapping>()
-                    .in(BillPolicyCloudAccountMapping::getCloudAccountId, request.getLinkCloudAccountIds()));
-            // 插入计费策略云账号关联关系
-            billPolicyCloudAccountMappingService.saveBatch(billPolicyCloudAccountMappings);
+        if (CollectionUtils.isNotEmpty(request.getCloudAccountList())) {
+            LinkCloudAccountRequest linkCloudAccountRequest = new LinkCloudAccountRequest();
+            linkCloudAccountRequest.setBillingPolicyId(billPolicy.getId());
+            linkCloudAccountRequest.setCloudAccountIdList(request.getCloudAccountList());
+            linkCloudAccount(linkCloudAccountRequest);
         }
+        updateBillingPolicyDetails(request.getBillingPolicyDetailsList(), billPolicy.getId(), currentTime);
         return billPolicy;
     }
 
@@ -230,45 +213,44 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
     @Override
     @Transactional
     public List<BillPolicyCloudAccountMapping> linkCloudAccount(LinkCloudAccountRequest request) {
-        LocalDateTime currentTime = LocalDateTime.now();
-        String billingPolicyId = request.getBillingPolicyId();
-        // 删除映射关系
-        billPolicyCloudAccountMappingService.remove(new LambdaQueryWrapper<BillPolicyCloudAccountMapping>()
-                .eq(BillPolicyCloudAccountMapping::getBillPolicyId, request.getBillingPolicyId())
-                .or().in(BillPolicyCloudAccountMapping::getCloudAccountId, request.getCloudAccountIdList()));
-        // 构建映射数据
-        List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappings = request.getCloudAccountIdList()
-                .stream()
-                .map(cloudAccountId -> buildBillPolicyCloudAccountMapping(currentTime, billingPolicyId, cloudAccountId))
-                .toList();
-        // 插入映射数据
-        billPolicyCloudAccountMappingService.saveBatch(billPolicyCloudAccountMappings);
-        return billPolicyCloudAccountMappings;
+        return linkCloudAccount(request.getBillingPolicyId(), request.getCloudAccountIdList());
     }
+
 
     @Override
     public boolean remove(String billingPolicyId) {
-        // 删除映射关系
-        billPolicyCloudAccountMappingService.remove(new LambdaQueryWrapper<BillPolicyCloudAccountMapping>()
-                .eq(BillPolicyCloudAccountMapping::getBillPolicyId, billingPolicyId));
-        // 删除策略详情
-        billPolicyDetailsService.remove(new LambdaQueryWrapper<BillPolicyDetails>()
-                .eq(BillPolicyDetails::getBillPolicyId, billingPolicyId));
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 获取最后
+        List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappingList = billPolicyCloudAccountMappingService.listLast(new LambdaQueryWrapper<>());
+        billPolicyCloudAccountMappingList = billPolicyCloudAccountMappingList
+                .stream()
+                .filter(billPolicyCloudAccountMapping -> StringUtils.equals(billPolicyCloudAccountMapping.getBillPolicyId(), billingPolicyId))
+                .map(BillPolicyCloudAccountMapping::getCloudAccountId)
+                .map(cloudAccountId -> {
+                    BillPolicyCloudAccountMapping billPolicyCloudAccountMapping = new BillPolicyCloudAccountMapping();
+                    billPolicyCloudAccountMapping.setCloudAccountId(cloudAccountId);
+                    billPolicyCloudAccountMapping.setCreateTime(currentTime);
+                    billPolicyCloudAccountMapping.setUpdateTime(currentTime);
+                    return billPolicyCloudAccountMapping;
+                }).toList();
+        if (CollectionUtils.isNotEmpty(billPolicyCloudAccountMappingList)) {
+            billPolicyCloudAccountMappingService.saveBatch(billPolicyCloudAccountMappingList);
+        }
         // 删除策略
         this.removeById(billingPolicyId);
         return true;
     }
 
 
-    private List<BillingField> toBillingFieldList(Map<String, BillingFieldMeta> metaMap, Function<BillingFieldMeta, BigDecimal> getDefaultPrice, List<BillingField> oldBillingFieldList) {
+    private List<BillingField> toBillingFieldList(Map<String, BillingFieldMeta> metaMap, Function<BillingFieldMeta, BigDecimal> getDefaultPrice, List<BillingField> oldBillingFieldList, UnitPriceConstants unitPriceConstants) {
         return metaMap
                 .entrySet()
                 .stream()
-                .map(item -> oldBillingFieldList.stream().filter(f -> StringUtils.equals(item.getKey(), f.getField())).findFirst().orElse(BillingField.of(item.getKey(), getDefaultPrice.apply(item.getValue()), UnitPriceConstants.HOUR)))
+                .sorted(Comparator.comparing(s -> s.getValue().getOrder()))
+                .map(item -> oldBillingFieldList.stream().filter(f -> StringUtils.equals(item.getKey(), f.getField())).findFirst().orElse(BillingField.of(item.getKey(), getDefaultPrice.apply(item.getValue()), unitPriceConstants)))
                 .toList();
     }
 
-    @NotNull
     private BillingPolicyDetailsResponse.BillingPolicyDetails buildBillingPolicyDetails(BillingFieldMetaSetting billSetting,
                                                                                         List<PackagePriceBillingPolicy> packagePriceBillingPolicyList,
                                                                                         List<BillingField> unitPriceOnDemandBillingPolicy,
@@ -276,8 +258,8 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
                                                                                         Map<String, Object> globalConfigMeta) {
         BillingPolicyDetailsResponse.BillingPolicyDetails billingPolicyDetails = new BillingPolicyDetailsResponse.BillingPolicyDetails();
         billingPolicyDetails.setPackagePriceBillingPolicy(packagePriceBillingPolicyList);
-        billingPolicyDetails.setUnitPriceOnDemandBillingPolicy(toBillingFieldList(billSetting.getBillingFieldMeta(), BillingFieldMeta::getDefaultOnDemandMPrice, unitPriceOnDemandBillingPolicy));
-        billingPolicyDetails.setUnitPriceMonthlyBillingPolicy(toBillingFieldList(billSetting.getBillingFieldMeta(), BillingFieldMeta::getDefaultMonthlyMPrice, unitPriceMonthlyBillingPolicy));
+        billingPolicyDetails.setUnitPriceOnDemandBillingPolicy(toBillingFieldList(billSetting.getBillingFieldMeta(), BillingFieldMeta::getDefaultOnDemandMPrice, unitPriceOnDemandBillingPolicy, UnitPriceConstants.HOUR));
+        billingPolicyDetails.setUnitPriceMonthlyBillingPolicy(toBillingFieldList(billSetting.getBillingFieldMeta(), BillingFieldMeta::getDefaultMonthlyMPrice, unitPriceMonthlyBillingPolicy, UnitPriceConstants.MONTH));
         billingPolicyDetails.setBillingFieldMeta(billSetting.getBillingFieldMeta());
         billingPolicyDetails.setResourceType(billSetting.getResourceType());
         billingPolicyDetails.setResourceName(billSetting.getResourceName());
@@ -295,7 +277,6 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
      * @param billingPolicyDetails 策略详情
      * @return 计费策略详情实例对象
      */
-    @NotNull
     private static BillPolicyDetails toBillPolicyDetails(String billingPolicyId,
                                                          LocalDateTime currentTime,
                                                          BillingPolicyRequest.BillingPolicyDetails billingPolicyDetails) {
@@ -320,14 +301,13 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
      * @param cloudAccountId 云账号id
      * @return 计费策略与云账号映射实例对象
      */
-    @NotNull
+
     private static BillPolicyCloudAccountMapping buildBillPolicyCloudAccountMapping(LocalDateTime currentTime, String billPolicyId, String cloudAccountId) {
         BillPolicyCloudAccountMapping billPolicyCloudAccountMapping = new BillPolicyCloudAccountMapping();
         billPolicyCloudAccountMapping.setBillPolicyId(billPolicyId);
         billPolicyCloudAccountMapping.setCloudAccountId(cloudAccountId);
         billPolicyCloudAccountMapping.setCreateTime(currentTime);
         billPolicyCloudAccountMapping.setUpdateTime(currentTime);
-        billPolicyCloudAccountMapping.setId(billPolicyId + '-' + cloudAccountId);
         return billPolicyCloudAccountMapping;
     }
 
@@ -340,18 +320,94 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
      * @param billingFieldMetaSetting 计费策略设置
      * @return 计费策略详情
      */
-    @NotNull
+
     private BillPolicyDetails toBillPolicyDetails(LocalDateTime currentTime, String billPolicyId, BillingFieldMetaSetting billingFieldMetaSetting) {
         BillPolicyDetails billPolicyDetails = new BillPolicyDetails();
         billPolicyDetails.setBillPolicyId(billPolicyId);
         billPolicyDetails.setPackagePriceBillingPolicy(List.of());
-        billPolicyDetails.setUnitPriceMonthlyBillingPolicy(toBillingFieldList(billingFieldMetaSetting.getBillingFieldMeta(), BillingFieldMeta::getDefaultMonthlyMPrice, List.of()));
-        billPolicyDetails.setUnitPriceOnDemandBillingPolicy(toBillingFieldList(billingFieldMetaSetting.getBillingFieldMeta(), BillingFieldMeta::getDefaultOnDemandMPrice, List.of()));
+        billPolicyDetails.setUnitPriceMonthlyBillingPolicy(toBillingFieldList(billingFieldMetaSetting.getBillingFieldMeta(), BillingFieldMeta::getDefaultMonthlyMPrice, List.of(), UnitPriceConstants.MONTH));
+        billPolicyDetails.setUnitPriceOnDemandBillingPolicy(toBillingFieldList(billingFieldMetaSetting.getBillingFieldMeta(), BillingFieldMeta::getDefaultOnDemandMPrice, List.of(), UnitPriceConstants.HOUR));
         billPolicyDetails.setResourceType(billingFieldMetaSetting.getResourceType());
         billPolicyDetails.setGlobalConfigMeta(billingFieldMetaSetting.getDefaultGlobalConfigMeta());
         billPolicyDetails.setCreateTime(currentTime);
         billPolicyDetails.setUpdateTime(currentTime);
         return billPolicyDetails;
+    }
+
+
+    /**
+     * 修改计费策略详情
+     *
+     * @param billingPolicyDetailsList 详情列表
+     * @param billingPolicyId          计费策略id
+     * @param currentTime              当前时间
+     */
+    private void updateBillingPolicyDetails(List<BillingPolicyRequest.BillingPolicyDetails> billingPolicyDetailsList,
+                                            String billingPolicyId,
+                                            LocalDateTime currentTime) {
+        if (CollectionUtils.isNotEmpty(billingPolicyDetailsList)) {
+            // 最后一条信息
+            List<BillPolicyDetails> lastList = baseBillPolicyDetailsMapper.listLast(new LambdaQueryWrapper<BillPolicyDetails>()
+                    .eq(BillPolicyDetails::getBillPolicyId, billingPolicyId));
+            billingPolicyDetailsList
+                    .stream()
+                    .map(billingPolicyDetails -> toBillPolicyDetails(billingPolicyId, currentTime, billingPolicyDetails))
+                    .forEach(billPolicyDetails -> {
+                        // 查询到资源类型相同的资源
+                        Optional<BillPolicyDetails> first = lastList
+                                .stream().
+                                filter(last -> StringUtils.equals(last.getResourceType(), billPolicyDetails.getResourceType()))
+                                .findFirst();
+
+                        // 如果存在,对比是否发生了改变  改变了插入一条数据
+                        if (first.isPresent()) {
+                            if (!first.get().equals(billPolicyDetails)) {
+                                billPolicyDetailsService.save(billPolicyDetails);
+                            }
+                        } else {
+                            // 不存在直接插入
+                            billPolicyDetailsService.save(billPolicyDetails);
+                        }
+                    });
+        }
+    }
+
+    /**
+     * 关联云账号
+     *
+     * @param policyId         策略id
+     * @param cloudAccountList 云账号列表
+     * @return 关联信息
+     */
+    private List<BillPolicyCloudAccountMapping> linkCloudAccount(String policyId, List<String> cloudAccountList) {
+
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        List<String> platformList = Arrays.stream(PlatformConstants.values()).filter(platform -> !platform.getPublicCloud()).map(Enum::name).toList();
+
+        List<CloudAccount> cloudAccounts = cloudAccountService.list(new LambdaQueryWrapper<CloudAccount>().in(CloudAccount::getPlatform, platformList));
+
+        List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappingList = billPolicyCloudAccountMappingService
+                .listLast(new LambdaQueryWrapper<>());
+
+        List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappings = cloudAccounts.stream().map(cloudAccount -> {
+            return (CollectionUtils.isEmpty(cloudAccountList) ? new ArrayList<String>() : cloudAccountList).stream()
+                    .filter(cloudAccountId -> StringUtils.equals(cloudAccountId, cloudAccount.getId()))
+                    .findFirst().map(cloudAccountId -> {
+                        return buildBillPolicyCloudAccountMapping(currentTime, policyId, cloudAccount.getId());
+                    }).orElseGet(() -> {
+                        return billPolicyCloudAccountMappingList.stream()
+                                .filter(b -> StringUtils.equals(b.getBillPolicyId(), policyId) && StringUtils.equals(b.getCloudAccountId(), cloudAccount.getId()))
+                                .findFirst()
+                                .map(b -> buildBillPolicyCloudAccountMapping(currentTime, null, cloudAccount.getId()))
+                                .orElse(null);
+
+                    });
+        }).filter(Objects::nonNull).toList();
+
+        // 插入映射数据
+        billPolicyCloudAccountMappingService.saveBatch(billPolicyCloudAccountMappings);
+        return billPolicyCloudAccountMappings;
     }
 
 

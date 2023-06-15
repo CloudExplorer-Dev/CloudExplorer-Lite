@@ -25,9 +25,9 @@
 import { ref } from "vue";
 import CloudAccountCheckbox from "@/views/billing_policy/components/CloudAccountCheckbox.vue";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
-
 import billingPolicyApi from "@/api/billing_policy/index";
 const billingPolicyId = ref<string>("");
+const emit = defineEmits(["refrece"]);
 const selectedCloudAccount = ref<Array<string>>([]);
 const cloudAccountList = ref<Array<CloudAccount>>([]);
 const dialogVisible = ref<boolean>(false);
@@ -50,7 +50,8 @@ const link = () => {
       billingPolicyId: billingPolicyId.value,
       cloudAccountIdList: selectedCloudAccount.value,
     })
-    .then((ok) => {
+    .then(() => {
+      emit("refrece", billingPolicyId.value);
       close();
     });
 };

@@ -44,4 +44,10 @@ public class BillingFieldMeta {
      */
     private Map<String, Object> meta;
 
+    private Integer order;
+
+    public BillingFieldMeta(Integer order) {
+        this.order = order;
+    }
+
 }

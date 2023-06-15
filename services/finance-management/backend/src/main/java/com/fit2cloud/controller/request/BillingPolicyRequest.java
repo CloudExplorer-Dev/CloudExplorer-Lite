@@ -20,8 +20,11 @@ public class BillingPolicyRequest {
 
     @Schema(title = "策略名称")
     @Length(min = 1, max = 255, message = "计费策略名称长度必须在1-255之间")
-
     private String name;
+
+    @Schema(title = "关联云账号列表")
+    private List<String> cloudAccountList;
+
     @Schema(title = "策略详情")
     private List<BillingPolicyDetails> billingPolicyDetailsList;
 

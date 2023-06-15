@@ -2,4 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.base.mapper.BaseBillPolicyCloudAccountMappingMapper">
 
+    <select id="listLast" resultType="com.fit2cloud.base.entity.BillPolicyCloudAccountMapping">
+        SELECT *
+        FROM bill_policy_cloud_account_mapping bill_policy_cloud_account_mapping
+                 RIGHT JOIN (SELECT max(create_time) AS create_time,
+                                    cloud_account_id
+                             FROM bill_policy_cloud_account_mapping ${ew.customSqlSegment}
+                             GROUP BY cloud_account_id) tmp
+                            ON tmp.create_time = bill_policy_cloud_account_mapping.create_time
+                                AND tmp.cloud_account_id = bill_policy_cloud_account_mapping.cloud_account_id
+            ${ew.customSqlSegment}
+    </select>
 </mapper>
