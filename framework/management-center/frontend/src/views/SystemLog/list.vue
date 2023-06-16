@@ -40,10 +40,15 @@
       </template>
     </el-table-column>
     <el-table-column
+      min-width="150px"
       prop="createTime"
       :label="$t('commons.create_time')"
       sortable
-    />
+    >
+      <template #default="scope">
+        {{ scope.row.createTime.split(".")[0] }}
+      </template>
+    </el-table-column>
     <el-table-column prop="message" label="日志详情" min-width="350px">
       <template #default="scope">
         <p class="text-overflow">{{ scope.row.message }}</p>

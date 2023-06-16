@@ -110,7 +110,7 @@ public class OptimizationStrategyIgnoreResourceServiceImpl extends ServiceImpl<O
             MPJLambdaWrapper<OptimizationStrategyIgnoreResource> wrapper = new MPJLambdaWrapper<>();
             wrapper.eq(true, OptimizationStrategyIgnoreResource::getOptimizationStrategyId, optimizationStrategyId);
             List<OptimizationStrategyIgnoreResource> strategyIgnoreResource = optimizationStrategyIgnoreResourceMapper.selectList(wrapper);
-            if (Objects.nonNull(strategyIgnoreResource)) {
+            if (CollectionUtils.isNotEmpty(strategyIgnoreResource)) {
                 optimizationStrategyIgnoreResourceMapper.deleteBatchIds(strategyIgnoreResource.stream().map(OptimizationStrategyIgnoreResource::getId).toList());
             }
             return true;
@@ -144,7 +144,7 @@ public class OptimizationStrategyIgnoreResourceServiceImpl extends ServiceImpl<O
         wrapper.leftJoin(CloudAccount.class, CloudAccount::getId, VmCloudServer::getAccountId);
         // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
         List<String> sourceId = permissionService.getSourceIds();
-        wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
+        wrapper.in(!CurrentUserUtils.isAdmin(), VmCloudServer::getSourceId, sourceId);
         wrapper.notIn(true, VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE, SpecialAttributesConstants.StatusField.FAILED));
         wrapper.like(StringUtils.isNotBlank(request.getIpArray()), VmCloudServer::getIpArray, request.getIpArray());
         wrapper.like(StringUtils.isNotBlank(request.getInstanceName()), VmCloudServer::getInstanceName, request.getInstanceName());
@@ -174,7 +174,7 @@ public class OptimizationStrategyIgnoreResourceServiceImpl extends ServiceImpl<O
         wrapper.leftJoin(CloudAccount.class, CloudAccount::getId, VmCloudServer::getAccountId);
         // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
         List<String> sourceId = permissionService.getSourceIds();
-        wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
+        wrapper.in(!CurrentUserUtils.isAdmin(), VmCloudServer::getSourceId, sourceId);
         wrapper.notIn(true, VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE, SpecialAttributesConstants.StatusField.FAILED));
         wrapper.like(StringUtils.isNotBlank(request.getIpArray()), VmCloudServer::getIpArray, request.getIpArray());
         if (Objects.nonNull(request.getOptimizationStrategyId())) {

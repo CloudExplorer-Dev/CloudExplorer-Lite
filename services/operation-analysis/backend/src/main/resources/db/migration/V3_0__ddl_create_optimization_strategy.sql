@@ -20,7 +20,7 @@ CREATE TABLE `operation_analysis_optimization_strategy` (
                                                             `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
                                                             `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
                                                             PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资源优化策略';
+) ENGINE=InnoDB COMMENT='资源优化策略';
 
 -- ----------------------------
 -- Records of operation_analysis_optimization_strategy
