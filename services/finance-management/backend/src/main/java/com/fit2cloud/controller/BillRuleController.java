@@ -61,7 +61,7 @@ public class BillRuleController {
     @GetMapping("/group_child_keys")
     @Operation(summary = "获取可分组的子分组", description = "获取可分组的子分组")
     @PreAuthorize("@cepc.hasAnyCePermission('CUSTOM_BILL:READ')")
-    public ResultHolder<List<DefaultKeyValue<String, String>>> groupChildKeys(@Parameter(name = "可分租的父级key") @RequestParam("parentKey") String parentKey) {
+    public ResultHolder<List<DefaultKeyValue<String, String>>> groupChildKeys(@Parameter(description = "可分租的父级key") @RequestParam("parentKey") String parentKey) {
         return ResultHolder.success(BillFieldConstants.BILL_FIELD.entrySet().stream()
                 .filter(field -> field.getValue().group())
                 .filter(field -> field.getKey().equals(parentKey))
@@ -79,8 +79,8 @@ public class BillRuleController {
     @GetMapping("/page/{currentPage}/{limit}")
     @Operation(summary = "分页查询账单规则", description = "分页查询账单规则")
     @PreAuthorize("@cepc.hasAnyCePermission('CUSTOM_BILL:READ')")
-    public ResultHolder<Page<BillRule>> page(@NotNull(message = "当前页不能为空") @Min(value = 0, message = "当前页不能小于0") @Parameter(name = "当前页", required = true) @PathVariable("currentPage") Integer currentPage,
-                                             @NotNull(message = "每页大小不能为空") @Min(value = 1, message = "每页大小不能小于1") @Parameter(name = "每页显示多少条", required = true) @PathVariable("limit") Integer limit,
+    public ResultHolder<Page<BillRule>> page(@NotNull(message = "当前页不能为空") @Min(value = 0, message = "当前页不能小于0") @Parameter(description = "当前页", required = true) @PathVariable("currentPage") Integer currentPage,
+                                             @NotNull(message = "每页大小不能为空") @Min(value = 1, message = "每页大小不能小于1") @Parameter(description = "每页显示多少条", required = true) @PathVariable("limit") Integer limit,
                                              BillRuleRequest request) {
         Page<BillRule> page = billRuleService.page(currentPage, limit, request);
         return ResultHolder.success(page);

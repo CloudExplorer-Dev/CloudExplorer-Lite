@@ -36,7 +36,7 @@ public class VmJobRecordController {
     @Operation(summary = "根据任务ID查询", description = "根据任务ID查询")
     @PreAuthorize("@cepc.hasAnyCePermission('JOBS:READ')")
     @GetMapping
-    public ResultHolder<JobRecordDTO> getRecord(@Parameter(name = "任务ID")
+    public ResultHolder<JobRecordDTO> getRecord(@Parameter(description = "任务ID")
                                                 @RequestParam("id")
                                                 String id) {
         return ResultHolder.success(iJobRecordService.getRecord(id));

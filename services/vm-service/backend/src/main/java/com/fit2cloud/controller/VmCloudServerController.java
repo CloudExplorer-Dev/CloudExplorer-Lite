@@ -153,7 +153,7 @@ public class VmCloudServerController {
     @GetMapping("/{id}")
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_SERVER:READ')")
     @Operation(summary = "根据id查询云主机", description = "根据id查询云主机")
-    public ResultHolder<VmCloudServerDTO> findCloudServer(@Parameter(name = "云主机id", required = true)
+    public ResultHolder<VmCloudServerDTO> findCloudServer(@Parameter(description = "云主机id", required = true)
                                                           @PathVariable("id") String id) {
         return ResultHolder.success(iVmCloudServerService.getById(id));
     }
@@ -161,14 +161,14 @@ public class VmCloudServerController {
     @GetMapping("/ids")
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_SERVER:READ')")
     @Operation(summary = "根据ids查询云主机", description = "根据ids查询云主机")
-    public ResultHolder<List<VmCloudServerDTO>> findCloudServer(@Parameter(name = "需要查询的云主机ids") @RequestParam("cloudServerIds[]") List<String> cloudServerIds) {
+    public ResultHolder<List<VmCloudServerDTO>> findCloudServer(@Parameter(description = "需要查询的云主机ids") @RequestParam("cloudServerIds[]") List<String> cloudServerIds) {
         return ResultHolder.success(iVmCloudServerService.getByIds(cloudServerIds));
     }
 
     @GetMapping("/operate/job_record")
     @PreAuthorize("@cepc.hasAnyCePermission('JOBS:READ')")
     @Operation(summary = "查询云主机最新的操作记录", description = "查询云主机最新的操作记录")
-    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudServerOperateStatus(@Parameter(name = "需要查询的云主机id") @RequestParam("cloudServerIds[]") List<String> cloudServerIds) {
+    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudServerOperateStatus(@Parameter(description = "需要查询的云主机id") @RequestParam("cloudServerIds[]") List<String> cloudServerIds) {
         return ResultHolder.success(iVmCloudServerService.findCloudServerOperateStatus(cloudServerIds).stream().collect(Collectors.groupingBy(JobRecordResourceResponse::getResourceId)));
     }
 

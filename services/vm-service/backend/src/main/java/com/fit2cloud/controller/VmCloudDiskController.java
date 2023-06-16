@@ -118,7 +118,7 @@ public class VmCloudDiskController {
             resourceId = "#id",
             content = "'磁盘卸载'",
             param = "#id")
-    public ResultHolder<Boolean> detach(@Parameter(name = "主键 ID")
+    public ResultHolder<Boolean> detach(@Parameter(description = "主键 ID")
                                         @NotNull(message = "{i18n.primary.key.cannot.be.null}")
                                         @CustomValidated(mapper = BaseVmCloudDiskMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                         @PathVariable("id") String id) {
@@ -129,7 +129,7 @@ public class VmCloudDiskController {
     @DeleteMapping("delete/{id}")
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.DELETE, resourceId = "#id", content = "'删除磁盘'", param = "#id")
-    public ResultHolder<Boolean> delete(@Parameter(name = "主键 ID")
+    public ResultHolder<Boolean> delete(@Parameter(description = "主键 ID")
                                         @NotNull(message = "{i18n.primary.key.cannot.be.null}")
                                         @CustomValidated(mapper = BaseVmCloudDiskMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                         @PathVariable("id") String id) {
@@ -189,7 +189,7 @@ public class VmCloudDiskController {
     @PutMapping("recycleDisk/{id}")
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:DELETE')")
     @OperatedLog(resourceType = ResourceTypeEnum.CLOUD_DISK, operated = OperatedTypeEnum.RECYCLE, resourceId = "#id", param = "#id")
-    public ResultHolder<Boolean> recycleDisk(@Parameter(name = "主键 ID")
+    public ResultHolder<Boolean> recycleDisk(@Parameter(description = "主键 ID")
                                              @NotNull(message = "{i18n.primary.key.cannot.be.null}")
                                              @CustomValidated(mapper = BaseVmCloudDiskMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                              @PathVariable("id") String id) {

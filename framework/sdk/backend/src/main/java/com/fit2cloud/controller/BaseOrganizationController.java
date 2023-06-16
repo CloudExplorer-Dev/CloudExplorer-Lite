@@ -36,7 +36,7 @@ public class BaseOrganizationController {
 
     @GetMapping("/tree/{type}")
     @Operation(summary = "获取组织树", description = "获取组织树")
-    public ResultHolder<List<OrganizationTree>> tree(@Parameter(name = "组织类型", example = "ORGANIZATION,WORKSPACE,ORGANIZATION_AND_WORKSPACE") @PathVariable("type") String type) {
+    public ResultHolder<List<OrganizationTree>> tree(@Parameter(description = "组织类型", example = "ORGANIZATION, WORKSPACE, ORGANIZATION_AND_WORKSPACE") @PathVariable("type") String type) {
         return ResultHolder.success(organizationService.tree(type));
     }
 

@@ -44,8 +44,8 @@ public class BillViewController {
     @GetMapping("/expenses/{type}/{value}")
     @Operation(summary = "获取账单花费,可以按月,按年", description = "获取账单花费")
     @PreAuthorize("@cepc.hasAnyCePermission('BILL_ViEW:READ')")
-    public ResultHolder<ExpensesResponse> getBillExpenses(@Pattern(regexp = "MONTH|YEAR", message = "类型,支持MONTH,YEAR") @Parameter(name = "类型,支持MONTH,YEAR") @PathVariable("type") String type,
-                                                          @Parameter(name = "如果类型是MONTH yyyy-mm格式,YEAR yyyy") @PathVariable("value") String value,
+    public ResultHolder<ExpensesResponse> getBillExpenses(@Pattern(regexp = "MONTH|YEAR", message = "类型,支持MONTH,YEAR") @Parameter(description = "类型,支持MONTH,YEAR") @PathVariable("type") String type,
+                                                          @Parameter(description = "如果类型是MONTH yyyy-mm格式,YEAR yyyy") @PathVariable("value") String value,
                                                           BillExpensesRequest billExpensesRequest) {
         return ResultHolder.success(billViewService.getBillExpenses(CalendarConstants.valueOf(type), value, billExpensesRequest));
     }
@@ -63,8 +63,8 @@ public class BillViewController {
     @GetMapping("/{ruleId}/{month}")
     @Operation(summary = "根据账单规则聚合账单", description = "根据账单规则聚合账单")
     @PreAuthorize("@cepc.hasAnyCePermission('BILL_ViEW:READ')")
-    public ResultHolder<Map<String, List<BillView>>> billViewByRule(@NotNull(message = "账单规则id不能为空") @CustomValidated(mapper = BillRuleMapper.class, handler = ExistHandler.class, field = "id", message = "账单规则id不存在", exist = false) @Parameter(name = "账单规则id") @PathVariable("ruleId") String ruleId,
-                                                                    @Pattern(regexp = "^\\d{4}-\\d{2}$", message = "月份格式必须为yyyy-mm") @Parameter(name = "月份") @PathVariable("month") String month) {
+    public ResultHolder<Map<String, List<BillView>>> billViewByRule(@NotNull(message = "账单规则id不能为空") @CustomValidated(mapper = BillRuleMapper.class, handler = ExistHandler.class, field = "id", message = "账单规则id不存在", exist = false) @Parameter(description = "账单规则id") @PathVariable("ruleId") String ruleId,
+                                                                    @Pattern(regexp = "^\\d{4}-\\d{2}$", message = "月份格式必须为yyyy-mm") @Parameter(description = "月份") @PathVariable("month") String month) {
         return ResultHolder.success(billViewService.billViewByRuleId(ruleId, month));
     }
 

@@ -57,13 +57,13 @@ import com.fit2cloud.service.*;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -567,6 +567,11 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             vmCloudServer.setInstanceStatus(F2CInstanceStatus.WaitCreating.name());
             vmCloudServer.setApplyUser(currentUser.getUsername());
             vmCloudServer.setRemark(tempData.getRemark());
+
+            if (vmCloudServer.getRemark() != null && vmCloudServer.getRemark().length() > 128) {
+                throw new RuntimeException("云主机备注长度不能超过128个字符");
+            }
+
             if (!CurrentUserUtils.isAdmin() && StringUtils.isNotBlank(sourceId)) {
                 vmCloudServer.setSourceId(sourceId);
             }

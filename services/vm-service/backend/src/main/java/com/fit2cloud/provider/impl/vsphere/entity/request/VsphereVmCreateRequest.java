@@ -47,7 +47,6 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             defaultJsonValue = true,
             attrs = "{\"min\":1,\"max\":10,\"step\":1}",
             confirmGroup = 1
-
     )
     private int count;
 

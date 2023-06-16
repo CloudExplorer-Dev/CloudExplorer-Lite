@@ -689,6 +689,19 @@ public class VsphereSyncCloudApi {
 
             if (folders != null && folders.size() > 0) {
                 for (Folder folder : folders) {
+                    //根据数据中心过滤
+                    if (StringUtils.isNotBlank(request.getRegion())) {
+                        ManagedEntity p = folder.getParent();
+                        if (p != null) {
+                            ManagedEntity pp = p.getParent();
+                            if (pp == null || !StringUtils.equals(pp.getName(), request.getRegion())) {
+                                continue;
+                            }
+                        } else {
+                            continue;
+                        }
+                    }
+
                     List<VsphereFolder> childFolders = VsphereUtil.getChildFolders(client, folder, "");
                     list.addAll(childFolders);
                 }

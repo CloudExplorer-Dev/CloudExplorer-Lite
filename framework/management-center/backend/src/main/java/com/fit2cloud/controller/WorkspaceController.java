@@ -84,9 +84,9 @@ public class WorkspaceController {
     @Operation(summary = "根据ID或者名称获取一个工作空间", description = "根据ID或者名称获取一个工作空间")
     @GetMapping("/one")
     public ResultHolder<WorkspaceDTO> one(
-            @Parameter(name = "工作空间ID")
+            @Parameter(description = "工作空间ID")
             @RequestParam("id") String id,
-            @Parameter(name = "工作空间名称")
+            @Parameter(description = "工作空间名称")
             @RequestParam("name") String name) {
         return ResultHolder.success(workspaceService.getOne(id, name));
     }
@@ -100,7 +100,7 @@ public class WorkspaceController {
     @PreAuthorize("@cepc.hasAnyCePermission('WORKSPACE:DELETE')")
     @Emit(value = "DELETE::WORKSPACE")
     public ResultHolder<Boolean> delete(
-            @Parameter(name = "工作空间ID")
+            @Parameter(description = "工作空间ID")
             @NotNull(message = "{i18n.workspace.id.is.not.empty}")
             @PathVariable("workspaceId") String workspaceId) {
         return ResultHolder.success(workspaceService.delete(workspaceId));
@@ -115,7 +115,7 @@ public class WorkspaceController {
             param = "#workspaces")
     @Emit(value = "DELETE_BATCH::WORKSPACE", el = "#arrayOf(#workspaces).map(\"#root.id\")")
     public ResultHolder<Boolean> batchDelete(
-            @Parameter(name = "批量删除工作空间")
+            @Parameter(description = "批量删除工作空间")
             @Size(min = 1, message = "{i18n.workspace.is.required}")
             @RequestBody ArrayList<Workspace> workspaces) {
         return ResultHolder.success(workspaceService.batchDelete(workspaces));

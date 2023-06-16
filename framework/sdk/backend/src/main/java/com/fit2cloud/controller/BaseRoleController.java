@@ -26,7 +26,7 @@ public class BaseRoleController {
 
     @GetMapping("role")
     public ResultHolder<Role> role(
-            @Parameter(name = "角色ID")
+            @Parameter(description = "角色ID")
             @RequestParam("id")
             String id
     ) {

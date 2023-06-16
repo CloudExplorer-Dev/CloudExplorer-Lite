@@ -70,7 +70,7 @@ public class CloudAccountController {
     @GetMapping("/{id}")
     @Operation(summary = "根据id查询云账号", description = "根据id查询云账号")
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
-    public ResultHolder<CloudAccount> findCloudAccount(@Parameter(name = "云账号id", required = true)
+    public ResultHolder<CloudAccount> findCloudAccount(@Parameter(description = "云账号id", required = true)
                                                        @CustomValidated(mapper = CloudAccountMapper.class, handler = ExistHandler.class, message = "{i18n.cloud_account_id_not_existent}", exist = false)
                                                        @PathVariable("id") String id) {
         return ResultHolder.success(cloudAccountService.getById(id));
@@ -118,7 +118,7 @@ public class CloudAccountController {
             content = "'删除云账号'",
             param = "#accountId")
     @Emit(value = "DELETE::CLOUD_ACCOUNT")
-    public ResultHolder<Boolean> delete(@Parameter(name = "云账号id")
+    public ResultHolder<Boolean> delete(@Parameter(description = "云账号id")
                                         @PathVariable("cloud_account_id")
                                         @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                         String accountId) {
@@ -133,7 +133,7 @@ public class CloudAccountController {
             content = "'批量删除云账号'",
             param = "#cloudAccountIds")
     @Emit("DELETE_BATCH::CLOUD_ACCOUNT")
-    public ResultHolder<Boolean> deleteBatch(@Parameter(name = "云账号id")
+    public ResultHolder<Boolean> deleteBatch(@Parameter(description = "云账号id")
                                              @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}")
                                              @RequestBody ArrayList<String> cloudAccountIds) {
         boolean delete = cloudAccountService.delete(cloudAccountIds);
@@ -147,7 +147,7 @@ public class CloudAccountController {
             resourceId = "#cloudAccountIds",
             content = "'全量同步云账号'",
             param = "#cloudAccountIds")
-    public ResultHolder<Boolean> sync(@Parameter(name = "云账号id") @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}") @RequestBody ArrayList<String> cloudAccountIds) {
+    public ResultHolder<Boolean> sync(@Parameter(description = "云账号id") @Size(min = 1, message = "{i18n.i18n.cloud_account.id.is.not.empty}") @RequestBody ArrayList<String> cloudAccountIds) {
         cloudAccountService.sync(cloudAccountIds);
         return ResultHolder.success(true);
     }
@@ -155,7 +155,7 @@ public class CloudAccountController {
     @GetMapping("/region/{cloud_account_id}")
     @Operation(summary = "获取当前云账号的区域信息", description = "获取当前云账号的区域信息")
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
-    public ResultHolder<List<Credential.Region>> region(@Parameter(name = "云账号id")
+    public ResultHolder<List<Credential.Region>> region(@Parameter(description = "云账号id")
                                                         @PathVariable("cloud_account_id")
                                                         @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                         @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
@@ -167,7 +167,7 @@ public class CloudAccountController {
     @GetMapping("/sync/job_record")
     @Operation(summary = "查询云账号最新的同步记录", description = "查询云账号最新的同步记录")
     @TokenRenewal
-    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudAccountSyncStatus(@Parameter(name = "需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
+    public ResultHolder<Map<String, List<JobRecordResourceResponse>>> findCloudAccountSyncStatus(@Parameter(description = "需要查询的云账户id") @RequestParam("cloudAccountIds[]") List<String> cloudAccountIds) {
         return ResultHolder.success(cloudAccountService.findCloudAccountSyncStatus(cloudAccountIds).stream().collect(Collectors.groupingBy(JobRecordResourceResponse::getResourceId)));
     }
 
@@ -178,7 +178,7 @@ public class CloudAccountController {
             resourceId = "#accountId",
             content = "'验证账号信息'",
             param = "#accountId")
-    public ResultHolder<CloudAccount> verification(@Parameter(name = "云账号id")
+    public ResultHolder<CloudAccount> verification(@Parameter(description = "云账号id")
                                                    @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                    @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                                    @PathVariable("cloud_account_id") String accountId) {
@@ -189,7 +189,7 @@ public class CloudAccountController {
     @GetMapping("/jobs/{cloud_account_id}")
     @Operation(summary = "获取云账号的定时任务", description = "获取云账号的定时任务")
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
-    public ResultHolder<CloudAccountJobDetailsResponse> jobs(@Parameter(name = "云账号id")
+    public ResultHolder<CloudAccountJobDetailsResponse> jobs(@Parameter(description = "云账号id")
                                                              @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                              @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                                              @PathVariable("cloud_account_id") String accountId) {
@@ -241,7 +241,7 @@ public class CloudAccountController {
     @GetMapping("/resourceCount/{cloud_account_id}")
     @Operation(summary = "获取云账号资源计数")
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_ACCOUNT:READ')")
-    public ResultHolder<List<ResourceCountResponse>> resourceCount(@Parameter(name = "云账号id")
+    public ResultHolder<List<ResourceCountResponse>> resourceCount(@Parameter(description = "云账号id")
                                                                    @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                                    @CustomValidated(mapper = CloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                                                    @PathVariable("cloud_account_id") String accountId) {
