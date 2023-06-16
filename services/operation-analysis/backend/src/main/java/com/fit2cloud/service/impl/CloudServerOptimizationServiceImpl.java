@@ -31,6 +31,7 @@ import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.utils.CustomCellWriteHeightConfig;
 import com.fit2cloud.utils.CustomCellWriteWidthConfig;
 import com.fit2cloud.utils.EasyExcelUtils;
+import com.fit2cloud.utils.cache.ElasticSearchVmLatestMonitoringDataSyncCache;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
@@ -85,6 +86,7 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
      */
     @Override
     public IPage<VmCloudServerDTO> pageList(PageServerRequest request) {
+        Long start = System.currentTimeMillis();
         OptimizationStrategyDTO optimizationStrategy = optimizationStrategyService.getOneOptimizationStrategy(request.getOptimizationStrategyId());
         if (Objects.isNull(optimizationStrategy)) {
             return new Page<>();
@@ -96,7 +98,9 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
         Set<String> resourceUuIdList = new HashSet<>();
         Set<String> resourceIdList = new HashSet<>();
         List<VmCloudServerDTO> vmCloudServerMonitoringDataList = new ArrayList<>();
+        Long esStart = System.currentTimeMillis();
         setConformToOptimizationStrategyRuleResource(optimizationStrategy, resourceUuIdList, resourceIdList, vmCloudServerMonitoringDataList);
+        LogUtil.debug("ES耗时：" + (System.currentTimeMillis() - esStart));
         if (CollectionUtils.isEmpty(resourceUuIdList) && CollectionUtils.isEmpty(resourceIdList)) {
             return new Page<>();
         }
@@ -113,6 +117,7 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
             }
             v.setContent(optimizationStrategy.getOptimizationContent());
         });
+        LogUtil.debug("后台耗时：" + (System.currentTimeMillis() - start));
         return resultPageData;
     }
 
@@ -129,7 +134,10 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
     private void setConformToOptimizationStrategyRuleResource(OptimizationStrategyDTO optimizationStrategy, Set<String> resourceUuIdList, Set<String> resourceIdList, List<VmCloudServerDTO> vmCloudServerMonitoringDataList) {
         // 监控策略时，查询ES数据
         if ("MONITORING".equalsIgnoreCase(optimizationStrategy.getStrategyType())) {
-            vmCloudServerMonitoringDataList.addAll(getCloudServerMonitoringData(optimizationStrategy.getDays()));
+            Long startTime = System.currentTimeMillis();
+            List<VmCloudServerDTO> vmCloudServerList = getCloudServerMonitoringData(optimizationStrategy.getDays());
+            LogUtil.debug("查询ES数据总耗时:" + (System.currentTimeMillis() - startTime));
+            vmCloudServerMonitoringDataList.addAll(vmCloudServerList);
             esConformToOptimizationStrategyRuleResourceIdList(optimizationStrategy, vmCloudServerMonitoringDataList, resourceUuIdList);
         } else {
             mysqlConformToOptimizationStrategyRuleResourceIdList(optimizationStrategy, resourceIdList);
@@ -154,7 +162,7 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
         wrapper.leftJoin(CloudAccount.class, CloudAccount::getId, VmCloudServer::getAccountId);
         // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
         List<String> sourceId = permissionService.getSourceIds();
-        wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
+        wrapper.in(!CurrentUserUtils.isAdmin(), VmCloudServer::getSourceId, sourceId);
         wrapper.notIn(true, VmCloudServer::getInstanceStatus, List.of(SpecialAttributesConstants.StatusField.VM_DELETE, SpecialAttributesConstants.StatusField.FAILED));
         wrapper.like(StringUtils.isNotBlank(request.getIpArray()), VmCloudServer::getIpArray, request.getIpArray());
         wrapper.like(StringUtils.isNotEmpty(request.getInstanceName()), VmCloudServerDTO::getInstanceName, request.getInstanceName());
@@ -403,14 +411,21 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
      * @return {@link List }<{@link VmCloudServerDTO }>
      */
     public List<VmCloudServerDTO> getCloudServerMonitoringData(Long days) {
+        Long latestTime = ElasticSearchVmLatestMonitoringDataSyncCache.getCacheOrUpdate();
+        Long start = System.currentTimeMillis();
         NativeQuery query = new NativeQueryBuilder()
-                .withPageable(PageRequest.of(0, 1))
-                .withTrackScores(true)
-                .withQuery(new Query.Builder().bool(addQueryBool(getVmCloudServerCpuOrMemoryMonitoringDataLastTime(), days).build()).build())
+                .withTrackScores(false)
+                .withTrackTotalHits(false)
+                .withQuery(new Query.Builder().bool(addQueryBool(latestTime, days).build()).build())
                 //按实例与云账号ID分组
                 .withAggregation("instanceId", addAggregation())
                 .build();
+        LogUtil.debug("构建ES查询条件耗时:" + (System.currentTimeMillis() - start));
+        System.out.println("最新时间:" + latestTime);
+        Long startTime = System.currentTimeMillis();
         SearchHits<Object> response = elasticsearchTemplate.search(query, Object.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
+        LogUtil.debug("查询ES数据耗时:" + (System.currentTimeMillis() - startTime));
+        System.out.println("查询ES数据耗时:" + (System.currentTimeMillis() - startTime));
         ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
         List<VmCloudServerDTO> vmCloudServerDTOList = new ArrayList<>();
         assert aggregations != null;
@@ -472,17 +487,17 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
         long sinceTime = esLastTime - 1000L * 60 * 60 * 24 * days;
         //最外层bool
         BoolQuery.Builder bool = new BoolQuery.Builder();
-        //filter bool
-        BoolQuery.Builder filterBool = new BoolQuery.Builder();
+        //must bool
+        BoolQuery.Builder mustBool = new BoolQuery.Builder();
         //资源类型
-        filterBool.should(new Query.Builder().term(new TermQuery.Builder().field("entityType.keyword").value("VIRTUAL_MACHINE").build()).build());
+        mustBool.should(new Query.Builder().term(new TermQuery.Builder().field("entityType.keyword").value("VIRTUAL_MACHINE").build()).build());
         //指标类型
         TermsQuery.Builder metricNameShouldTerm = new TermsQuery.Builder().field("metricName.keyword").terms(new TermsQueryField.Builder().value(Arrays.asList(FieldValue.of("MEMORY_USED_UTILIZATION"), FieldValue.of("CPU_USED_UTILIZATION"))).build());
-        filterBool.should(new Query.Builder().terms(metricNameShouldTerm.build()).build());
+        mustBool.should(new Query.Builder().terms(metricNameShouldTerm.build()).build());
         //时间区间类型
         RangeQuery.Builder timestampRangeShouldTerm = new RangeQuery.Builder().field("timestamp").gte(JsonData.of(sinceTime)).lte(JsonData.of(esLastTime));
-        filterBool.should(new Query.Builder().range(timestampRangeShouldTerm.build()).build());
-        bool.filter(filterBool.build().should());
+        mustBool.should(new Query.Builder().range(timestampRangeShouldTerm.build()).build());
+        bool.must(mustBool.build().should());
         return bool;
     }
 
@@ -507,22 +522,19 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
      *
      * @return long
      */
-    private long getVmCloudServerCpuOrMemoryMonitoringDataLastTime() {
+    public long getVmCloudServerCpuOrMemoryMonitoringDataLatestTime() {
         try {
-            BoolQuery.Builder bool = new BoolQuery.Builder();
             //filter bool
             BoolQuery.Builder filterBool = new BoolQuery.Builder();
             //资源类型
             filterBool.must(new Query.Builder().term(new TermQuery.Builder().field("entityType.keyword").value("VIRTUAL_MACHINE").build()).build());
             //指标类型
             TermsQuery.Builder metricNameShouldTerm = new TermsQuery.Builder().field("metricName.keyword").terms(new TermsQueryField.Builder().value(Arrays.asList(FieldValue.of("MEMORY_USED_UTILIZATION"), FieldValue.of("CPU_USED_UTILIZATION"))).build());
-            bool.filter(filterBool.build().should());
             filterBool.should(new Query.Builder().terms(metricNameShouldTerm.build()).build());
             NativeQuery query = new NativeQueryBuilder()
                     .withPageable(PageRequest.of(0, 1))
                     .withSort(Sort.by(Sort.Order.desc("timestamp")))
-                    .withTrackScores(true)
-                    .withQuery(new Query.Builder().bool(bool.build()).build())
+                    .withQuery(new Query.Builder().bool(filterBool.build()).build())
                     .build();
             SearchHits<Object> response = elasticsearchTemplate.search(query, Object.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
             if (org.apache.commons.collections.CollectionUtils.isNotEmpty(response.getSearchHits())) {
@@ -641,7 +653,7 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
             QueryWrapper<VmCloudServerStatusTimingDTO> vmCloudServerStatusTimingQueryWrapper = new QueryWrapper<>();
             // TODO 这添加Having没用。。。后面在看看，先代码过滤吧
 //            vmCloudServerStatusTimingQueryWrapper.having("last_" + tableColumnName + OptimizationRuleFieldCompare.valueOf(optimizationRuleFieldCondition.getCompare()).getCompare() + (Long.parseLong( optimizationRuleFieldCondition.getValue())*86400L));
-//            System.out.println(vmCloudServerStatusTimingQueryWrapper.getCustomSqlSegment());
+//            LogUtil.debug(vmCloudServerStatusTimingQueryWrapper.getCustomSqlSegment());
             List<VmCloudServerStatusTimingDTO> list = vmCloudServerStatusTimingMapper.listVmCloudServerStatusTiming(vmCloudServerStatusTimingQueryWrapper);
             List<VmCloudServerStatusTimingDTO> filterList = list.stream().filter(v -> {
                 Long days = Long.parseLong(optimizationRuleFieldCondition.getValue()) * 86400L;

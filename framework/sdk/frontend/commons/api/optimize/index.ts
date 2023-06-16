@@ -26,7 +26,10 @@ export function listOptimizationStrategy(
   loading?: Ref<boolean>
 ): Promise<Result<Array<OptimizationStrategy>>> {
   return get(
-    `api/optimization_strategy/${resourceType}/list`,
+    (import.meta.env.VITE_APP_NAME === "operation-analysis"
+      ? ""
+      : "/operation-analysis/") +
+      `api/optimization_strategy/${resourceType}/list`,
     undefined,
     loading
   );
@@ -51,7 +54,10 @@ export function getResourceTypeList(
   loading?: Ref<boolean>
 ): Promise<Result<Array<ResourceTypeDTO>>> {
   return get(
-    `api/optimization_strategy/resource_type/list`,
+    (import.meta.env.VITE_APP_NAME === "operation-analysis"
+      ? ""
+      : "/operation-analysis/") +
+      `api/optimization_strategy/resource_type/list`,
     undefined,
     loading
   );
@@ -66,7 +72,14 @@ export function pageOptimizationStrategyServerResourceList(
   req: PageOptimizationStrategyResourceRequest,
   loading?: Ref<boolean>
 ): Promise<Result<Page<VmCloudServerVO>>> {
-  return get("api/optimization_strategy_resource/server/page", req, loading);
+  return get(
+    (import.meta.env.VITE_APP_NAME === "operation-analysis"
+      ? ""
+      : "/operation-analysis/") +
+      "api/optimization_strategy_resource/server/page",
+    req,
+    loading
+  );
 }
 
 /**

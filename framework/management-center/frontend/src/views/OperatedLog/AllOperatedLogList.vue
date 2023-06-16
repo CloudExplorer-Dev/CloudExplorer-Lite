@@ -93,7 +93,11 @@
       prop="date"
       :label="$t('commons.operate_time')"
       sortable="desc"
-    />
+    >
+      <template #default="scope">
+        {{ scope.row.date.split(",")[0] }}
+      </template>
+    </el-table-column>
     <el-table-column
       width="100px"
       prop="status"

@@ -4,14 +4,14 @@ import com.fit2cloud.base.service.IBaseSystemParameterService;
 import com.fit2cloud.common.constants.ParamConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.es.entity.OperatedLog;
+import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.es.entity.SystemLog;
 import com.fit2cloud.service.ILogService;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import jakarta.annotation.Resource;
 
 /**
  * @author jianneng
@@ -34,7 +34,7 @@ public class LogCleanJob {
         cleanOperatedLog(operatedLogValue, "操作日志", "ce-file-api-logs", OperatedLog.class);
         cleanOperatedLog(loginLogValue, "登录日志", "ce-file-api-logs", OperatedLog.class);
         cleanOperatedLog(systemLogValue, "系统日志", "ce-file-system-logs", SystemLog.class);
-        cleanOperatedLog(metricValue, "监控数据", "ce-perf-metric-monitor-data", SystemLog.class);
+        cleanOperatedLog(metricValue, "监控数据", "ce-perf-metric-monitor-data", PerfMetricMonitorData.class);
     }
 
     private void cleanOperatedLog(String m, String logType, String index, Class<?> clazz) {

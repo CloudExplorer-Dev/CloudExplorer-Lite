@@ -39,6 +39,7 @@ import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.service.IServerAnalysisService;
 import com.fit2cloud.utils.OperationUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +53,6 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
@@ -485,7 +485,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         // 获取获取组织工作空间树
         List<OrganizationTree> tree = iBaseOrganizationService.tree("ORGANIZATION_AND_WORKSPACE");
         List<TreeNode> treeNodes = OperationUtils.orgCount(tree, (orgId, workspaceIds) ->
-                groupSource.stream().filter(v -> StringUtils.equals(orgId, v.getKey()) || workspaceIds.contains(v.getKey())).mapToInt(DefaultKeyValue::getValue).sum(), groupSource.stream().mapToInt(DefaultKeyValue::getValue).sum());
+                groupSource.stream().filter(v -> StringUtils.equals(orgId, v.getKey()) || (CollectionUtils.isNotEmpty(workspaceIds) && workspaceIds.contains(v.getKey()))).mapToInt(DefaultKeyValue::getValue).sum(), groupSource.stream().mapToInt(DefaultKeyValue::getValue).sum());
         // 如果是组织管理员,只展示当前组织管理员下面的数据
         if (CurrentUserUtils.isOrgAdmin()) {
             treeNodes = treeNodes.stream().filter(t -> StringUtils.equals(t.getId(), CurrentUserUtils.getOrganizationId())).map(TreeNode::getChildren).filter(Objects::nonNull).flatMap(List::stream).toList();

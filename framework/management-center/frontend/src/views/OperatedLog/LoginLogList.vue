@@ -34,7 +34,11 @@
       prop="date"
       :label="$t('log_manage.login_time')"
       sortable="desc"
-    />
+    >
+      <template #default="scope">
+        {{ scope.row.date.split(",")[0] }}
+      </template>
+    </el-table-column>
     <el-table-column
       prop="status"
       :label="$t('log_manage.status')"

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.CurrentUserUtils;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.constants.ResourceTypeConstants;
@@ -19,7 +20,6 @@ import com.fit2cloud.dao.mapper.OptimizationStrategyMapper;
 import com.fit2cloud.dto.optimization.*;
 import com.fit2cloud.service.IOptimizationStrategyIgnoreResourceService;
 import com.fit2cloud.service.IOptimizationStrategyService;
-import com.fit2cloud.service.IPermissionService;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.google.common.base.Joiner;
 import jakarta.annotation.Resource;
@@ -30,10 +30,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * <p>
@@ -47,8 +44,6 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
 
     @Resource
     private OptimizationStrategyMapper optimizationStrategyMapper;
-    @Resource
-    private IPermissionService permissionService;
     @Resource
     private IOptimizationStrategyIgnoreResourceService optimizationStrategyIgnoreResourceService;
     @Resource
@@ -67,9 +62,6 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
         MPJLambdaWrapper<OptimizationStrategy> wrapper = new MPJLambdaWrapper<>();
         wrapper.selectAll(OptimizationStrategy.class);
         wrapper.like(StringUtils.isNotEmpty(request.getName()), OptimizationStrategy::getName, request.getName());
-        // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
-        List<String> sourceId = permissionService.getSourceIds();
-        wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
         wrapper.orderByAsc(OptimizationStrategy::getCreateTime);
         IPage<OptimizationStrategyDTO> result = optimizationStrategyMapper.pageList(page, wrapper);
         result.getRecords().forEach(v -> {
@@ -78,16 +70,27 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
         return result;
     }
 
-    public String getOptimizationContent(OptimizationStrategyDTO optimizationStrategyDTO) {
+    public static void main(String[] args) {
+        String s = "{\"id\":\"3277cf5ada8d4b6397149c9761ca4223\",\"name\":\"建议变更付费方式\",\"strategyType\":\"OTHER\",\"resourceType\":\"VIRTUAL_MACHINE\",\"days\":null,\"optimizationRules\":{\"children\":[{\"children\":[],\"conditions\":[{\"field\":\"instanceChargeType\",\"esField\":false,\"compare\":\"EQ\",\"value\":\"PostPaid\"},{\"field\":\"runningDuration\",\"esField\":false,\"compare\":\"GT\",\"value\":\"1000\"}],\"conditionType\":\"AND\"},{\"children\":[],\"conditions\":[{\"field\":\"instanceChargeType\",\"esField\":false,\"compare\":\"EQ\",\"value\":\"PrePaid\"},{\"field\":\"shutdownDuration\",\"esField\":false,\"compare\":\"GE\",\"value\":\"100\"}],\"conditionType\":\"AND\"}],\"conditions\":[],\"conditionType\":\"AND\"},\"optimizationScope\":true,\"authorizeId\":null,\"enabled\":true,\"updateFlag\":true,\"createUserId\":\"69549a1d4ffa1078f163b339087949ad\",\"updateUserId\":\"a7087692925ea80d178138522e3edbe1\",\"createTime\":\"2023-06-10 11:03:49\",\"updateTime\":\"2023-06-15 14:39:47\",\"optimizationContent\":null,\"ignoreNumber\":0,\"ignoreResourceIdList\":null}";
+        OptimizationStrategyDTO optimizationStrategyDTO = JsonUtil.parseObject(s, OptimizationStrategyDTO.class);
+        System.out.println(JsonUtil.toJSONString(getOptimizationContent(optimizationStrategyDTO)));
+    }
+
+    public static String getOptimizationContent(OptimizationStrategyDTO optimizationStrategyDTO) {
         OptimizationRule optimizationRule = optimizationStrategyDTO.getOptimizationRules();
         StringBuffer stringBuffer = new StringBuffer();
+        List<String> contentList = new ArrayList<>();
         if (Objects.nonNull(optimizationRule)) {
             if (Objects.nonNull(optimizationStrategyDTO.getDays())) {
-                stringBuffer.append("持续").append(optimizationStrategyDTO.getDays()).append("天,");
+                stringBuffer.append(String.format("针对过去%s天的数据分析,", optimizationStrategyDTO.getDays()));
             }
             ResourceTypeConstants resourceTypeConstants = ResourceTypeConstants.valueOf(optimizationStrategyDTO.getResourceType());
             List<OptimizationRuleField> list = CommonUtil.exec(OptimizationRuleFieldProviderImpl.class, resourceTypeConstants.getOptimizationRuleFieldList());
-            formatOptimizationContentFromOptimizationRule(stringBuffer, optimizationRule, optimizationRule.getChildren(), list);
+            formatOptimizationContentFromOptimizationRule(contentList, optimizationRule, optimizationRule.getChildren(), list);
+            if (CollectionUtils.isNotEmpty(contentList)) {
+                stringBuffer.append(StringUtils.join(contentList, String.format(" %s ", optimizationRule.getConditionType().name())));
+            }
+            stringBuffer.append(String.format(",%s", optimizationStrategyDTO.getName()));
         }
         return stringBuffer.toString();
     }
@@ -96,25 +99,36 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
     /**
      * 从优化规则格式优化内容
      *
-     * @param stringBuffer     最终优化内容
      * @param optimizationRule 优化规则
      * @param children         子集
      * @param list             列表
      * @author jianneng
      * @date 2023/05/31
      */
-    public void formatOptimizationContentFromOptimizationRule(StringBuffer stringBuffer, OptimizationRule optimizationRule, List<OptimizationRule> children, List<OptimizationRuleField> list) {
+    public static void formatOptimizationContentFromOptimizationRule(List<String> contentList, OptimizationRule optimizationRule, List<OptimizationRule> children, List<OptimizationRuleField> list) {
         if (CollectionUtils.isNotEmpty(optimizationRule.getConditions())) {
             int conditionsSize = optimizationRule.getConditions().size();
             int count = 0;
             // 比较条件
+            StringBuilder stringBuffer = new StringBuilder();
             for (OptimizationRuleFieldCondition v : optimizationRule.getConditions()) {
                 // 从资源类型优化规则字段中获取对应的字段信息
                 List<OptimizationRuleField> optimizationRuleFieldList = list.stream().filter(field -> StringUtils.equalsIgnoreCase(field.getField(), v.getField())).toList();
                 if (CollectionUtils.isNotEmpty(optimizationRuleFieldList)) {
                     stringBuffer.append(optimizationRuleFieldList.get(0).getLabel());
-                    stringBuffer.append(OptimizationRuleFieldCompare.valueOf(v.getCompare()).getMessage());
-                    stringBuffer.append(v.getValue());
+                    stringBuffer.append(String.format(" %s ", OptimizationRuleFieldCompare.valueOf(v.getCompare()).getMessage()));
+                    if (CollectionUtils.isNotEmpty(optimizationRuleFieldList.get(0).getOptions())) {
+                        try {
+                            // 获取下拉框字段值的label
+                            List<DefaultKeyValue<String, Object>> optionList = optimizationRuleFieldList.get(0).getOptions();
+                            String valueLabel = optionList.stream().filter(option -> StringUtils.equalsIgnoreCase((String) option.getValue(), v.getValue())).toList().get(0).getKey();
+                            stringBuffer.append(valueLabel);
+                        } catch (Exception e) {
+                            stringBuffer.append(v.getValue());
+                        }
+                    } else {
+                        stringBuffer.append(v.getValue());
+                    }
                     String unit = optimizationRuleFieldList.get(0).getUnit();
                     if (Objects.nonNull(unit)) {
                         stringBuffer.append(unit);
@@ -122,16 +136,16 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
                     count++;
                     if (count < conditionsSize) {
                         // 比较器
-                        stringBuffer.append(optimizationRule.getConditionType().name());
+                        String conditionType = optimizationRule.getConditionType().name();
+                        stringBuffer.append(String.format(" %s ", conditionType));
                     }
                 }
             }
+            contentList.add(String.format("%s", stringBuffer));
         }
         if (CollectionUtils.isNotEmpty(children)) {
-            // 比较器
-            stringBuffer.append(optimizationRule.getConditionType().name());
             for (OptimizationRule child : children) {
-                formatOptimizationContentFromOptimizationRule(stringBuffer, child, child.getChildren(), list);
+                formatOptimizationContentFromOptimizationRule(contentList, child, child.getChildren(), list);
             }
         }
     }
@@ -145,9 +159,7 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
     @Override
     public List<OptimizationStrategy> getOptimizationStrategyList(String resourceType) {
         MPJLambdaWrapper<OptimizationStrategy> wrapper = new MPJLambdaWrapper<>();
-        // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
-        List<String> sourceId = permissionService.getSourceIds();
-        wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
+        wrapper.eq(StringUtils.isNotEmpty(resourceType), OptimizationStrategy::getResourceType, resourceType);
         wrapper.orderByAsc(OptimizationStrategy::getCreateTime);
         return optimizationStrategyMapper.selectList(wrapper);
     }
@@ -162,9 +174,6 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
     public OptimizationStrategyDTO getOneOptimizationStrategy(String optimizationStrategyId) {
         MPJLambdaWrapper<OptimizationStrategy> wrapper = new MPJLambdaWrapper<>();
         wrapper.eq(true, OptimizationStrategy::getId, optimizationStrategyId);
-        // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
-        List<String> sourceId = permissionService.getSourceIds();
-        wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
         OptimizationStrategy optimizationStrategy = optimizationStrategyMapper.selectOne(wrapper);
         if (Objects.isNull(optimizationStrategy)) {
             throw new Fit2cloudException(ErrorCodeConstants.NOT_EXISTS_OPTIMIZE_SUGGEST_STRATEGY.getCode(), ErrorCodeConstants.NOT_EXISTS_OPTIMIZE_SUGGEST_STRATEGY.getMessage());
@@ -172,9 +181,9 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
         OptimizationStrategyDTO optimizationStrategyDTO = new OptimizationStrategyDTO();
         BeanUtils.copyProperties(optimizationStrategy, optimizationStrategyDTO);
         if (!optimizationStrategy.getOptimizationScope()) {
-            MPJLambdaWrapper<OptimizationStrategyIgnoreResource> ignoreResourceMPJLambdaWrapper = new MPJLambdaWrapper<>();
-            ignoreResourceMPJLambdaWrapper.eq(true, OptimizationStrategyIgnoreResource::getOptimizationStrategyId, optimizationStrategy.getId());
-            List<OptimizationStrategyIgnoreResource> ignoreResourceList = optimizationStrategyIgnoreResourceMapper.selectList(ignoreResourceMPJLambdaWrapper);
+            MPJLambdaWrapper<OptimizationStrategyIgnoreResource> ignoreResourceWrapper = new MPJLambdaWrapper<>();
+            ignoreResourceWrapper.eq(true, OptimizationStrategyIgnoreResource::getOptimizationStrategyId, optimizationStrategy.getId());
+            List<OptimizationStrategyIgnoreResource> ignoreResourceList = optimizationStrategyIgnoreResourceMapper.selectList(ignoreResourceWrapper);
             if (CollectionUtils.isNotEmpty(ignoreResourceList)) {
                 optimizationStrategyDTO.setIgnoreResourceIdList(ignoreResourceList.stream().map(OptimizationStrategyIgnoreResource::getResourceId).toList());
             }
@@ -254,9 +263,6 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
         // 构建查询参数
         MPJLambdaWrapper<OptimizationStrategy> wrapper = new MPJLambdaWrapper<>();
         wrapper.eq(true, OptimizationStrategy::getId, optimizationStrategyId);
-        // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
-        List<String> sourceId = permissionService.getSourceIds();
-        wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
         OptimizationStrategy strategy = optimizationStrategyMapper.selectOne(wrapper);
         if (Objects.isNull(strategy)) {
             throw new RuntimeException("没有权限删除或者找不到ID为[" + optimizationStrategyId + "]的优化策略");
@@ -276,9 +282,6 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
         // 构建查询参数
         MPJLambdaWrapper<OptimizationStrategy> wrapper = new MPJLambdaWrapper<>();
         wrapper.in(true, OptimizationStrategy::getId, optimizationStrategyIdList);
-        // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
-        List<String> sourceId = permissionService.getSourceIds();
-        wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
         List<OptimizationStrategy> strategyList = optimizationStrategyMapper.selectList(wrapper);
         if (CollectionUtils.isEmpty(strategyList)) {
             throw new RuntimeException("没有权限删除或者找不到ID为[" + Joiner.on(",").join(optimizationStrategyIdList) + "]的优化策略");
@@ -324,9 +327,6 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
         // 构建查询参数
         MPJLambdaWrapper<OptimizationStrategy> wrapper = new MPJLambdaWrapper<>();
         wrapper.eq(true, OptimizationStrategy::getId, optimizationStrategyDTO.getId());
-        // 不是管理员就获取当前用户有权限的组织或工作空间下的优化策略
-        List<String> sourceId = permissionService.getSourceIds();
-        wrapper.in(!CurrentUserUtils.isAdmin(), OptimizationStrategy::getAuthorizeId, sourceId);
         OptimizationStrategy strategy = optimizationStrategyMapper.selectOne(wrapper);
         if (Objects.isNull(strategy)) {
             throw new RuntimeException("没有权限改变状态或者找不到ID为[" + optimizationStrategyDTO.getId() + "]的优化策略");

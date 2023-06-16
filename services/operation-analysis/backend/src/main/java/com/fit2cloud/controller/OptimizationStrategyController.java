@@ -53,7 +53,7 @@ public class OptimizationStrategyController {
 
     @Operation(summary = "查询优化策略列表")
     @GetMapping("/{resourceType}/list")
-    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:READ','RESOURCE_OPTIMIZATION:READ')")
     public ResultHolder<List<OptimizationStrategy>> list(@PathVariable("resourceType") String resourceType) {
         return ResultHolder.success(optimizationStrategyService.getOptimizationStrategyList(resourceType));
     }
@@ -122,7 +122,7 @@ public class OptimizationStrategyController {
 
     @Operation(summary = "查询资源类型列表")
     @GetMapping("/resource_type/list")
-    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:CREATE')")
+    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:READ','RESOURCE_OPTIMIZATION:READ')")
     public ResultHolder<List<ResourceTypeDTO>> getResourceTypeList() {
         return ResultHolder.success(optimizationStrategyService.getResourceTypeList());
     }
@@ -140,14 +140,14 @@ public class OptimizationStrategyController {
 
     @Operation(summary = "分页查询优化策略云主机列表")
     @GetMapping("/server/page")
-    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:READ','RESOURCE_OPTIMIZATION:READ')")
     public ResultHolder<IPage<VmCloudServerDTO>> pageServer(@Validated PageServerRequest request) {
         return ResultHolder.success(optimizationStrategyIgnoreResourceService.pageVmCloudServerList(request));
     }
 
     @Operation(summary = "查询优化策略云主机列表")
     @GetMapping("/server/list")
-    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:READ','RESOURCE_OPTIMIZATION:READ')")
     public ResultHolder<List<VmCloudServerDTO>> serverList(@Validated ServerRequest request) {
         return ResultHolder.success(optimizationStrategyIgnoreResourceService.vmCloudServerList(request));
     }

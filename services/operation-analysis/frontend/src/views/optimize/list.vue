@@ -1,7 +1,7 @@
 <template>
   <ServerOptimization
     no-title
-    no-padding
+    :no-padding="true"
     v-model:check-id="checkedId"
     checkable
     :show-setting-icon="showSettingIcon"
@@ -155,7 +155,6 @@
                 )
               : "-"
           }}
-          {{ monitoringStrategy + "111" }}
         </template>
       </el-table-column>
       <el-table-column
@@ -198,14 +197,10 @@
       />
       <template #buttons>
         <!-- 导出 -->
-        <el-tooltip content="下载" placement="bottom">
-          <el-button @click="exportData('xlsx')">
-            <ce-icon
-              color="#646A73"
-              code="icon_bottom-align_outlined"
-            ></ce-icon>
-          </el-button>
-        </el-tooltip>
+        <el-button @click="exportData('xlsx')">
+          <ce-icon size="16" code="icon_bottom-align_outlined"></ce-icon>
+          <span>导出</span>
+        </el-button>
 
         <CeTableColumnSelect :columns="columns" />
       </template>
@@ -237,8 +232,9 @@ import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 import { useUserStore } from "@commons/stores/modules/user";
 import PercentFormat from "@commons/utils/percentFormat";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { usePermissionStore } from "@commons/stores/modules/permission";
 const userStore = useUserStore();
-
+const permissionStore = usePermissionStore();
 const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();
 /**
  * 忽略资源标签
@@ -478,7 +474,12 @@ const buttons = ref([
       addIgnore(row);
     },
     show: (row: { instanceStatus: string }) => {
-      return !ignoreResourceTag.value;
+      return (
+        !ignoreResourceTag.value &&
+        permissionStore.hasPermission(
+          "[operation-analysis]OPTIMIZATION_STRATEGY:EDIT"
+        )
+      );
     },
   },
   {
@@ -488,7 +489,12 @@ const buttons = ref([
       cancelIgnore(row);
     },
     show: (row: { instanceStatus: string }) => {
-      return ignoreResourceTag.value;
+      return (
+        ignoreResourceTag.value &&
+        permissionStore.hasPermission(
+          "[operation-analysis]OPTIMIZATION_STRATEGY:EDIT"
+        )
+      );
     },
   },
 ]);

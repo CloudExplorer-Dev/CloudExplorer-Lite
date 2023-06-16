@@ -27,12 +27,12 @@ import com.fit2cloud.service.IPermissionService;
 import com.fit2cloud.service.IServerAnalysisService;
 import com.fit2cloud.utils.OperationUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -287,12 +287,12 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         return Map.of("tree", treeNodes);
     }
 
-    private List<DefaultKeyValue<String, Integer>> groupSource(ResourceAnalysisRequest request){
+    private List<DefaultKeyValue<String, Integer>> groupSource(ResourceAnalysisRequest request) {
         LambdaQueryWrapper<VmCloudDisk> wrapper = new LambdaQueryWrapper<VmCloudDisk>().notIn(VmCloudDisk::getStatus, List.of("Deleted", "Failed"));
-        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()),VmCloudDisk::getAccountId,request.getAccountIds());
-        if(request.isStatisticalBlock()){
+        wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), VmCloudDisk::getAccountId, request.getAccountIds());
+        if (request.isStatisticalBlock()) {
             return baseVmCloudDiskMapper.groupSourceId(wrapper);
-        }else{
+        } else {
             return baseVmCloudDiskMapper.groupSourceIdBySize(wrapper);
         }
     }
@@ -306,7 +306,7 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
      * @return 指定组织和工作空间的数量
      */
     private int getCount(String orgId, List<String> workspaceIds, List<DefaultKeyValue<String, Integer>> groupSource) {
-        return groupSource.stream().filter(v -> StringUtils.equals(orgId, v.getKey()) || workspaceIds.contains(v.getKey())).mapToInt(DefaultKeyValue::getValue).sum();
+        return groupSource.stream().filter(v -> StringUtils.equals(orgId, v.getKey()) || (CollectionUtils.isNotEmpty(workspaceIds) && workspaceIds.contains(v.getKey()))).mapToInt(DefaultKeyValue::getValue).sum();
     }
 
     private static int getWorkspaceResourceNumber(Map<String, List<TreeNode>> workspaceGroupByPid, List<TreeNode> childrenList, TreeNode v) {
