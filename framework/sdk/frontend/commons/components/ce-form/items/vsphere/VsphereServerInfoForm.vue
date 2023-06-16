@@ -63,7 +63,16 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
-                  <el-form-item :prop="'[' + index + '].remark'">
+                  <el-form-item
+                    :rules="[
+                      {
+                        message: '云主机备注' + '长度不能超过128个字符',
+                        trigger: 'blur',
+                        max: 128,
+                      },
+                    ]"
+                    :prop="'[' + index + '].remark'"
+                  >
                     <el-input
                       v-model.trim="item.remark"
                       placeholder="请输入云主机备注"
