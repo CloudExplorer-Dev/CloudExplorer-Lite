@@ -14,6 +14,7 @@ import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * {@code @Author:张少虎}
@@ -26,8 +27,8 @@ public class EmitTemplate implements Emit {
     @Resource
     private RestTemplate restTemplate;
 
-    @Resource(name = "securityContextWorkThreadPool")
-    private DelegatingSecurityContextExecutor securityContextWorkThreadPool;
+    @Resource(name = "workThreadPool")
+    private ThreadPoolExecutor workThreadPool;
 
     @Override
     public void emit(String event, @NotNull String[] excludes, Object... args) {
@@ -37,7 +38,7 @@ public class EmitTemplate implements Emit {
                 String httpUrl = ServiceUtil.getHttpUrl(service, "/api/event/on/" + event);
                 restTemplate.exchange(httpUrl, HttpMethod.POST, new HttpEntity<>(args), new ParameterizedTypeReference<ResultHolder<String>>() {
                 });
-            }, securityContextWorkThreadPool);
+            }, new DelegatingSecurityContextExecutor(workThreadPool));
         }
     }
 
