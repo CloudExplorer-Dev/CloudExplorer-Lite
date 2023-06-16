@@ -3,6 +3,7 @@ package com.fit2cloud.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.BillPolicy;
 import com.fit2cloud.base.entity.BillPolicyCloudAccountMapping;
+import com.fit2cloud.base.entity.BillPolicyDetails;
 import com.fit2cloud.controller.request.BillingPolicyRequest;
 import com.fit2cloud.controller.request.LinkCloudAccountRequest;
 import com.fit2cloud.controller.response.BillingPolicyDetailsResponse;
@@ -64,4 +65,11 @@ public interface IBillingPolicyService extends IService<BillPolicy> {
      */
     boolean remove(String billingPolicyId);
 
+    /**
+     * 获取最新的计价策略
+     *
+     * @param cloudAccountId 云账号id
+     * @return 计价策略详情
+     */
+    List<BillPolicyDetails> calculateConfigPrice(String cloudAccountId);
 }

@@ -13,6 +13,7 @@ import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
+import com.fit2cloud.provider.impl.openstack.constants.OpenstackPeriodOption;
 import com.fit2cloud.provider.impl.openstack.entity.OpenStackFlavor;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
@@ -192,4 +193,21 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
         return OpenStackCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, BaseDiskRequest.class));
     }
 
+    @Override
+    public String calculateConfigPrice(String req) {
+        OpenstackCalculateConfigPriceRequest openstackCalculateConfigPriceRequest =
+                JsonUtil.parseObject(req, OpenstackCalculateConfigPriceRequest.class);
+        return OpenStackCloudApi.calculateConfigPrice(openstackCalculateConfigPriceRequest);
+    }
+
+    public List<Map<String, Object>> getPeriodOption(String req) {
+        List<Map<String, Object>> periodList = new ArrayList<>();
+        for (OpenstackPeriodOption option : OpenstackPeriodOption.values()) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("period", option.getPeriod());
+            map.put("periodDisplayName", option.getPeriodDisplayName());
+            periodList.add(map);
+        }
+        return periodList;
+    }
 }
