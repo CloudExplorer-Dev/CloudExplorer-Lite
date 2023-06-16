@@ -4,7 +4,7 @@ import com.fit2cloud.common.utils.JsonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.StandardReflectionParameterNameDiscoverer;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
 public class SpelUtil {
 
     private static SpelExpressionParser parser = new SpelExpressionParser();
-    private LocalVariableTableParameterNameDiscoverer discoverer = new LocalVariableTableParameterNameDiscoverer();
+    private StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
 
     public static String getElValueByParam(String spELString, Object[] param, String[] parameterNames) {
         try {
@@ -55,8 +55,8 @@ public class SpelUtil {
         Object[] args = joinPoint.getArgs();
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method targetMethod = methodSignature.getMethod();
-        LocalVariableTableParameterNameDiscoverer parameterNameDiscoverer
-                = new LocalVariableTableParameterNameDiscoverer();
+        StandardReflectionParameterNameDiscoverer parameterNameDiscoverer
+                = new StandardReflectionParameterNameDiscoverer();
         String[] parametersName = parameterNameDiscoverer.getParameterNames(targetMethod);
 
         if (args == null || args.length <= 0) {

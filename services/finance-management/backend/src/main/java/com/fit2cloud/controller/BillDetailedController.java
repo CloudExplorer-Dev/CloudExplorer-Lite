@@ -26,7 +26,7 @@ public class BillDetailedController {
     @GetMapping("/{currentPage}/{pageSize}")
     @Operation(summary = "分页查询账单详情", description = "分页查询账单详情")
     @PreAuthorize("@cepc.hasAnyCePermission('BILL_DETAILED:READ')")
-    public ResultHolder<IPage<BillDetailResponse>> page(@Parameter(name = "当前页") @PathVariable("currentPage") Integer currentPage, @Parameter(name = "每页显示多少条") @PathVariable("pageSize") Integer pageSize, PageBillDetailedRequest request) {
+    public ResultHolder<IPage<BillDetailResponse>> page(@Parameter(description = "当前页") @PathVariable("currentPage") Integer currentPage, @Parameter(description = "每页显示多少条") @PathVariable("pageSize") Integer pageSize, PageBillDetailedRequest request) {
         IPage<BillDetailResponse> page = billDetailedService.page(currentPage, pageSize, request);
         return ResultHolder.success(page);
     }

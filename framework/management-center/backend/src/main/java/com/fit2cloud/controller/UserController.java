@@ -93,7 +93,7 @@ public class UserController {
     @Operation(summary = "查询用户")
     @PreAuthorize("@cepc.hasAnyCePermission('USER:READ')")
     @GetMapping("/{id}")
-    public ResultHolder<UserDto> getUser(@Parameter(name = "主键 ID")
+    public ResultHolder<UserDto> getUser(@Parameter(description = "主键 ID")
                                          @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                          @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                          @PathVariable("id") String id) {
@@ -107,7 +107,7 @@ public class UserController {
             resourceId = "#id",
             content = "'删除用户'",
             param = "#id")
-    public ResultHolder<Boolean> delete(@Parameter(name = "主键 ID")
+    public ResultHolder<Boolean> delete(@Parameter(description = "主键 ID")
                                         @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                         @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                         @PathVariable("id") String id) {
@@ -117,7 +117,7 @@ public class UserController {
     @Operation(summary = "根据用户ID查询用户角色信息")
     @PreAuthorize("@cepc.hasAnyCePermission('USER:READ')")
     @GetMapping(value = "/role/info/{id}")
-    public ResultHolder<UserOperateDto> roleInfo(@Parameter(name = "主键 ID") @NotNull(message = "{i18n.user.id.cannot.be.null}")
+    public ResultHolder<UserOperateDto> roleInfo(@Parameter(description = "主键 ID") @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                                  @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                                  @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                                  @PathVariable("id") String id) {

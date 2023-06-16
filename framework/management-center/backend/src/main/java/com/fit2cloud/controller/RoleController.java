@@ -83,7 +83,7 @@ public class RoleController {
             content = "'删除角色'",
             param = "#id")
     public ResultHolder<Boolean> removeRole(
-            @Parameter(name = "角色ID")
+            @Parameter(description = "角色ID")
             @NotNull(message = "角色ID不能为空")
             @CustomValidated(mapper = BaseRoleMapper.class, handler = ExistHandler.class, message = "角色ID不存在", exist = false)
             @RequestParam("id")
@@ -99,7 +99,7 @@ public class RoleController {
             content = "'批量删除了'+#ids.size+'个角色'",
             param = "#ids")
     public ResultHolder<Boolean> batchRemoveRole(
-            @Parameter(name = "角色ID列表")
+            @Parameter(description = "角色ID列表")
             @Size(min = 1, message = "至少需要一个角色ID")
             @RequestBody
             List<String> ids) {
@@ -110,7 +110,7 @@ public class RoleController {
     @PreAuthorize("@cepc.hasAnyCePermission('ROLE:READ')")
     @GetMapping("module-permission")
     public ResultHolder<Map<String, ModulePermission>> listModulePermissionByRole(
-            @Parameter(name = "角色")
+            @Parameter(description = "角色")
             @NotNull(message = "角色不能为空")
             @RequestParam("role")
             RoleConstants.ROLE role
@@ -122,7 +122,7 @@ public class RoleController {
     @PreAuthorize("@cepc.hasAnyCePermission('ROLE:READ')")
     @GetMapping("permission")
     public ResultHolder<List<String>> listRolePermissionByRole(
-            @Parameter(name = "角色ID")
+            @Parameter(description = "角色ID")
             @NotNull(message = "角色ID不能为空")
             @RequestParam("id")
             String id
@@ -138,7 +138,7 @@ public class RoleController {
             content = "'更新角色权限为['+#permissionIds+']'",
             param = "#permissionIds")
     public ResultHolder<List<String>> updateRolePermissionByRole(
-            @Parameter(name = "角色ID")
+            @Parameter(description = "角色ID")
             @NotNull(message = "角色ID不能为空")
             @CustomValidated(mapper = BaseRoleMapper.class, handler = ExistHandler.class, message = "角色ID不存在", exist = false)
             @RequestParam("id")

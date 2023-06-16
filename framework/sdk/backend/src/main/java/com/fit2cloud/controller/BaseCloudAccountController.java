@@ -38,7 +38,7 @@ public class BaseCloudAccountController {
 
     @GetMapping("/{id}")
     @Operation(summary = "根据id查询云账号", description = "根据id查询云账号")
-    public ResultHolder<CloudAccount> findCloudAccount(@Parameter(name = "云账号id", required = true)
+    public ResultHolder<CloudAccount> findCloudAccount(@Parameter(description = "云账号id", required = true)
                                                        @CustomValidated(mapper = BaseCloudAccountMapper.class, handler = ExistHandler.class, message = "{i18n.cloud_account_id_not_existent}", exist = false)
                                                        @PathVariable("id") String id) {
         return ResultHolder.success(cloudAccountService.getById(id));
@@ -46,7 +46,7 @@ public class BaseCloudAccountController {
 
     @PostMapping("/job_init/{cloud_account_id}")
     @Operation(summary = "初始化云账号定时任务", description = "初始化云账号定时任务")
-    public ResultHolder<Boolean> initCloudAccountJob(@Parameter(name = "云账号id") @NotNull @PathVariable("cloud_account_id") String cloudAccountId) {
+    public ResultHolder<Boolean> initCloudAccountJob(@Parameter(description = "云账号id") @NotNull @PathVariable("cloud_account_id") String cloudAccountId) {
         cloudAccountService.initCloudAccountJob(cloudAccountId);
         return ResultHolder.success(true);
     }
@@ -59,7 +59,7 @@ public class BaseCloudAccountController {
 
     @GetMapping("/job/{cloud_account_id}")
     @Operation(summary = "获取云账号的定时任务", description = "获取云账号的定时任务")
-    public ResultHolder<CloudAccountModuleJob> getCloudAccountJob(@Parameter(name = "云账号id")
+    public ResultHolder<CloudAccountModuleJob> getCloudAccountJob(@Parameter(description = "云账号id")
                                                                   @NotNull(message = "{i18n.cloud_account.id.is.not.empty}")
                                                                   @CustomValidated(mapper = BaseCloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                                                   @PathVariable("cloud_account_id") String accountId) {
@@ -101,7 +101,7 @@ public class BaseCloudAccountController {
 
     @GetMapping("/balance/{id}")
     @Operation(summary = "获取云账号余额")
-    public ResultHolder<Object> getAccountBalance(@Parameter(name = "云账号id", required = true)
+    public ResultHolder<Object> getAccountBalance(@Parameter(description = "云账号id", required = true)
                                                   @CustomValidated(mapper = BaseCloudAccountMapper.class, field = "id", handler = ExistHandler.class, message = "{i18n.cloud_account.id.is.not.existent}", exist = false)
                                                   @PathVariable("id") String id) {
         return ResultHolder.success(cloudAccountService.getAccountBalance(id));

@@ -57,8 +57,8 @@ public class DimensionSettingController {
     @GetMapping("/{authorize_id}/{type}")
     @Operation(summary = "获取账单授权设置", description = "获取账单授权设置")
     @PreAuthorize("@cepc.hasAnyCePermission('DIMENSION_SETTING:READ')")
-    public ResultHolder<BillDimensionSetting> getBillDimensionSetting(@Parameter(name = "授权账号id") @PathVariable("authorize_id") String authorizeId,
-                                                                      @Parameter(name = "授权账号类型 组织或者工作空间") @Pattern(regexp = "^(ORGANIZATION|WORKSPACE)$", message = "授权类型只支持WORKSPACE,ORGANIZATION") @PathVariable("type") String type) {
+    public ResultHolder<BillDimensionSetting> getBillDimensionSetting(@Parameter(description = "授权账号id") @PathVariable("authorize_id") String authorizeId,
+                                                                      @Parameter(description = "授权账号类型 组织或者工作空间") @Pattern(regexp = "^(ORGANIZATION|WORKSPACE)$", message = "授权类型只支持WORKSPACE,ORGANIZATION") @PathVariable("type") String type) {
         BillDimensionSetting billDimensionSetting = billDimensionSettingService.getBillDimensionSetting(authorizeId, type);
         return ResultHolder.success(billDimensionSetting);
     }
@@ -69,8 +69,8 @@ public class DimensionSettingController {
     @OperatedLog(resourceType = ResourceTypeEnum.DIMENSION, operated = OperatedTypeEnum.MODIFY,
             content = "#type=='ORGANIZATION'?'账单授权组织['+#authorizeId+']':'账单授权工作空间['+#authorizeId+']'",
             param = "#authorizeRule")
-    public ResultHolder<BillDimensionSetting> saveOrUpdate(@Parameter(name = "授权账号id") @PathVariable("authorize_id") String authorizeId,
-                                                           @Parameter(name = "授权账号类型 组织或者工作空间") @Pattern(regexp = "ORGANIZATION|WORKSPACE", message = "授权类型只支持WORKSPACE,ORGANIZATION") @PathVariable("type") String type,
+    public ResultHolder<BillDimensionSetting> saveOrUpdate(@Parameter(description = "授权账号id") @PathVariable("authorize_id") String authorizeId,
+                                                           @Parameter(description = "授权账号类型 组织或者工作空间") @Pattern(regexp = "ORGANIZATION|WORKSPACE", message = "授权类型只支持WORKSPACE,ORGANIZATION") @PathVariable("type") String type,
                                                            @RequestBody BillAuthorizeRule authorizeRule) {
         BillDimensionSetting billDimensionSetting = billDimensionSettingService.saveOrUpdate(authorizeId, type, authorizeRule);
         return ResultHolder.success(billDimensionSetting);
@@ -79,8 +79,8 @@ public class DimensionSettingController {
     @GetMapping("/authorize_resources/{page}/{limit}")
     @Operation(summary = "获取已授权的资源列表", description = "获取已授权的资源列表")
     @PreAuthorize("@cepc.hasAnyCePermission('DIMENSION_SETTING:READ')")
-    public ResultHolder<Page<AuthorizeResourcesResponse>> authorizeResources(@Parameter(name = "当前页") @NotNull(message = "当前页必填") @PathVariable("page") Integer page,
-                                                                             @Parameter(name = "每页多少条") @NotNull(message = "每页显示多少条必填") @NotNull @PathVariable("limit") Integer limit,
+    public ResultHolder<Page<AuthorizeResourcesResponse>> authorizeResources(@Parameter(description = "当前页") @NotNull(message = "当前页必填") @PathVariable("page") Integer page,
+                                                                             @Parameter(description = "每页多少条") @NotNull(message = "每页显示多少条必填") @NotNull @PathVariable("limit") Integer limit,
                                                                              AuthorizeResourcesRequest request) {
         return ResultHolder.success(billDimensionSettingService.getAuthorizeResources(page, limit, request));
     }
@@ -88,8 +88,8 @@ public class DimensionSettingController {
     @GetMapping("/not_authorize_resources/{page}/{limit}")
     @Operation(summary = "获取未授权资源列表", description = "获取未授权资源列表")
     @PreAuthorize("@cepc.hasAnyCePermission('DIMENSION_SETTING:READ')")
-    public ResultHolder<Page<AuthorizeResourcesResponse>> notAuthorizeResources(@Parameter(name = "当前页") @NotNull(message = "当前页必填") @PathVariable("page") Integer page,
-                                                                                @Parameter(name = "每页多少条") @NotNull(message = "每页显示多少条必填") @NotNull @PathVariable("limit") Integer limit,
+    public ResultHolder<Page<AuthorizeResourcesResponse>> notAuthorizeResources(@Parameter(description = "当前页") @NotNull(message = "当前页必填") @PathVariable("page") Integer page,
+                                                                                @Parameter(description = "每页多少条") @NotNull(message = "每页显示多少条必填") @NotNull @PathVariable("limit") Integer limit,
                                                                                 NotAuthorizeResourcesRequest request) {
         return ResultHolder.success(billDimensionSettingService.getNotAuthorizeResources(page, limit, request));
     }

@@ -60,7 +60,7 @@ public class OrganizationController {
 
     @GetMapping("/{organizationId}")
     @Operation(summary = "根据组织id查询组织", description = "根据组织id查询组织")
-    public ResultHolder<Organization> getOrganization(@Parameter(name = "组织id")
+    public ResultHolder<Organization> getOrganization(@Parameter(description = "组织id")
                                                       @NotNull(message = "{i18n.organization.name.is.not.empty}")
                                                       @CustomValidated(mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
                                                       @PathVariable("organizationId") String id) {
@@ -116,7 +116,7 @@ public class OrganizationController {
             content = "'删除组织'",
             param = "#id")
     @Emit("DELETE::ORGANIZATION")
-    public ResultHolder<Boolean> delete(@Parameter(name = "组织id")
+    public ResultHolder<Boolean> delete(@Parameter(description = "组织id")
                                         @NotNull(message = "{i18n.organization.name.is.not.empty}")
                                         @CustomValidated(mapper = BaseOrganizationMapper.class, handler = ExistHandler.class, message = "{i18n.organization.id.is.not.existent}", exist = false)
                                         @PathVariable("organizationId") String id) {
@@ -131,7 +131,7 @@ public class OrganizationController {
             content = "'批量删除了['+#organizationIds.size+']个组织'",
             param = "#organizationIds")
     @Emit(value = "DELETE_BATCH::ORGANIZATION", el = "#arrayOf(#organizationIds).map(\"#root.id\")")
-    public ResultHolder<Boolean> deleteBatch(@Parameter(name = "批量删除组织")
+    public ResultHolder<Boolean> deleteBatch(@Parameter(description = "批量删除组织")
                                              @Size(min = 1, message = "{i18n.organization.id.size.gt.one}")
                                              @NotNull(message = "{i18n.organization.id.is.not.empty}")
                                              @RequestBody ArrayList<Organization> organizationIds) {
