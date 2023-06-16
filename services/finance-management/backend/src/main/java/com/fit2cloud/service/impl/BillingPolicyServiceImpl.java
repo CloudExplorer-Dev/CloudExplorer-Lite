@@ -38,9 +38,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -49,6 +46,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 
 /**
@@ -69,8 +67,8 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
     private IBaseBillPolicyCloudAccountMappingService billPolicyCloudAccountMappingService;
     @Resource
     private IBaseCloudAccountService cloudAccountService;
-    @Resource(name = "securityContextWorkThreadPool")
-    private DelegatingSecurityContextExecutor securityContextWorkThreadPool;
+    @Resource(name = "workThreadPool")
+    private ThreadPoolExecutor workThreadPool;
 
     /**
      * 获取模块云账号任务
@@ -130,13 +128,11 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
 
     @Override
     public BillingPolicyDetailsResponse detailsBillingPolicy(String billingPolicyId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        securityContextWorkThreadPool.setSecurityContextHolderStrategy(SecurityContextHolder.getContextHolderStrategy());
 
         // 查询所有微服务的计费策略设置
         List<BillingFieldMetaSetting> billingFieldMetaSettings = ServiceUtil.getServices("gateway", ServerInfo.module)
                 .stream()
-                .map(modelName -> CompletableFuture.supplyAsync(() -> getChargingModuleInfo.apply(modelName), securityContextWorkThreadPool))
+                .map(modelName -> CompletableFuture.supplyAsync(() -> getChargingModuleInfo.apply(modelName), new DelegatingSecurityContextExecutor(workThreadPool)))
                 .map(CompletableFuture::join)
                 .map(ResultHolder::getData)
                 .flatMap(List::stream)
@@ -185,7 +181,7 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
         // 获取其他模块 计费设置
         List<BillingFieldMetaSetting> billingFieldMetaSettings = ServiceUtil.getServices("gateway", ServerInfo.module)
                 .stream()
-                .map(modelName -> CompletableFuture.supplyAsync(() -> getChargingModuleInfo.apply(modelName), securityContextWorkThreadPool))
+                .map(modelName -> CompletableFuture.supplyAsync(() -> getChargingModuleInfo.apply(modelName), new DelegatingSecurityContextExecutor(workThreadPool)))
                 .map(CompletableFuture::join)
                 .map(ResultHolder::getData)
                 .flatMap(List::stream)

@@ -51,6 +51,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -58,6 +59,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -73,8 +75,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, CloudAccount> implements ICloudAccountService {
-    @Resource(name = "securityContextWorkThreadPool")
-    private DelegatingSecurityContextExecutor securityContextWorkThreadPool;
+    @Resource(name = "workThreadPool")
+    private ThreadPoolExecutor workThreadPool;
     @Resource
     private RestTemplate restTemplate;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -229,7 +231,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         CloudAccountJobDetailsResponse cloudAccountJobDetailsResponse = new CloudAccountJobDetailsResponse();
         List<CloudAccountModuleJob> cloudAccountModuleJobs = ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
                 .stream()
-                .map(moduleName -> CompletableFuture.supplyAsync(() -> this.getCloudModuleJob(accountId, moduleName), securityContextWorkThreadPool))
+                .map(moduleName -> CompletableFuture.supplyAsync(() -> this.getCloudModuleJob(accountId, moduleName), new DelegatingSecurityContextExecutor(workThreadPool)))
                 .map(CompletableFuture::join)
                 .filter(Objects::nonNull)
                 .toList();
@@ -241,16 +243,16 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     /**
      * 获取不同模块到云账号定时任务
      *
-     * @param acloudAccountId 云账号id
-     * @param moduleName      模块名称
+     * @param cloudAccountId 云账号id
+     * @param moduleName     模块名称
      * @return 模块的云账号定时任务
      */
-    private CloudAccountModuleJob getCloudModuleJob(String acloudAccountId, String moduleName) {
+    private CloudAccountModuleJob getCloudModuleJob(String cloudAccountId, String moduleName) {
         // 如果是当前模块,直接获取
         if (moduleName.equals(ServerInfo.module)) {
-            return baseCloudAccountService.getCloudAccountJob(acloudAccountId);
+            return baseCloudAccountService.getCloudAccountJob(cloudAccountId);
         } else {
-            ResultHolder<CloudAccountModuleJob> apply = getCloudAccountJobApi.apply(moduleName, acloudAccountId);
+            ResultHolder<CloudAccountModuleJob> apply = getCloudAccountJobApi.apply(moduleName, cloudAccountId);
             if (apply.getCode().equals(200)) {
                 return apply.getData();
             }
@@ -278,7 +280,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     public CloudAccountJobDetailsResponse updateJob(UpdateJobsRequest updateJobsRequest) {
         List<CloudAccountModuleJob> cloudAccountModuleJobs = ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
                 .stream()
-                .map(module -> CompletableFuture.supplyAsync(() -> getCloudAccountModuleJob(updateJobsRequest, module), securityContextWorkThreadPool))
+                .map(module -> CompletableFuture.supplyAsync(() -> getCloudAccountModuleJob(updateJobsRequest, module), new DelegatingSecurityContextExecutor(workThreadPool)))
                 .map(CompletableFuture::join)
                 .filter(Objects::nonNull)
                 .toList();
@@ -352,7 +354,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     public List<SyncResource> getModuleResourceJob(String cloudAccountId) {
         return ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
                 .stream()
-                .map(moduleId -> CompletableFuture.supplyAsync(() -> getSyncResource(moduleId, cloudAccountId), securityContextWorkThreadPool))
+                .map(moduleId -> CompletableFuture.supplyAsync(() -> getSyncResource(moduleId, cloudAccountId), new DelegatingSecurityContextExecutor(workThreadPool)))
                 .map(CompletableFuture::join)
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
@@ -361,7 +363,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     @Override
     public void sync(SyncRequest syncRequest) {
-        ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module).forEach(moduleId -> CompletableFuture.runAsync(() -> sync(moduleId, syncRequest), securityContextWorkThreadPool));
+        ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module).forEach(moduleId -> CompletableFuture.runAsync(() -> sync(moduleId, syncRequest), new DelegatingSecurityContextExecutor(workThreadPool)));
     }
 
     /**
@@ -459,7 +461,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     private List<CompletableFuture<Boolean>> syncByCloudAccountId(String cloudAccountId) {
         return ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
                 .stream()
-                .map(moduleId -> CompletableFuture.supplyAsync(() -> syncByCloudAccountId.apply(moduleId, cloudAccountId), securityContextWorkThreadPool))
+                .map(moduleId -> CompletableFuture.supplyAsync(() -> syncByCloudAccountId.apply(moduleId, cloudAccountId), new DelegatingSecurityContextExecutor(workThreadPool)))
                 .toList();
     }
 
@@ -472,7 +474,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     public List<ResourceCountResponse> getModuleResourceCount(String accountId) {
         return ServiceUtil.getServicesExcludeGatewayAndIncludeSelf(ServerInfo.module)
                 .stream()
-                .map(moduleId -> CompletableFuture.supplyAsync(() -> getResourceCount(moduleId, accountId), securityContextWorkThreadPool))
+                .map(moduleId -> CompletableFuture.supplyAsync(() -> getResourceCount(moduleId, accountId), new DelegatingSecurityContextExecutor(workThreadPool)))
                 .map(CompletableFuture::join)
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
@@ -498,7 +500,7 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
      */
     private final BiFunction<String, String, List<ResourceCountResponse>> getResourceCount = (String module, String accountId) -> {
         String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/count/resource/" + accountId);
-        ResponseEntity<ResultHolder<List<ResourceCountResponse>>> exchange = restTemplate.exchange(httpUrl, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<List<ResourceCountResponse>>>() {
+        ResponseEntity<ResultHolder<List<ResourceCountResponse>>> exchange = restTemplate.exchange(httpUrl, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<>() {
         });
         if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
             throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
