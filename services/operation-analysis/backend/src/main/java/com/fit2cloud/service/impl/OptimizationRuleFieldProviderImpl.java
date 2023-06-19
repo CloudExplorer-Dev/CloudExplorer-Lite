@@ -52,7 +52,7 @@ public class OptimizationRuleFieldProviderImpl implements IOptimizationRuleField
         OptimizationRuleField stoppedDuration = new OptimizationRuleField("持续关机时长", "shutdownDuration", false, "天", OptimizationRuleFieldType.Number);
         fieldList.add(stoppedDuration);
         // 状态
-        OptimizationRuleField status = new OptimizationRuleField("实例状态", "instanceStatus", false, "null", OptimizationRuleFieldType.Enum,
+        OptimizationRuleField status = new OptimizationRuleField("实例状态", "instanceStatus", false, null, OptimizationRuleFieldType.Enum,
                 List.of(new DefaultKeyValue<>("待回收", "ToBeRecycled"),
                         new DefaultKeyValue<>("运行中", "Running"),
                         new DefaultKeyValue<>("已停止", "Stopped"),
