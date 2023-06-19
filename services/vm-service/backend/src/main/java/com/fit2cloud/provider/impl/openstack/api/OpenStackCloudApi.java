@@ -1,5 +1,7 @@
 package com.fit2cloud.provider.impl.openstack.api;
 
+import com.fit2cloud.base.entity.BillPolicyDetails;
+import com.fit2cloud.common.constants.ChargeTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.impl.OpenStackCredential;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
@@ -7,6 +9,9 @@ import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.common.utils.ServiceUtil;
+import com.fit2cloud.common.utils.SpringUtil;
+import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.request.BaseDiskRequest;
@@ -18,6 +23,7 @@ import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
 import com.fit2cloud.provider.impl.openstack.util.OpenStackPerfMetricConstants;
 import com.fit2cloud.provider.impl.openstack.util.OpenStackUtils;
+import com.fit2cloud.utils.ChargingUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +45,11 @@ import org.openstack4j.model.telemetry.Resource;
 import org.openstack4j.model.telemetry.SampleCriteria;
 import org.openstack4j.model.telemetry.Statistics;
 import org.openstack4j.openstack.storage.block.domain.VolumeBackendPool;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -564,7 +575,8 @@ public class OpenStackCloudApi {
                     .setIpArray(new ArrayList<>())
                     .setInstanceType(instanceType)
                     .setRegion(request.getRegion())
-                    .setInstanceTypeDescription(instanceType);
+                    .setInstanceTypeDescription(instanceType)
+                    .setInstanceChargeType(request.getInstanceChargeType());
 
             if (!request.isBootFormVolume()) {
                 virtualMachine.setDisk(flavor.getDisk());
@@ -660,7 +672,7 @@ public class OpenStackCloudApi {
             }
             CheckStatusResult result = OpenStackUtils.checkServerStatus(osClient, server, Server.Status.ACTIVE);
             return OpenStackUtils.toF2CVirtualMachine(osClient, (Server) result.getObject(), request.getRegionId(), null)
-                    .setId(request.getId());
+                    .setId(request.getId()).setInstanceChargeType(request.getInstanceChargeType());
 
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -1083,5 +1095,46 @@ public class OpenStackCloudApi {
         } catch (Exception e) {
             throw new RuntimeException("GetVmF2CDisks Error!" + e.getMessage(), e);
         }
+    }
+
+    public static String calculateConfigPrice(OpenstackCalculateConfigPriceRequest request) {
+        if (StringUtils.isEmpty(request.getFlavorId())) {
+            return "--";
+        }
+        List<Flavor> flavors = OpenStackCloudApi.getFlavors(request);
+        Optional<Flavor> first = flavors.stream().filter(flavor -> StringUtils.equals(flavor.getId(), request.getFlavorId())).findFirst();
+        if (first.isEmpty()) {
+            return "--";
+        }
+        RestTemplate restTemplate = SpringUtil.getBean(RestTemplate.class);
+        Set<String> servicesExcludeGateway = ServiceUtil.getServicesExcludeGateway();
+        if (servicesExcludeGateway.contains("finance-management")) {
+            String url = ServiceUtil.getHttpUrl("finance-management", "api/billing_policy/calculate_config_price/" + request.getAccountId());
+            ResponseEntity<ResultHolder<List<BillPolicyDetails>>> exchange = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<>() {
+            });
+            List<BillPolicyDetails> billPolicyDetailsList = Objects.requireNonNull(exchange.getBody()).getData();
+
+            Optional<BigDecimal> ecs = billPolicyDetailsList.stream()
+                    .map(billPolicyDetails -> {
+                        if ("ECS".equals(billPolicyDetails.getResourceType())) {
+                            return ChargingUtil.getBigDecimal(request.getInstanceChargeType(), Map.of("cpu", first.get().getVcpus(), "memory", new BigDecimal(first.get().getRam()).divide(new BigDecimal(1024), 0, RoundingMode.CEILING).intValue()), billPolicyDetails);
+                        }
+                        if ("DISK".equals(billPolicyDetails.getResourceType())) {
+                            List<OpenStackServerCreateRequest.DiskConfig> disks = request.getDisks();
+                            return disks.stream().map(disk -> ChargingUtil.getBigDecimal(request.getInstanceChargeType(), Map.of("size", disk.getSize()), billPolicyDetails))
+                                    .reduce(BigDecimal::add).orElse(new BigDecimal(0));
+                        }
+                        return new BigDecimal(0);
+                    }).reduce(BigDecimal::add);
+            return ecs.map(bigDecimal -> {
+                        if (ChargeTypeConstants.PREPAID.getCode().equals(request.getInstanceChargeType()) && StringUtils.isNotEmpty(request.getPeriodNum())) {
+                            return bigDecimal.multiply(new BigDecimal(request.getPeriodNum())).multiply(new BigDecimal(request.getCount()));
+                        }
+                        return bigDecimal.multiply(new BigDecimal(request.getCount()));
+                    }).map(bigDecimal -> bigDecimal.setScale(3, RoundingMode.HALF_UP) +
+                            (ChargeTypeConstants.POSTPAID.getCode().equals(request.getInstanceChargeType()) ? "元/小时" : "元"))
+                    .orElse("--");
+        }
+        return "-";
     }
 }

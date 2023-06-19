@@ -2,11 +2,11 @@ package com.fit2cloud.controller;
 
 import com.fit2cloud.base.entity.BillPolicy;
 import com.fit2cloud.base.entity.BillPolicyCloudAccountMapping;
+import com.fit2cloud.base.entity.BillPolicyDetails;
 import com.fit2cloud.base.mapper.BaseBillPolicyMapper;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
-import com.fit2cloud.controller.request.AddBillingPolicyRequest;
 import com.fit2cloud.controller.request.BillingPolicyRequest;
 import com.fit2cloud.controller.request.LinkCloudAccountRequest;
 import com.fit2cloud.controller.request.ListCloudAccountByPolicyRequest;
@@ -92,6 +92,13 @@ public class BillingPolicyController {
     public ResultHolder<List<BillPolicyCloudAccountMapping>> linkCloudAccount(@Validated @RequestBody LinkCloudAccountRequest request) {
         List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappings = billingPolicyService.linkCloudAccount(request);
         return ResultHolder.success(billPolicyCloudAccountMappings);
+    }
+
+    @Operation(summary = "获取实例类型最新的价格配置")
+    @GetMapping("/calculate_config_price/{cloud_account_id}")
+    public ResultHolder<List<BillPolicyDetails>> calculateConfigPrice(@PathVariable("cloud_account_id") String cloudAccountId) {
+        List<BillPolicyDetails> list = billingPolicyService.calculateConfigPrice(cloudAccountId);
+        return ResultHolder.success(list);
     }
 
 }

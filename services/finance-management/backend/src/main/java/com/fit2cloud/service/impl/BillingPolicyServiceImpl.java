@@ -1,6 +1,7 @@
 package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fit2cloud.autoconfigure.ServerInfo;
@@ -19,6 +20,7 @@ import com.fit2cloud.common.charging.constants.UnitPriceConstants;
 import com.fit2cloud.common.charging.entity.BillingFieldMeta;
 import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.ServiceUtil;
 import com.fit2cloud.controller.handler.ResultHolder;
@@ -235,6 +237,20 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
         // 删除策略
         this.removeById(billingPolicyId);
         return true;
+    }
+
+    @Override
+    public List<BillPolicyDetails> calculateConfigPrice(String cloudAccountId) {
+        List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappingList =
+                billPolicyCloudAccountMappingService.listLast(new QueryWrapper<BillPolicyCloudAccountMapping>()
+                        .eq(ColumnNameUtil.getColumnName(BillPolicyCloudAccountMapping::getCloudAccountId, "bill_policy_cloud_account_mapping"), cloudAccountId));
+        if (CollectionUtils.isEmpty(billPolicyCloudAccountMappingList)) {
+            return List.of();
+        }
+        return baseBillPolicyDetailsMapper.listLast(new QueryWrapper<BillPolicyDetails>()
+                .in(ColumnNameUtil.getColumnName(BillPolicyDetails::getBillPolicyId, "bill_policy_details"),
+                        billPolicyCloudAccountMappingList.stream()
+                                .map(BillPolicyCloudAccountMapping::getBillPolicyId).distinct().toList()));
     }
 
 
