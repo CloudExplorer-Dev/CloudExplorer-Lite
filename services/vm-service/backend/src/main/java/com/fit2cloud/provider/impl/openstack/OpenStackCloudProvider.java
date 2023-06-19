@@ -210,4 +210,20 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
         }
         return periodList;
     }
+
+    @Override
+    public String calculateConfigUpdatePrice(String req) {
+        CalculateConfigUpdatePriceRequest calculateConfigUpdatePriceRequest = JsonUtil.parseObject(req, CalculateConfigUpdatePriceRequest.class);
+        OpenstackCalculateConfigPriceRequest openstackCalculateConfigPriceRequest = new OpenstackCalculateConfigPriceRequest();
+        openstackCalculateConfigPriceRequest.setDisks(List.of());
+        openstackCalculateConfigPriceRequest.setFlavorId(calculateConfigUpdatePriceRequest.getNewInstanceType());
+        openstackCalculateConfigPriceRequest.setCount(1);
+        openstackCalculateConfigPriceRequest.setPeriodNum("1");
+        openstackCalculateConfigPriceRequest.setRegionId(calculateConfigUpdatePriceRequest.getRegionId());
+        openstackCalculateConfigPriceRequest.setImageId(calculateConfigUpdatePriceRequest.getImageId());
+        openstackCalculateConfigPriceRequest.setInstanceChargeType(calculateConfigUpdatePriceRequest.getInstanceChargeType());
+        openstackCalculateConfigPriceRequest.setOpenStackCredential(calculateConfigUpdatePriceRequest.getOpenStackCredential());
+        openstackCalculateConfigPriceRequest.setAccountId(calculateConfigUpdatePriceRequest.getCloudAccountId());
+        return OpenStackCloudApi.calculateConfigPrice(openstackCalculateConfigPriceRequest);
+    }
 }

@@ -320,4 +320,18 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         }
         return periodList;
     }
+
+    @Override
+    public String calculateConfigUpdatePrice(String req) {
+        CalculateConfigUpdatePriceRequest calculateConfigUpdatePriceRequest = JsonUtil.parseObject(req, CalculateConfigUpdatePriceRequest.class);
+        VsphereCalculateConfigPriceRequest vsphereCalculateConfigPriceRequest = new VsphereCalculateConfigPriceRequest();
+        vsphereCalculateConfigPriceRequest.setRam(calculateConfigUpdatePriceRequest.getMemory());
+        vsphereCalculateConfigPriceRequest.setCpu(calculateConfigUpdatePriceRequest.getCpu());
+        vsphereCalculateConfigPriceRequest.setCount(1);
+        vsphereCalculateConfigPriceRequest.setPeriodNum("1");
+        vsphereCalculateConfigPriceRequest.setAccountId(calculateConfigUpdatePriceRequest.getCloudAccountId());
+        vsphereCalculateConfigPriceRequest.setDisks(List.of());
+        vsphereCalculateConfigPriceRequest.setInstanceChargeType(calculateConfigUpdatePriceRequest.getInstanceChargeType());
+        return VsphereSyncCloudApi.calculateConfigPrice(vsphereCalculateConfigPriceRequest);
+    }
 }
