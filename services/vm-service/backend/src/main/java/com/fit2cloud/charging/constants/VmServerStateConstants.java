@@ -7,12 +7,13 @@ package com.fit2cloud.charging.constants;
  * {@code @注释: }
  */
 public enum VmServerStateConstants {
-    NotCreate('0', "未创建"),
+    NotCreate('0', "计费预留字段,用于当月占位"),
     Running('1', "运行中"),
     Stopped('2', "停止"),
     Failed('3', "失败"),
     Deleted('4', "已删除"),
-    unknown('4', "未知");
+    Creating('5', "创建中"),
+    unknown('9', "未知");
     private final char code;
     private final String message;
 

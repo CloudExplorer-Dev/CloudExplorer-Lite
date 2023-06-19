@@ -11,8 +11,10 @@ import com.fit2cloud.common.charging.constants.BillModeConstants;
 import com.fit2cloud.common.charging.entity.InstanceRecord;
 import com.fit2cloud.common.charging.entity.InstanceState;
 import com.fit2cloud.common.charging.instance.InstanceRecordMappingHandler;
+import com.fit2cloud.common.constants.ChargeTypeConstants;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.service.IVmCloudDiskService;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,10 +46,14 @@ public class VmCloudDiskInstanceRecordMappingHandler implements InstanceRecordMa
         return vmCloudDiskService.list(new LambdaQueryWrapper<VmCloudDisk>()
                         .notIn(VmCloudDisk::getStatus, List.of("deleted")))
                 .stream().map(vmCloudDisk -> {
+                    BillModeConstants billMode = StringUtils.isEmpty(vmCloudDisk.getDiskChargeType()) ?
+                            BillModeConstants.ON_DEMAND : vmCloudDisk.getDiskChargeType().equals(ChargeTypeConstants.POSTPAID.getCode())
+                            ? BillModeConstants.ON_DEMAND : BillModeConstants.MONTHLY;
+
                     InstanceRecord instanceRecord = new InstanceRecord();
                     instanceRecord.setResourceId(vmCloudDisk.getId());
                     instanceRecord.setResourceName(vmCloudDisk.getDiskName());
-                    instanceRecord.setBillMode(BillModeConstants.ON_DEMAND);
+                    instanceRecord.setBillMode(billMode);
                     instanceRecord.setMeta(Map.of("size", vmCloudDisk.getSize().intValue()));
                     instanceRecord.setRegion(vmCloudDisk.getRegion());
                     instanceRecord.setCloudAccountId(vmCloudDisk.getAccountId());

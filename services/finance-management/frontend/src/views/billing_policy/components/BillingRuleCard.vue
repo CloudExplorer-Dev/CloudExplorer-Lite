@@ -3,7 +3,7 @@
     <template #header>
       <div class="card-header">
         <span
-          >{{ billingMode === "ON_DEMAND" ? "按需按量" : "包年包月" }}
+          >{{ billingMode === "ON_DEMAND" ? "按量付费" : "包年包月" }}
         </span>
         <span></span>
         <div>

@@ -11,8 +11,10 @@ import com.fit2cloud.common.charging.constants.BillModeConstants;
 import com.fit2cloud.common.charging.entity.InstanceRecord;
 import com.fit2cloud.common.charging.entity.InstanceState;
 import com.fit2cloud.common.charging.instance.InstanceRecordMappingHandler;
+import com.fit2cloud.common.constants.ChargeTypeConstants;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.service.IVmCloudServerService;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,10 +48,13 @@ public class VmServerInstanceRecordMappingHandler implements InstanceRecordMappi
                 )
                 .stream()
                 .map(vmCloudServer -> {
+                    BillModeConstants billMode = StringUtils.isEmpty(vmCloudServer.getInstanceChargeType()) ?
+                            BillModeConstants.ON_DEMAND : vmCloudServer.getInstanceChargeType().equals(ChargeTypeConstants.POSTPAID.getCode())
+                            ? BillModeConstants.ON_DEMAND : BillModeConstants.MONTHLY;
                     InstanceRecord instanceRecord = new InstanceRecord();
                     instanceRecord.setResourceId(vmCloudServer.getId());
                     instanceRecord.setResourceName(vmCloudServer.getInstanceName());
-                    instanceRecord.setBillMode(BillModeConstants.ON_DEMAND);
+                    instanceRecord.setBillMode(billMode);
                     instanceRecord.setMeta(Map.of("cpu", vmCloudServer.getCpu(), "memory", vmCloudServer.getMemory()));
                     instanceRecord.setOrganizationId(vmCloudServer.getSourceId());
                     instanceRecord.setRegion(vmCloudServer.getRegion());

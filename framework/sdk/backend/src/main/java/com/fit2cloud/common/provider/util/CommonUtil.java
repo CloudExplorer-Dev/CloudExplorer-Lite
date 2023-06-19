@@ -4,9 +4,8 @@ import io.reactivex.rxjava3.functions.BiFunction;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.function.Function;
 
@@ -165,5 +164,27 @@ public class CommonUtil {
             }
         }
         return result;
+    }
+
+    /**
+     * 获取 到期时间
+     *
+     * @param periodNum 包年包月月份
+     * @return 到期时间
+     */
+    public static LocalDateTime getExpiredTime(String periodNum) {
+        LocalDateTime localDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59));
+        return localDateTime.plusMonths(Long.parseLong(periodNum));
+    }
+
+    /**
+     * 获取到期时间时间戳
+     *
+     * @param periodNum 包年包月月份
+     * @return 到期时间
+     */
+    public static long getExpiredTimeEpochMilli(String periodNum) {
+        LocalDateTime expiredTime = getExpiredTime(periodNum);
+        return expiredTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 }

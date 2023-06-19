@@ -249,7 +249,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             label = "配置费用",
             clazz = VsphereCloudProvider.class,
             method = "calculateConfigPrice",
-            relationTrigger = {"periodNum", "instanceChargeType", "cpu", "ram", "disks"},
+            relationTrigger = {"count", "periodNum", "instanceChargeType", "cpu", "ram", "disks"},
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             footerLocation = 1,

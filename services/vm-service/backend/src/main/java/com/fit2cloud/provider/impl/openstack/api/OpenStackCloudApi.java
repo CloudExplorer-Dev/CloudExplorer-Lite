@@ -7,6 +7,7 @@ import com.fit2cloud.common.platform.credential.impl.OpenStackCredential;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.ServiceUtil;
@@ -577,6 +578,10 @@ public class OpenStackCloudApi {
                     .setRegion(request.getRegion())
                     .setInstanceTypeDescription(instanceType)
                     .setInstanceChargeType(request.getInstanceChargeType());
+
+            if (StringUtils.equals(ChargeTypeConstants.PREPAID.getCode(), request.getInstanceChargeType())) {
+                virtualMachine.setExpiredTime(CommonUtil.getExpiredTimeEpochMilli(request.getPeriodNum()));
+            }
 
             if (!request.isBootFormVolume()) {
                 virtualMachine.setDisk(flavor.getDisk());

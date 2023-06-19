@@ -1,17 +1,17 @@
 <template>
   <div>
     <el-button type="primary" @click="openAddPackage" :disabled="disabled"
-      >添加套餐</el-button
+      >添加规格</el-button
     >
     <el-table :data="tableData" style="width: 100%">
-      <el-table-column prop="name" label="套餐名称" />
+      <el-table-column prop="name" label="规格名称" />
       <el-table-column
         :prop="field.prop"
         :label="field.label"
         v-for="(field, index) in tableDynamicFieldList"
         :key="index"
       />
-      <el-table-column prop="onDemand" label="按需按量 (元/小时)" />
+      <el-table-column prop="onDemand" label="按量付费 (元/小时)" />
       <el-table-column prop="monthly" label="包年包月 (元/月)" />
       <fu-table-operations
         fixed="right"

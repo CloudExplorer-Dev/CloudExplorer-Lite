@@ -13,7 +13,7 @@
     <template #top>
       <el-alert
         style="--el-alert-bg-color: rgba(51, 112, 255, 0.15)"
-        title="当前计费策略仅对VMware 、OpenStack等私有云资源进行资源计费，其他与公有云一样需在云账号中同步账单，在分账设置中进行分账。"
+        title="当前计费策略是针对私有云资源设置的计费规则，云账号设置计费策略后同公有云账单一样需在【云账号】中【同步账单】，【账单明细】中查看账单，【分账设置】中设置分账。"
         type="info"
         show-icon
         @close="topHeight = 0"
@@ -23,7 +23,7 @@
     <div class="content">
       <div class="left_content" v-loading="listLoading">
         <div class="title_content">
-          <span class="title_text">私有云计费策略</span>
+          <span class="title_text">计费策略</span>
           <span @click="openAddPolicy" style="cursor: pointer"
             ><AddPolicyIcon></AddPolicyIcon
           ></span>
@@ -47,7 +47,7 @@
                 : ''
             "
             class="billing_policy_item"
-            v-for="policy in billingPolicyList"
+            v-for="policy in policyList"
             :key="policy.id"
           >
             <span> {{ policy.name }} </span>
@@ -102,13 +102,18 @@ import { ElMessageBox } from "element-plus";
 
 import bus from "@commons/bus";
 const topHeight = ref<number>(40);
-const filterText = ref<string>();
+const filterText = ref<string>("");
 const billingPolicyList = ref<Array<BillingPolicy>>([]);
 const activeBillingPolicyId = ref<string>();
 const linkCloudAccountRef = ref<InstanceType<typeof LinkCloudAccount>>();
 const reNameRef = ref<InstanceType<typeof ReName>>();
 const operate = ref<"VIEW" | "EDIT" | "CREATE">("VIEW");
 
+const policyList = computed(() => {
+  return billingPolicyList.value.filter((p) =>
+    p.name.includes(filterText.value)
+  );
+});
 /**
  * 选中的账单策略
  */
@@ -214,7 +219,7 @@ onMounted(() => {
 .content {
   --el-popover-padding: 0;
   display: flex;
-  height: calc(100%);
+  height: 100%;
   .left_content {
     box-sizing: border-box;
     padding: 0 24px 0 0;
@@ -244,10 +249,10 @@ onMounted(() => {
 
     .billing_policy_list {
       margin-top: 7px;
-      width: 100%;
+      width: 192px;
+      height: auto;
       .billing_policy_item {
         height: 38px;
-        width: 100%;
         border-radius: 4px;
         color: #1f2329;
         font-weight: 400;

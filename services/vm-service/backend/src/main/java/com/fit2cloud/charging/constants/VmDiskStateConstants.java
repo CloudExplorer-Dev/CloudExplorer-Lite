@@ -8,7 +8,7 @@ package com.fit2cloud.charging.constants;
  */
 public enum VmDiskStateConstants {
 
-    NotCreate('0', "未创建"),
+    NotCreate('0', "计费预留字段,用于当月占位"),
 
     available('1', "可用"),
 

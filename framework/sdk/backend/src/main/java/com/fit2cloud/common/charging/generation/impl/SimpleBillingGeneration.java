@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
  * {@code @注释: }
  */
 public class SimpleBillingGeneration implements BillingGeneration {
+    private final String packageFieldName = "package";
     private final BillSetting setting;
 
     private final List<Workspace> workspaces;
@@ -199,15 +200,13 @@ public class SimpleBillingGeneration implements BillingGeneration {
         BillPolicyDetails policy = regionInstance.billPolicy;
         // 套餐策略
         Optional<PackagePriceBillingPolicy> firstPackagePolicy = getFirstPackagePolicy(regionInstance.resourceInstance, policy.getPackagePriceBillingPolicy());
-        List<BillingField> billingFields = new ArrayList<>();
+        List<BillingField> billingFields;
         HashMap<String, Integer> billMeta = new HashMap<>();
         if (firstPackagePolicy.isPresent()) {
             PackagePriceBillingPolicy usePackagePolicy = firstPackagePolicy.get();
             billingFields = packagePolicyToBillingField(usePackagePolicy, regionInstance.resourceInstance.getBillMode());
             // 套餐价数量为1
-            for (BillingField billingField : billingFields) {
-                billMeta.put(billingField.getField(), 1);
-            }
+            billMeta.put(packageFieldName, 1);
         } else {
             billingFields = regionInstance.resourceInstance.getBillMode().equals(BillModeConstants.MONTHLY) ?
                     policy.getUnitPriceMonthlyBillingPolicy() :
@@ -220,7 +219,7 @@ public class SimpleBillingGeneration implements BillingGeneration {
                 month,
                 regionInstance.start,
                 regionInstance.end,
-                regionInstance.resourceInstance.getBillMode().equals(BillModeConstants.MONTHLY) ? setting.getMonthlyPolicy() : setting.getOnDemandPolicy(),
+                regionInstance.resourceInstance.getBillMode(),
                 regionInstance.billPolicy.getGlobalConfigMeta(),
                 setting.stateBilling(),
                 billMeta,
@@ -279,12 +278,9 @@ public class SimpleBillingGeneration implements BillingGeneration {
      * @return 转换后
      */
     private List<BillingField> packagePolicyToBillingField(PackagePriceBillingPolicy policy, BillModeConstants billMode) {
-        return policy.getBillPolicyFields()
-                .stream()
-                .map(field -> BillingField.of(field.getField(),
-                        billMode.equals(BillModeConstants.MONTHLY) ? policy.getMonthly() : policy.getOnDemand(), billMode.equals(BillModeConstants.MONTHLY) ? UnitPriceConstants.MONTH : UnitPriceConstants.HOUR)
-                ).toList();
-
+        return List.of(BillingField.of(packageFieldName,
+                billMode.equals(BillModeConstants.MONTHLY) ? policy.getMonthly() : policy.getOnDemand(),
+                billMode.equals(BillModeConstants.MONTHLY) ? UnitPriceConstants.MONTH : UnitPriceConstants.HOUR));
     }
 
     /**
@@ -416,7 +412,7 @@ public class SimpleBillingGeneration implements BillingGeneration {
      *
      * @param instanceState 实例状态
      * @param month         月份
-     * @param billingPolicy 计费策略
+     * @param billMode      计费策略
      * @param predicate     判断状态是否计费
      * @param billingMate   账单meta元数据
      * @param fields        计费字段
@@ -427,12 +423,13 @@ public class SimpleBillingGeneration implements BillingGeneration {
                                                               String month,
                                                               InstanceState.Time start,
                                                               InstanceState.Time end,
-                                                              BillingPolicy billingPolicy,
+                                                              BillModeConstants billMode,
                                                               Map<String, Object> globalConfigMeta,
                                                               BiPredicate<Map<String, Object>, InstanceState.State> predicate,
                                                               Map<String, Integer> billingMate,
                                                               List<BillingField> fields,
                                                               BillingGranularityConstants granularity) {
+        BillingPolicy billingPolicy = billMode.equals(BillModeConstants.MONTHLY) ? setting.getMonthlyPolicy() : setting.getOnDemandPolicy();
         List<DefaultKeyValue<String, List<InstanceState.State>>> stateListGroup = instanceState.getStateListGroup(start, end, month, granularity);
         return stateListGroup
                 .stream()
@@ -460,6 +457,7 @@ public class SimpleBillingGeneration implements BillingGeneration {
             BiPredicate<Map<String, Object>, InstanceState.State> predicate,
             List<BillingField> fields,
             Map<String, Integer> billingMate) {
+
         return fields
                 .stream()
                 .map(field -> {

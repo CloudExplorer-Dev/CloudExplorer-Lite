@@ -25,6 +25,11 @@
           <slot name="complex"></slot>
         </template>
         <template #buttons>
+          <el-button
+            style="width: 32px; height: 32px"
+            @click="refresh"
+            :icon="RefreshRight"
+          />
           <slot name="buttons"></slot>
         </template>
         <template #filter>
@@ -99,7 +104,7 @@ import {
 } from "@commons/components/ce-table/type";
 import CeFilterBar from "@commons/components/ce-table/CeFilterBar.vue";
 import CeFilter from "@commons/components/ce-table/CeFilter.vue";
-
+import { RefreshRight } from "@element-plus/icons-vue";
 const props = defineProps<{
   header?: string;
   tableConfig: TableConfig;

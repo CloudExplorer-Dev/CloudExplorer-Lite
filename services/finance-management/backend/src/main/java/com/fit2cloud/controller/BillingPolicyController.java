@@ -46,6 +46,7 @@ public class BillingPolicyController {
 
     @Operation(summary = "策略详情")
     @GetMapping(value = {"/details/{billing_policy_id}", "/details/"})
+    @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:READ')")
     public ResultHolder<BillingPolicyDetailsResponse> detailsBillingPolicy(@CustomValidated(mapper = BaseBillPolicyMapper.class, handler = ExistHandler.class, field = "id", message = "计费策略id不存在", exist = false, ifNullPass = true)
                                                                            @PathVariable(required = false, value = "billing_policy_id") String billingPolicyId) {
         BillingPolicyDetailsResponse billingPolicyDetailsResponse = billingPolicyService.detailsBillingPolicy(billingPolicyId);
@@ -73,6 +74,7 @@ public class BillingPolicyController {
 
     @Operation(summary = "修改策略")
     @PutMapping("/{billing_policy_id}")
+    @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:EDIT')")
     public ResultHolder<BillPolicy> updateBillingPolicy(@Parameter(description = "计费策略id") @CustomValidated(mapper = BaseBillPolicyMapper.class, handler = ExistHandler.class, field = "id", message = "计费策略id不存在", exist = false)
                                                         @PathVariable("billing_policy_id") String billingPolicyId,
                                                         @Validated @RequestBody BillingPolicyRequest request) {
@@ -82,6 +84,7 @@ public class BillingPolicyController {
 
     @Operation(summary = "创建策略")
     @PostMapping()
+    @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:CREATE')")
     public ResultHolder<BillPolicy> createBillingPolicy(@Validated @RequestBody BillingPolicyRequest request) {
         BillPolicy billingPolicy = billingPolicyService.createBillingPolicy(request);
         return ResultHolder.success(billingPolicy);
@@ -89,6 +92,7 @@ public class BillingPolicyController {
 
     @Operation(summary = "关联云账号")
     @PostMapping("/link")
+    @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:EDIT')")
     public ResultHolder<List<BillPolicyCloudAccountMapping>> linkCloudAccount(@Validated @RequestBody LinkCloudAccountRequest request) {
         List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappings = billingPolicyService.linkCloudAccount(request);
         return ResultHolder.success(billPolicyCloudAccountMappings);
@@ -96,6 +100,7 @@ public class BillingPolicyController {
 
     @Operation(summary = "获取实例类型最新的价格配置")
     @GetMapping("/calculate_config_price/{cloud_account_id}")
+    @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:READ')")
     public ResultHolder<List<BillPolicyDetails>> calculateConfigPrice(@PathVariable("cloud_account_id") String cloudAccountId) {
         List<BillPolicyDetails> list = billingPolicyService.calculateConfigPrice(cloudAccountId);
         return ResultHolder.success(list);
