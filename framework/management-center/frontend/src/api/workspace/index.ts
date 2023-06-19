@@ -42,7 +42,7 @@ export function deleteWorkspaceById(
   workspaceId: string,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return del("api/workspace/" + workspaceId, loading);
+  return del(`api/workspace/${workspaceId}`, loading);
 }
 
 /**

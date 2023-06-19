@@ -35,7 +35,7 @@ export function shutdownInstance(
   instanceId: string,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return post("api/server/shutdown/" + instanceId, null, null, loading);
+  return post(`api/server/shutdown/${instanceId}`, null, null, loading);
 }
 
 /**
@@ -47,7 +47,7 @@ export function powerOn(
   instanceId: string,
   loading?: Ref<boolean>
 ): Promise<Result<null>> {
-  return post("api/server/powerOn/" + instanceId, null, null, loading);
+  return post(`api/server/powerOn/${instanceId}`, null, null, loading);
 }
 
 /**
@@ -59,7 +59,7 @@ export function reboot(
   instanceId: string,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return post("api/server/reboot/" + instanceId, null, null, loading);
+  return post(`api/server/reboot/${instanceId}`, null, null, loading);
 }
 
 /**
@@ -71,7 +71,7 @@ export function powerOff(
   instanceId: string,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return post("api/server/powerOff/" + instanceId, null, null, loading);
+  return post(`api/server/powerOff/${instanceId}`, null, null, loading);
 }
 
 /**
@@ -83,7 +83,7 @@ export function recycleInstance(
   instanceId: string,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return post("api/server/recycle/" + instanceId, null, null, loading);
+  return post(`api/server/recycle/${instanceId}`, null, null, loading);
 }
 
 /**
@@ -95,7 +95,7 @@ export function deleteInstance(
   instanceId: string,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return post("api/server/delete/" + instanceId, null, null, loading);
+  return post(`api/server/delete/${instanceId}`, null, null, loading);
 }
 
 /**
@@ -107,7 +107,7 @@ export function deleteFailedRecord(
   id: string,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return post("api/server/deleteFailedRecord/" + id, null, null, loading);
+  return post(`api/server/deleteFailedRecord/${id}`, null, null, loading);
 }
 
 /**
@@ -138,7 +138,7 @@ export function getVmCloudServerById(
   id: string,
   loading?: Ref<boolean>
 ): Promise<Result<VmCloudServerVO>> {
-  return get("api/server/" + id, null, loading);
+  return get(`api/server/${id}`, null, loading);
 }
 
 /**
@@ -207,7 +207,7 @@ export function changeServerConfig(
  * @param loading
  */
 export function getConfigUpdateForm(platform: string, loading?: Ref<boolean>) {
-  return get("/api/server/configUpdateForm/" + platform, null, loading);
+  return get(`/api/server/configUpdateForm/${platform}`, null, loading);
 }
 
 /**
@@ -220,7 +220,7 @@ export function getConfigUpdatePrice(
   req: unknown,
   loading?: Ref<boolean>
 ) {
-  return post("/api/server/configUpdatePrice/" + platform, null, req, loading);
+  return post(`/api/server/configUpdatePrice/${platform}`, null, req, loading);
 }
 
 /**

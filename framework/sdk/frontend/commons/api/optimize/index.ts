@@ -82,7 +82,7 @@ export function exportServerData(
 ) {
   exportExcel(
     fileName,
-    "api/optimization_strategy_resource/server/download/" + req.version,
+    `api/optimization_strategy_resource/server/download/${req.version}`,
     req,
     loading
   );

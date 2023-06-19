@@ -34,7 +34,7 @@ export function getCreateDiskForm(
   accountId: string,
   loading?: Ref<boolean>
 ): Promise<Result<any>> {
-  return get("/api/disk/createDiskForm/" + accountId, null, loading);
+  return get(`/api/disk/createDiskForm/${accountId}`, null, loading);
 }
 
 /**
@@ -82,7 +82,7 @@ export function detach(
   id: string,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return put("api/disk/detach/" + id, null, null, loading);
+  return put(`api/disk/detach/${id}`, null, null, loading);
 }
 
 /**
@@ -95,7 +95,7 @@ export function deleteDisk(
   id: string,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return del("api/disk/delete/" + id, null, null, loading);
+  return del(`api/disk/delete/${id}`, null, null, loading);
 }
 
 /**
@@ -107,7 +107,7 @@ export function recycleDisk(
   id: string,
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
-  return put("api/disk/recycleDisk/" + id, null, null, loading);
+  return put(`api/disk/recycleDisk/${id}`, null, null, loading);
 }
 
 /**
@@ -175,7 +175,7 @@ export function showCloudDiskById(
   id: string,
   loading?: Ref<boolean>
 ): Promise<Result<VmCloudDiskVO>> {
-  return get("api/disk/showCloudDiskById/" + id, null, loading);
+  return get(`api/disk/showCloudDiskById/${id}`, null, loading);
 }
 
 /**

@@ -26,7 +26,7 @@ export function deleteResource(
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
   return post(
-    "/api/vm/recycleBin/deleteResource/" + recycleId,
+    `/api/vm/recycleBin/deleteResource/${recycleId}`,
     null,
     null,
     loading
@@ -132,7 +132,7 @@ export function recoverResource(
   loading?: Ref<boolean>
 ): Promise<Result<boolean>> {
   return post(
-    "/api/vm/recycleBin/recoverResource/" + recycleId,
+    `/api/vm/recycleBin/recoverResource/${recycleId}`,
     null,
     null,
     loading
@@ -141,7 +141,7 @@ export function recoverResource(
 
 /**
  * 批量恢复资源
- * @param recycleBinId
+ * @param recycleIds
  * @param loading
  */
 export function batchRecoverResource(

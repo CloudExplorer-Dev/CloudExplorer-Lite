@@ -41,7 +41,7 @@ const verificationCloudAccount: (
   loading?: Ref<boolean>
 ) => Promise<Result<Page<CloudAccount>>> = (cloud_account_id, loading) => {
   return get(
-    "/api/cloud_account/verification/" + cloud_account_id,
+    `/api/cloud_account/verification/${cloud_account_id}`,
     null,
     loading
   );
@@ -57,7 +57,7 @@ const updateCloudAccount: (
   data: UpdateAccount,
   loading?: Ref<boolean>
 ) => Promise<Result<CloudAccount>> = (data, loading) => {
-  return put("/api/cloud_account/", null, data, loading);
+  return put("/api/cloud_account", null, data, loading);
 };
 /**
  * 删除云账号 根据云账号id
@@ -69,7 +69,7 @@ const deleteCloudAccount: (
   cloud_account_id: string,
   loading?: Ref<boolean>
 ) => Promise<Result<boolean>> = (cloud_account_id, loading) => {
-  return del("/api/cloud_account/" + cloud_account_id, null, null, loading);
+  return del(`/api/cloud_account/${cloud_account_id}`, null, null, loading);
 };
 
 /**
@@ -82,7 +82,7 @@ const batchDeleteCloudAccount: (
   cloud_account_ids: Array<string>,
   loading?: Ref<boolean>
 ) => Promise<Result<boolean>> = (cloud_account_ids, loading) => {
-  return del("/api/cloud_account/", null, cloud_account_ids, loading);
+  return del("/api/cloud_account", null, cloud_account_ids, loading);
 };
 /**
  * 获取区域
@@ -94,7 +94,7 @@ const getRegions: (
   accountId: string,
   loading?: Ref<boolean>
 ) => Promise<Result<Array<Region>>> = (accountId, loading) => {
-  return get("/api/cloud_account/region/" + accountId, null, loading);
+  return get(`/api/cloud_account/region/${accountId}`, null, loading);
 };
 
 /**
@@ -107,7 +107,7 @@ const getJobs: (
   accountId: string,
   loading?: Ref<boolean>
 ) => Promise<Result<CloudAccountJobDetailsResponse>> = (accountId, loading) => {
-  return get("/api/cloud_account/jobs/" + accountId, null, loading);
+  return get(`/api/cloud_account/jobs/${accountId}`, null, loading);
 };
 
 /**
@@ -162,7 +162,7 @@ const getResourceCount: (
   loading?: Ref<boolean>
 ) => Promise<Result<Array<ResourceCount>>> = (cloudAccountId, loading) => {
   return get(
-    "/api/cloud_account/resourceCount/" + cloudAccountId,
+    `/api/cloud_account/resourceCount/${cloudAccountId}`,
     null,
     loading
   );
@@ -233,7 +233,7 @@ const saveOrUpdateBillSetting = (
   loading?: Ref<boolean>
 ) => {
   return put(
-    "/api/base/cloud_account/bill/" + cloudAccountId,
+    `/api/base/cloud_account/bill/${cloudAccountId}`,
     undefined,
     data,
     loading

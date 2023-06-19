@@ -13,7 +13,7 @@ export function tree(
   loading?: Ref<boolean>
 ): Promise<Result<Array<OrganizationTree>>> {
   const type: string = treeType === undefined ? "ORGANIZATION" : treeType;
-  return get("/api/organization/tree/" + type, {}, loading);
+  return get(`/api/organization/tree/${type}`, {}, loading);
 }
 export function sourceTree(
   loading?: Ref<boolean>

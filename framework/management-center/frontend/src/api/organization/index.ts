@@ -29,14 +29,14 @@ const batchSave = (data: CreateOrgForm, loading?: Ref<boolean>) => {
   return post("/api/organization/batch", null, data, loading);
 };
 const deleteOrg = (id: string, loading?: Ref<boolean>) => {
-  return del("/api/organization/" + id, undefined, undefined, loading);
+  return del(`/api/organization/${id}`, undefined, undefined, loading);
 };
 
 const deleteBatchOrg = (organizations: Array<Organization>) => {
   return del("/api/organization", undefined, organizations);
 };
 const getOrgById = (id: string) => {
-  return get("/api/organization/" + id, null);
+  return get(`/api/organization/${id}`, null);
 };
 const updateOrg = (organization: OrgUpdateForm) => {
   return put("/api/organization", undefined, organization);
