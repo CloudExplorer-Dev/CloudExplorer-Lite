@@ -35,7 +35,7 @@
               @change="changeIgnoreResourceTag"
             >
               <el-radio-button :label="false">优化资源</el-radio-button>
-              <el-radio-button :label="true">已忽略资源</el-radio-button>
+              <el-radio-button :label="true" v-if="showIgnoreResourceTag">已忽略资源</el-radio-button>
             </el-radio-group>
           </el-col>
         </el-row>
@@ -197,9 +197,8 @@
       />
       <template #buttons>
         <!-- 导出 -->
-        <el-button @click="exportData('xlsx')">
+        <el-button @click="exportData('xlsx')" style="width: 32px;">
           <ce-icon size="16" code="icon_bottom-align_outlined"></ce-icon>
-          <span>导出</span>
         </el-button>
 
         <CeTableColumnSelect :columns="columns" />
@@ -378,6 +377,11 @@ const showSettingIcon = computed<boolean>(() =>
 const changeIgnoreResourceTag = () => {
   search(table?.value.getTableSearch());
 };
+const showIgnoreResourceTag = computed(()=>{
+  return permissionStore.hasPermission(
+      "[operation-analysis]OPTIMIZATION_STRATEGY_IGNORE_RESOURCE:READ"
+  )
+})
 /**
  * 导出
  */
@@ -477,7 +481,7 @@ const buttons = ref([
       return (
         !ignoreResourceTag.value &&
         permissionStore.hasPermission(
-          "[operation-analysis]OPTIMIZATION_STRATEGY:EDIT"
+          "[operation-analysis]OPTIMIZATION_STRATEGY_IGNORE_RESOURCE:ADD"
         )
       );
     },
@@ -492,7 +496,7 @@ const buttons = ref([
       return (
         ignoreResourceTag.value &&
         permissionStore.hasPermission(
-          "[operation-analysis]OPTIMIZATION_STRATEGY:EDIT"
+          "[operation-analysis]OPTIMIZATION_STRATEGY_IGNORE_RESOURCE:CANCEL"
         )
       );
     },
