@@ -1,7 +1,7 @@
 <template>
   <el-drawer
     v-model="drawer"
-    :title="packagePriceBillingId ? '编辑套餐' : '添加套餐'"
+    :title="packagePriceBillingId ? '编辑规格' : '添加规格'"
     direction="rtl"
     size="600px"
     :before-close="close"
@@ -14,10 +14,10 @@
       ref="formRef"
       :rules="rules"
     >
-      <el-form-item label="套餐名称" prop="name">
+      <el-form-item label="规格名称" prop="name">
         <el-input v-model="form.name" />
       </el-form-item>
-      <el-form-item label="套餐配置" prop="config">
+      <el-form-item label="规格配置" prop="config">
         <div class="config">
           <el-row
             :gutter="20"
@@ -57,11 +57,11 @@
           </div>
         </div>
       </el-form-item>
-      <el-form-item label="套餐价格" prop="price">
+      <el-form-item label="规格价格" prop="price">
         <div class="config">
           <el-row :gutter="20">
             <el-col :span="12">
-              <el-form-item label="按需按量套餐计费" :prop="`price.onDemand`">
+              <el-form-item label="按量付费" :prop="`price.onDemand`">
                 <el-input
                   v-number="{
                     max: 100000000,
@@ -81,7 +81,7 @@
               </div>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="包年包月套餐计费" :prop="`price.monthly`">
+              <el-form-item label="包年包月" :prop="`price.monthly`">
                 <el-input
                   v-number="{
                     max: 100000000,

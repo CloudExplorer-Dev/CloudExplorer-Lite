@@ -100,7 +100,7 @@ public class MenuConstants {
             ).menu(
                     new Menu.Builder()
                             .name("billing_policy")
-                            .title("私有云计费")
+                            .title("计费策略")
                             .componentPath("/src/views/billing_policy/index.vue")
                             .path("/billing_policy")
                             .saveRecent(true)

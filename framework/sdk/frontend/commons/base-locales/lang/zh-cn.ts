@@ -344,6 +344,13 @@ const permissions = {
         edit: "编辑",
         delete: "删除",
       },
+      billing_policy: {
+        base: "计费策略",
+        read: "查看",
+        create: "创建",
+        edit: "编辑",
+        delete: "删除",
+      },
     },
     security: {
       overview: {

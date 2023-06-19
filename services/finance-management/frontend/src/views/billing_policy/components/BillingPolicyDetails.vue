@@ -8,7 +8,7 @@
       >
         <base-container style="--ce-base-container-height: auto">
           <template #header>
-            <span>按单价计费规则</span>
+            <span>按单价计费</span>
           </template>
           <template #content>
             <el-row :gutter="16">
@@ -33,7 +33,7 @@
         </base-container>
         <base-container style="--ce-base-container-height: auto">
           <template #header>
-            <span>按套餐计费</span>
+            <span>按规格计费</span>
           </template>
           <template #content>
             <BillingPackage

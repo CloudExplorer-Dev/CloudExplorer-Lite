@@ -8,6 +8,7 @@ import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.*;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.provider.entity.*;
@@ -943,7 +944,9 @@ public class VsphereSyncCloudApi {
                 .setInstanceTypeDescription(instanceType)
                 .setRemark(request.getServerInfos().get(index).getRemark())
                 .setInstanceChargeType(request.getInstanceChargeType());
-
+        if (StringUtils.equals(ChargeTypeConstants.PREPAID.getCode(), request.getInstanceChargeType())) {
+            virtualMachine.setExpiredTime(CommonUtil.getExpiredTimeEpochMilli(request.getPeriodNum()));
+        }
         return virtualMachine;
 
     }

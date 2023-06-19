@@ -19,7 +19,7 @@
         >
       </template>
       <el-table-column type="selection" />
-      <el-table-column prop="name" label="规则"> </el-table-column>
+      <el-table-column prop="name" label="账单名称"> </el-table-column>
       <el-table-column prop="name" label="分组维度">
         <template #default="scope">
           <span>{{

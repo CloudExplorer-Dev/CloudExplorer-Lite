@@ -42,6 +42,8 @@ public class Charging implements ChargingConfig.Config {
                     List<Character> notBilling = new ArrayList<>();
                     notBilling.add(VmServerStateConstants.NotCreate.getCode());
                     notBilling.add(VmServerStateConstants.Deleted.getCode());
+                    notBilling.add(VmServerStateConstants.Failed.getCode());
+                    notBilling.add(VmServerStateConstants.Creating.getCode());
                     if (value) {
                         notBilling.add(VmServerStateConstants.Stopped.getCode());
                     }

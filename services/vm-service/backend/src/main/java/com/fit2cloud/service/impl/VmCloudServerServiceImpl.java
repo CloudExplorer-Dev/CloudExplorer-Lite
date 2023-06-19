@@ -65,6 +65,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -567,7 +568,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             vmCloudServer.setInstanceStatus(F2CInstanceStatus.WaitCreating.name());
             vmCloudServer.setApplyUser(currentUser.getUsername());
             vmCloudServer.setRemark(tempData.getRemark());
-
+            if (Objects.nonNull(tempData.getExpiredTime())) {
+                vmCloudServer.setExpiredTime(new Date(tempData.getExpiredTime()).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+            }
             if (vmCloudServer.getRemark() != null && vmCloudServer.getRemark().length() > 128) {
                 throw new RuntimeException("云主机备注长度不能超过128个字符");
             }

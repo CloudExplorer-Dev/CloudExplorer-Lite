@@ -78,7 +78,7 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
     private final Function<String, ResultHolder<List<BillingFieldMetaSetting>>> getChargingModuleInfo = (String moduleName) -> {
         String httpUrl = ServiceUtil.getHttpUrl(moduleName, "/api/base/billing/policy_config");
         ResponseEntity<ResultHolder<List<BillingFieldMetaSetting>>> cloudAccountJob = restTemplate
-                .exchange(httpUrl, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<ResultHolder<List<BillingFieldMetaSetting>>>() {
+                .exchange(httpUrl, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<>() {
                 });
         return cloudAccountJob.getBody();
     };
@@ -179,23 +179,6 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
         billPolicy.setCreateTime(currentTime);
         billPolicy.setUpdateTime(currentTime);
         this.save(billPolicy);
-
-        // 获取其他模块 计费设置
-        List<BillingFieldMetaSetting> billingFieldMetaSettings = ServiceUtil.getServices("gateway", ServerInfo.module)
-                .stream()
-                .map(modelName -> CompletableFuture.supplyAsync(() -> getChargingModuleInfo.apply(modelName), new DelegatingSecurityContextExecutor(workThreadPool)))
-                .map(CompletableFuture::join)
-                .map(ResultHolder::getData)
-                .flatMap(List::stream)
-                .toList();
-
-        List<BillPolicyDetails> billPolicyDetailsList = billingFieldMetaSettings
-                .stream()
-                .map(item -> toBillPolicyDetails(currentTime, billPolicy.getId(), item))
-                .toList();
-
-        // 插入计费详情
-        billPolicyDetailsService.saveBatch(billPolicyDetailsList);
 
         if (CollectionUtils.isNotEmpty(request.getCloudAccountList())) {
             LinkCloudAccountRequest linkCloudAccountRequest = new LinkCloudAccountRequest();
