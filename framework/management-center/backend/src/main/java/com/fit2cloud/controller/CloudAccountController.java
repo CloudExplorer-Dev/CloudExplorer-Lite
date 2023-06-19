@@ -25,13 +25,13 @@ import com.fit2cloud.service.ICloudAccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -234,7 +234,8 @@ public class CloudAccountController {
             resourceId = "#updateAccountNameRequest.id",
             content = "'编辑云账号名称为['+#updateAccountNameRequest.name+']'",
             param = "#updateAccountNameRequest")
-    public ResultHolder<Boolean> updateAccountName(@RequestBody UpdateAccountNameRequest updateAccountNameRequest) {
+    @Emit(value = "UPDATE::CLOUD_ACCOUNT", el = "#updateAccountNameRequest.id")
+    public ResultHolder<Boolean> updateAccountName(@Validated(ValidationGroup.UPDATE.class) @RequestBody UpdateAccountNameRequest updateAccountNameRequest) {
         return ResultHolder.success(cloudAccountService.updateAccountName(updateAccountNameRequest));
     }
 
