@@ -743,6 +743,11 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
         Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
         List<F2CDisk> f2CDisks = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(params), ICloudProvider::getVmF2CDisks);
+        for (F2CDisk f2CDisk : f2CDisks) {
+            if (StringUtils.isEmpty(f2CDisk.getDiskChargeType())) {
+                f2CDisk.setDiskChargeType(vmCloudServer.getInstanceChargeType());
+            }
+        }
         return f2CDisks;
     }
 

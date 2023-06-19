@@ -1,7 +1,7 @@
 <template>
   <div
     class="info-card"
-    :class="{ 'no-padding': noPadding }"
+    :class="{ 'no-padding': noPadding, 'margin-bottom': !noPadding }"
     v-if="show"
     v-bind="$attrs"
   >
@@ -64,6 +64,7 @@ const props = withDefaults(
   {
     needRoles: () => ["ADMIN", "ORGADMIN", "USER"],
     permission: [
+      "[operation-analysis]OPTIMIZATION_STRATEGY:READ",
       "[operation-analysis]SERVER_OPTIMIZATION:READ",
       "[operation-analysis]OVERVIEW:READ",
     ],
@@ -127,7 +128,7 @@ function goTo(id: string) {
   } else {
     MicroAppRouterUtil.jumpToChildrenPath(
       "operation-analysis",
-      "/operation-analysis/server_optimization/list?checked=" +
+      "/operation-analysis/resource_optimization/server_optimization/list?checked=" +
         queryParam.checked +
         (queryParam.accountIds ? "&accountIds=" + queryParam.accountIds : ""),
       router
@@ -233,9 +234,8 @@ defineExpose({
 .info-card {
   background: #ffffff;
   border-radius: 4px;
-  padding: 24px;
+  padding: 20px;
   overflow: hidden;
-
   .title {
     font-style: normal;
     font-weight: 500;
@@ -249,5 +249,8 @@ defineExpose({
 
 .info-card.no-padding {
   padding: 0;
+}
+.info-card.margin-bottom {
+  margin-bottom: 20px;
 }
 </style>

@@ -1,20 +1,22 @@
 package com.fit2cloud.provider.impl.vsphere.api;
 
+import com.fit2cloud.base.entity.BillPolicyDetails;
+import com.fit2cloud.common.constants.ChargeTypeConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
-import com.fit2cloud.common.utils.DateUtil;
-import com.fit2cloud.common.utils.IpChecker;
-import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.common.utils.*;
+import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.*;
+import com.fit2cloud.utils.ChargingUtil;
 import com.vmware.vim25.*;
 import com.vmware.vim25.mo.*;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,11 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -934,7 +941,8 @@ public class VsphereSyncCloudApi {
                 .setIpArray(new ArrayList<>())
                 .setInstanceType(instanceType)
                 .setInstanceTypeDescription(instanceType)
-                .setRemark(request.getServerInfos().get(index).getRemark());
+                .setRemark(request.getServerInfos().get(index).getRemark())
+                .setInstanceChargeType(request.getInstanceChargeType());
 
         return virtualMachine;
 
@@ -1000,7 +1008,6 @@ public class VsphereSyncCloudApi {
 
             if (vm != null) {
                 f2CVirtualMachine = VsphereUtil.toF2CInstance(vm, client);
-
                 client.connectVirtualEthernetCard(vm);
 
                 if (f2CVirtualMachine != null) {
@@ -1079,6 +1086,7 @@ public class VsphereSyncCloudApi {
         }
         if (f2CVirtualMachine != null) {
             f2CVirtualMachine.setId(request.getId());
+            f2CVirtualMachine.setInstanceChargeType(request.getInstanceChargeType());
         }
         return f2CVirtualMachine;
     }
@@ -1752,7 +1760,7 @@ public class VsphereSyncCloudApi {
 
         int cpuCount = request.getCpu();
         int cpuSockets = 1;
-        long memory = request.getMemory() * 1024l;
+        long memory = request.getMemory() * 1024L;
         HostSystem host = client.getHost(vm);
         Optional.ofNullable(host).orElseThrow(() -> new RuntimeException("Host does not exist!"));
         cpuSockets = host.getSummary().getHardware().getNumCpuPkgs();
@@ -1813,5 +1821,42 @@ public class VsphereSyncCloudApi {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
+
+    public static String calculateConfigPrice(VsphereCalculateConfigPriceRequest request) {
+        RestTemplate restTemplate = SpringUtil.getBean(RestTemplate.class);
+        Set<String> servicesExcludeGateway = ServiceUtil.getServicesExcludeGateway();
+        if (servicesExcludeGateway.contains("finance-management")) {
+            String url = ServiceUtil.getHttpUrl("finance-management", "api/billing_policy/calculate_config_price/" + request.getAccountId());
+            ResponseEntity<ResultHolder<List<BillPolicyDetails>>> exchange = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<>() {
+            });
+
+            List<BillPolicyDetails> billPolicyDetailsList = Objects.requireNonNull(exchange.getBody()).getData();
+
+            String instanceChargeType = request.getInstanceChargeType();
+
+            Optional<BigDecimal> ecs = billPolicyDetailsList.stream()
+                    .map(billPolicyDetails -> {
+                        if ("ECS".equals(billPolicyDetails.getResourceType())) {
+                            return ChargingUtil.getBigDecimal(instanceChargeType, Map.of("cpu", request.getCpu(), "memory", request.getRam()), billPolicyDetails);
+                        }
+                        if ("DISK".equals(billPolicyDetails.getResourceType())) {
+                            List<VsphereVmCreateRequest.DiskConfig> disks = request.getDisks();
+                            return disks.stream().map(disk -> ChargingUtil.getBigDecimal(instanceChargeType, Map.of("size", disk.getSize()), billPolicyDetails))
+                                    .reduce(BigDecimal::add).orElse(new BigDecimal(0));
+                        }
+                        return new BigDecimal(0);
+                    }).reduce(BigDecimal::add);
+            return ecs.map(bigDecimal -> {
+                        if (ChargeTypeConstants.PREPAID.getCode().equals(instanceChargeType) && StringUtils.isNotEmpty(request.getPeriodNum())) {
+                            return bigDecimal.multiply(new BigDecimal(request.getPeriodNum())).multiply(new BigDecimal(request.getCount()));
+                        }
+                        return bigDecimal.multiply(new BigDecimal(request.getCount()));
+                    }).map(bigDecimal -> bigDecimal.setScale(3, RoundingMode.HALF_UP) +
+                            (ChargeTypeConstants.POSTPAID.getCode().equals(instanceChargeType) ? "元/小时" : "元"))
+                    .orElse("--");
+        }
+        return "-";
+    }
+
 
 }

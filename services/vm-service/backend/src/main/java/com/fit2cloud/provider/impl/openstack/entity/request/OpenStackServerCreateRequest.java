@@ -53,6 +53,19 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
      */
     private String id;
 
+    @Form(inputType = InputType.Radio,
+            label = "付费方式",
+            clazz = OpenStackBaseCloudProvider.class,
+            method = "getChargeType",
+            textField = "key",
+            valueField = "value",
+            defaultValue = "PostPaid",
+            step = 1,
+            group = 1,
+            confirmGroup = 1
+    )
+    private String instanceChargeType;
+
     //step 1
     //区域
     @Form(inputType = InputType.Radio,
@@ -166,6 +179,33 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             confirmGroup = 2
     )
     private List<String> securityGroups;
+
+    @Form(inputType = InputType.SingleSelect,
+            label = "时长",
+            clazz = OpenStackCloudProvider.class,
+            method = "getPeriodOption",
+            textField = "periodDisplayName",
+            valueField = "period",
+            defaultValue = "1",
+            relationShowValues = "PrePaid",
+            relationShows = "instanceChargeType",
+            propsInfo = "{\"style\":{\"height\":\"30px\"}}",
+            confirmGroup = 1
+    )
+    private String periodNum;
+
+    @Form(inputType = InputType.LabelText,
+            label = "配置费用",
+            clazz = OpenStackCloudProvider.class,
+            method = "calculateConfigPrice",
+            relationTrigger = {"count", "periodNum", "instanceChargeType", "flavorId", "disks"},
+            attrs = "{\"style\":\"color: red; font-size: large\"}",
+            confirmGroup = 1,
+            footerLocation = 1,
+            confirmSpecial = true,
+            required = false
+    )
+    private String configPrice;
 
     @Form(inputType = InputType.Radio,
             step = 3,

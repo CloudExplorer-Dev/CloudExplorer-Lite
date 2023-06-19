@@ -7,10 +7,10 @@ import com.fit2cloud.dto.module.Menu;
 import com.fit2cloud.dto.module.MenuPermission;
 import com.fit2cloud.dto.module.Menus;
 import com.fit2cloud.service.MenuService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 /**
@@ -215,6 +215,12 @@ public class MenuConstants {
                     .order(1)
                     .requiredPermission(new MenuPermission.Builder()
                             .role(RoleConstants.ROLE.ADMIN)
+                            .permission(GROUP.RESOURCE_OPTIMIZATION, OPERATE.READ)
+                            .permission(GROUP.SERVER_OPTIMIZATION, OPERATE.READ)
+                            .permission(GROUP.OPTIMIZATION_STRATEGY, OPERATE.READ)
+                    ).requiredPermission(new MenuPermission.Builder()
+                            .role(RoleConstants.ROLE.USER)
+                            .permission(GROUP.RESOURCE_OPTIMIZATION, OPERATE.READ)
                             .permission(GROUP.SERVER_OPTIMIZATION, OPERATE.READ)
                             .permission(GROUP.OPTIMIZATION_STRATEGY, OPERATE.READ)
                     )

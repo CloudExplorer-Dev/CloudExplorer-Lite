@@ -48,12 +48,12 @@ import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.service.*;
 import com.fit2cloud.utils.ConvertUtils;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -643,6 +643,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             vmCloudDisk.setId(diskId);
             vmCloudDisk.setAccountId(accountId);
             vmCloudDisk.setSourceId(sourceId);
+            vmCloudDisk.setDiskChargeType(f2cDisk.getDiskChargeType());
             if (exist) {
                 baseMapper.updateById(vmCloudDisk);
             } else {

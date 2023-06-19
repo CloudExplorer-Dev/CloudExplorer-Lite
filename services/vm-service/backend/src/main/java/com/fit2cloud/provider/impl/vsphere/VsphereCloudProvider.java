@@ -14,6 +14,7 @@ import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
 import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskMode;
 import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskType;
+import com.fit2cloud.provider.impl.vsphere.entity.constants.VspherePeriodOption;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.DiskType;
 
@@ -123,6 +124,7 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         return VsphereSyncCloudApi.getFolders(request);
     }
 
+    @Override
     public List<Map<String, String>> getDiskTypes(String req) {
         List<Map<String, String>> diskTypes = new ArrayList<>();
         Map<String, String> defaultMap = new HashMap<>();
@@ -299,5 +301,37 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
     @Override
     public boolean resetPassword(String req) {
         return VsphereSyncCloudApi.resetPassword(JsonUtil.parseObject(req, VsphereVmResetPasswordRequest.class));
+    }
+
+    @Override
+    public String calculateConfigPrice(String req) {
+        VsphereCalculateConfigPriceRequest vsphereCalculateConfigPriceRequest =
+                JsonUtil.parseObject(req, VsphereCalculateConfigPriceRequest.class);
+        return VsphereSyncCloudApi.calculateConfigPrice(vsphereCalculateConfigPriceRequest);
+    }
+
+    public List<Map<String, Object>> getPeriodOption(String req) {
+        List<Map<String, Object>> periodList = new ArrayList<>();
+        for (VspherePeriodOption option : VspherePeriodOption.values()) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("period", option.getPeriod());
+            map.put("periodDisplayName", option.getPeriodDisplayName());
+            periodList.add(map);
+        }
+        return periodList;
+    }
+
+    @Override
+    public String calculateConfigUpdatePrice(String req) {
+        CalculateConfigUpdatePriceRequest calculateConfigUpdatePriceRequest = JsonUtil.parseObject(req, CalculateConfigUpdatePriceRequest.class);
+        VsphereCalculateConfigPriceRequest vsphereCalculateConfigPriceRequest = new VsphereCalculateConfigPriceRequest();
+        vsphereCalculateConfigPriceRequest.setRam(calculateConfigUpdatePriceRequest.getMemory());
+        vsphereCalculateConfigPriceRequest.setCpu(calculateConfigUpdatePriceRequest.getCpu());
+        vsphereCalculateConfigPriceRequest.setCount(1);
+        vsphereCalculateConfigPriceRequest.setPeriodNum("1");
+        vsphereCalculateConfigPriceRequest.setAccountId(calculateConfigUpdatePriceRequest.getCloudAccountId());
+        vsphereCalculateConfigPriceRequest.setDisks(List.of());
+        vsphereCalculateConfigPriceRequest.setInstanceChargeType(calculateConfigUpdatePriceRequest.getInstanceChargeType());
+        return VsphereSyncCloudApi.calculateConfigPrice(vsphereCalculateConfigPriceRequest);
     }
 }

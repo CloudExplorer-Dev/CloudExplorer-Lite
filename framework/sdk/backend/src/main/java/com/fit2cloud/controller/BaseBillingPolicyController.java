@@ -66,5 +66,4 @@ public class BaseBillingPolicyController {
                 .toList();
         return ResultHolder.success(instanceBills);
     }
-
 }

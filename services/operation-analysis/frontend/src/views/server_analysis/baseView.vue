@@ -40,6 +40,10 @@
     <el-row :gutter="16" class="row">
       <el-col :span="12">
         <CloudServerIncreaseTrend
+          :permission="[
+            '[operation-analysis]SERVER_ANALYSIS:READ',
+            '[operation-analysis]OVERVIEW:READ',
+          ]"
           :cloud-account-id="currentAccount"
           :host-id="currentHost"
           style="height: 250px; border: 1px solid rgba(223, 224, 227, 1)"
