@@ -5,11 +5,11 @@ import com.fit2cloud.dto.permission.ModulePermission;
 import com.fit2cloud.dto.permission.Permission;
 import com.fit2cloud.dto.permission.PermissionGroup;
 import com.fit2cloud.service.BasePermissionService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Resource;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -127,16 +127,6 @@ public class PermissionConstants {
                             .permission(new Permission.Builder()
                                     .operate(OPERATE.READ)
                                     .name("permission.operation.server_optimization.read")
-                                    .role(RoleConstants.ROLE.ADMIN)
-                                    .role(RoleConstants.ROLE.ORGADMIN)
-                                    .role(RoleConstants.ROLE.USER))
-            ).group(
-                    new PermissionGroup.Builder()
-                            .id(GROUP.RESOURCE_OPTIMIZATION)
-                            .name("permission.operation.resource_optimization.base")
-                            .permission(new Permission.Builder()
-                                    .operate(OPERATE.READ)
-                                    .name("permission.operation.resource_optimization.read")
                                     .role(RoleConstants.ROLE.ADMIN)
                                     .role(RoleConstants.ROLE.ORGADMIN)
                                     .role(RoleConstants.ROLE.USER))

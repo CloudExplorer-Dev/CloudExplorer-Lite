@@ -53,7 +53,7 @@ public class OptimizationStrategyController {
 
     @Operation(summary = "查询优化策略列表")
     @GetMapping("/{resourceType}/list")
-    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:READ','RESOURCE_OPTIMIZATION:READ')")
+    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:READ','SERVER_OPTIMIZATION:READ')")
     public ResultHolder<List<OptimizationStrategy>> list(@PathVariable("resourceType") String resourceType) {
         return ResultHolder.success(optimizationStrategyService.getOptimizationStrategyList(resourceType));
     }
@@ -122,7 +122,6 @@ public class OptimizationStrategyController {
 
     @Operation(summary = "查询资源类型列表")
     @GetMapping("/resource_type/list")
-    @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:READ','RESOURCE_OPTIMIZATION:READ')")
     public ResultHolder<List<ResourceTypeDTO>> getResourceTypeList() {
         return ResultHolder.success(optimizationStrategyService.getResourceTypeList());
     }
