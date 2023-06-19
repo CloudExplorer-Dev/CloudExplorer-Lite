@@ -79,7 +79,7 @@ const saveComplianceRule: (
   complianceRule: SaveComplianceRuleRequest,
   loading?: Ref<boolean>
 ) => Promise<Result<ComplianceRule>> = (complianceRule, loading) => {
-  return post("/api/compliance_rule/", undefined, complianceRule, loading);
+  return post("/api/compliance_rule", undefined, complianceRule, loading);
 };
 
 /**
@@ -92,7 +92,7 @@ const updateComplianceRule: (
   complianceRule: UpdateComplianceRuleRequest,
   loading?: Ref<boolean>
 ) => Promise<Result<ComplianceRule>> = (complianceRule, loading) => {
-  return put("/api/compliance_rule/", undefined, complianceRule, loading);
+  return put("/api/compliance_rule", undefined, complianceRule, loading);
 };
 
 /**
@@ -121,7 +121,7 @@ const switchEnable: (
   loading?: Ref<boolean>
 ) => Promise<Result<ComplianceRule>> = (complianceRuleId, enable, loading) => {
   return put(
-    "/api/compliance_rule/",
+    "/api/compliance_rule",
     undefined,
     { id: complianceRuleId, enable },
     loading

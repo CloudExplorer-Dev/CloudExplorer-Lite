@@ -18,7 +18,7 @@ function getCloudAccount(
   cloudAccountId: string,
   loading?: Ref<boolean>
 ): Promise<Result<CloudAccount>> {
-  return get("/api/base/cloud_account/" + cloudAccountId, null, loading);
+  return get(`/api/base/cloud_account/${cloudAccountId}`, null, loading);
 }
 
 /**
@@ -31,7 +31,7 @@ function getAccountBalance(
   loading?: Ref<boolean>
 ): Promise<Result<number | string>> {
   return get(
-    "/api/base/cloud_account/balance/" + cloudAccountId,
+    `/api/base/cloud_account/balance/${cloudAccountId}`,
     null,
     loading
   );

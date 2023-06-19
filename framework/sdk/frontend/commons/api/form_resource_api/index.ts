@@ -7,7 +7,7 @@ const getResourceMyMethod = (
   loading?: Ref<boolean>
 ) => {
   return post(
-    "/api/base/provider/" + clazz + "/" + method,
+    `/api/base/provider/${clazz}/${method}`,
     undefined,
     params,
     loading
@@ -21,7 +21,7 @@ const getResourceMyServiceMethod = (
   loading?: Ref<boolean>
 ) => {
   return post(
-    "/api/base/service/" + clazz + "/" + method,
+    `/api/base/service/${clazz}/${method}`,
     undefined,
     params,
     loading

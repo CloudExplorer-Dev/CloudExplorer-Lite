@@ -43,18 +43,18 @@ export const updatePwd = (
 };
 
 export const deleteUserById = (userId: string, loading?: Ref<boolean>) => {
-  return del("/api/user/" + userId, undefined, undefined, loading);
+  return del(`/api/user/${userId}`, undefined, undefined, loading);
 };
 
 export const getRoleInfo = (userId: string) => {
-  return get("/api/user/role/info/" + userId);
+  return get(`/api/user/role/info/${userId}`);
 };
 
 export function getUser(
   userId: string,
   loading?: Ref<boolean>
 ): Promise<Result<User>> {
-  return get("/api/user/" + userId, undefined, loading);
+  return get(`/api/user/${userId}`, undefined, loading);
 }
 
 /**
@@ -76,7 +76,7 @@ export const userNotificationSetting = (req: any) => {
 };
 
 export const findUserNotification = (userId: string) => {
-  return get("/api/user/findUserNotification/" + userId);
+  return get(`/api/user/findUserNotification/${userId}`);
 };
 
 export const userAddRole = (req: any) => {

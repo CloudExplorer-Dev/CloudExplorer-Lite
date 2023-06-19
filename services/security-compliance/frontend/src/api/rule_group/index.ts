@@ -57,7 +57,7 @@ const save: (
   loading
 ) => {
   return post(
-    "/api/compliance_rule_group/",
+    "/api/compliance_rule_group",
     {},
     complianceGroupRequest,
     loading
@@ -74,7 +74,7 @@ const update: (
   complianceRuleGroup: UpdateComplianeRuleGroupRequest,
   loading?: Ref<boolean>
 ) => Promise<Result<ComplianceRuleGroup>> = (complianceRuleGroup, loading) => {
-  return put("/api/compliance_rule_group/", {}, complianceRuleGroup, loading);
+  return put("/api/compliance_rule_group", {}, complianceRuleGroup, loading);
 };
 /**
  * 根据id删除 安规规则组

@@ -91,7 +91,7 @@ const rowCloudAccountList = computed(() => {
   if (!props.cloudAccountList) {
     return [];
   }
- return split(
+  return split(
     props.cloudAccountList,
     Math.ceil(props.cloudAccountList.length / props.rowNumber)
   );
