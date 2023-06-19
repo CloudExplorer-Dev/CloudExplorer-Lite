@@ -18,6 +18,7 @@ import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
+import com.fit2cloud.constants.OptimizationRuleConditionTypeConstants;
 import com.fit2cloud.constants.SpecialAttributesConstants;
 import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.dao.entity.OptimizationStrategy;
@@ -199,6 +200,7 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
             MPJLambdaWrapper<VmCloudServer> wrapper = getVmCloudServerWrapper(request, ignoreResourceIdList, resourceUuIdList, resourceIdList);
             list = vmCloudServerMapper.selectJoinList(VmCloudServerDTO.class, wrapper);
         }
+        LogUtil.debug("命中:" + list.size());
         list.forEach(v -> {
             VmCloudServerExcelDTO vmCloudServerExcelDTO = new VmCloudServerExcelDTO();
             BeanUtils.copyProperties(v, vmCloudServerExcelDTO);
@@ -218,13 +220,16 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
             }
             resultList.add(vmCloudServerExcelDTO);
         });
+        LogUtil.debug("导出云主机优化列表数据,查询到的数据量:" + resultList.size());
         return resultList;
     }
 
     @Override
     public void downloadExcel(PageServerRequest request, String version, HttpServletResponse response) {
+        LogUtil.debug("开始导出优化策略资源");
         OptimizationStrategyDTO optimizationStrategy = optimizationStrategyService.getOneOptimizationStrategy(request.getOptimizationStrategyId());
         if (Objects.nonNull(optimizationStrategy)) {
+            LogUtil.debug("优化策略名称:" + optimizationStrategy.getName());
             String fileName = optimizationStrategy.getName() + "_云主机_" + (request.isIgnore() ? "已忽略资源" : "优化资源");
             response.reset();
             setResponse(response, fileName, (StringUtils.equalsIgnoreCase("xlsx", version) ? version : "xls"));
@@ -236,10 +241,15 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
                         .registerWriteHandler(new CustomCellWriteHeightConfig())
                         .registerWriteHandler(EasyExcelUtils.getStyleStrategy())
                         .doWrite(list);
-            } catch (IOException e) {
+            } catch (IOException ioe) {
+                LogUtil.error("导出优化策略资源失败IO:" + ioe.getMessage());
+                throw new RuntimeException(ioe);
+            } catch (Exception e) {
+                LogUtil.error("导出优化策略资源失败:" + e.getMessage());
                 throw new RuntimeException(e);
             }
         }
+        LogUtil.debug("结束导出优化策略资源");
     }
 
     /**
@@ -262,49 +272,43 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
 
     /**
      * es符合优化策略规则资源id列表
+     * 支持两层关系
      *
      * @param optimizationStrategy            优化策略
      * @param vmCloudServerMonitoringDataList vm云服务器监控数据列表
      * @param resourceUuIdList                资源UUID列表
      */
     private void esConformToOptimizationStrategyRuleResourceIdList(OptimizationStrategy optimizationStrategy, List<VmCloudServerDTO> vmCloudServerMonitoringDataList, Set<String> resourceUuIdList) {
-        esConformToOptimizationStrategyRuleResourceUuIdList(optimizationStrategy.getOptimizationRules(), optimizationStrategy.getOptimizationRules().getChildren(), vmCloudServerMonitoringDataList, resourceUuIdList);
+        List<VmCloudServerDTO> result = vmCloudServerMonitoringDataList.stream().filter(cloudServerMonitoringData -> {
+            // 策略规则
+            OptimizationRule optimizationRule = optimizationStrategy.getOptimizationRules();
+            // 规则条件比较结果
+            List<Boolean> ruleCompareResult = new ArrayList<>();
+            // 第一层条件
+            List<OptimizationRuleFieldCondition> conditionList = optimizationRule.getConditions();
+            if (CollectionUtils.isNotEmpty(conditionList)) {
+                ruleCompareResult.add(filterVmCloudServerMonitoringDataByFieldCondition(cloudServerMonitoringData, conditionList, isAnd(optimizationRule.getConditionType())));
+            }
+            // 第二层条件
+            List<OptimizationRule> childrenList = optimizationRule.getChildren();
+            for (OptimizationRule children : childrenList) {
+                if (CollectionUtils.isNotEmpty(children.getConditions())) {
+                    ruleCompareResult.add(filterVmCloudServerMonitoringDataByFieldCondition(cloudServerMonitoringData, children.getConditions(), isAnd(children.getConditionType())));
+                }
+            }
+            if (isAnd(optimizationRule.getConditionType())) {
+                return ruleCompareResult.stream().allMatch(Boolean::booleanValue);
+            } else {
+                return ruleCompareResult.stream().anyMatch(Boolean::booleanValue);
+            }
+        }).toList();
+        if (CollectionUtils.isNotEmpty(result)) {
+            resourceUuIdList.addAll(result.stream().map(VmCloudServerDTO::getInstanceUuid).toList());
+        }
     }
 
-    /**
-     * 符合资源优化策略规则条件的资源uuid列表
-     *
-     * @param optimizationRule                优化规则
-     * @param children                        条件子集
-     * @param vmCloudServerMonitoringDataList vm云服务器监控数据列表
-     * @param resourceUuIdList                资源uuid列表
-     */
-    private void esConformToOptimizationStrategyRuleResourceUuIdList(OptimizationRule optimizationRule, List<OptimizationRule> children, List<VmCloudServerDTO> vmCloudServerMonitoringDataList, Set<String> resourceUuIdList) {
-        switch (optimizationRule.getConditionType()) {
-            case AND ->
-                    filterMonitoringDataByOptimizationRuleFieldCondition(optimizationRule, true, vmCloudServerMonitoringDataList, resourceUuIdList);
-            case OR ->
-                    filterMonitoringDataByOptimizationRuleFieldCondition(optimizationRule, false, vmCloudServerMonitoringDataList, resourceUuIdList);
-            default -> {
-            }
-        }
-        if (CollectionUtils.isNotEmpty(children)) {
-            for (OptimizationRule child : children) {
-                esConformToOptimizationStrategyRuleResourceUuIdList(child, child.getChildren(), vmCloudServerMonitoringDataList, resourceUuIdList);
-            }
-        }
-    }
-
-    /**
-     * 通过优化规则字段条件过滤监控数据
-     *
-     * @param optimizationRule                优化规则
-     * @param andCondition                    和条件
-     * @param vmCloudServerMonitoringDataList vm云服务器监控数据列表
-     * @param resourceUuIdList                资源uu id列表
-     */
-    private void filterMonitoringDataByOptimizationRuleFieldCondition(OptimizationRule optimizationRule, Boolean andCondition, List<VmCloudServerDTO> vmCloudServerMonitoringDataList, Set<String> resourceUuIdList) {
-        resourceUuIdList.addAll(vmCloudServerMonitoringDataList.stream().filter(vmCloudServerDTO -> filterVmCloudServerMonitoringDataByFieldCondition(vmCloudServerDTO, optimizationRule, andCondition)).toList().stream().map(VmCloudServerDTO::getInstanceUuid).toList());
+    private boolean isAnd(OptimizationRuleConditionTypeConstants conditionType) {
+        return StringUtils.equalsIgnoreCase(conditionType.name(), OptimizationRuleConditionTypeConstants.AND.name());
     }
 
     /**
@@ -313,13 +317,12 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
      * andCondition为false时，只要有一个满足就行
      *
      * @param vmCloudServerDTO vm云服务器dto
-     * @param optimizationRule 优化规则
      * @param andCondition     和条件
      * @return boolean
      */
-    private boolean filterVmCloudServerMonitoringDataByFieldCondition(VmCloudServerDTO vmCloudServerDTO, OptimizationRule optimizationRule, Boolean andCondition) {
+    private boolean filterVmCloudServerMonitoringDataByFieldCondition(VmCloudServerDTO vmCloudServerDTO, List<OptimizationRuleFieldCondition> conditions, Boolean andCondition) {
         List<Boolean> compareResult = new ArrayList<>();
-        for (OptimizationRuleFieldCondition optimizationRuleFieldCondition : optimizationRule.getConditions()) {
+        for (OptimizationRuleFieldCondition optimizationRuleFieldCondition : conditions) {
             if (optimizationRuleFieldCondition.isEsField()) {
                 // 监控指标字段 field 形式为 MEMORY_USED_UTILIZATION@MAX
                 // 通过field获取指标名称
@@ -331,9 +334,9 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
             }
         }
         if (andCondition) {
-            return compareResult.stream().filter(v -> v).toList().size() == optimizationRule.getConditions().size();
+            return compareResult.stream().allMatch(Boolean::booleanValue);
         } else {
-            return compareResult.stream().filter(v -> v).toList().size() > 0;
+            return compareResult.stream().anyMatch(Boolean::booleanValue);
         }
     }
 
@@ -553,42 +556,42 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
      * @param resourceIdList       资源id列表
      */
     private void mysqlConformToOptimizationStrategyRuleResourceIdList(OptimizationStrategy optimizationStrategy, Set<String> resourceIdList) {
-        mysqlConformToOptimizationStrategyRuleResourceIdList(optimizationStrategy.getOptimizationRules(), optimizationStrategy.getOptimizationRules().getChildren(), resourceIdList);
-    }
-
-    /**
-     * 符合优化策略规则资源id列表
-     *
-     * @param optimizationRule 优化规则
-     * @param children         规则子集
-     * @param resourceIdList   资源id列表
-     */
-    public void mysqlConformToOptimizationStrategyRuleResourceIdList(OptimizationRule optimizationRule, List<OptimizationRule> children, Set<String> resourceIdList) {
-        switch (optimizationRule.getConditionType()) {
-            case AND -> toQueryWrapperByOptimizationRuleFieldCondition(optimizationRule, true, resourceIdList);
-            case OR -> toQueryWrapperByOptimizationRuleFieldCondition(optimizationRule, false, resourceIdList);
-            default -> {
+        QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<>();
+        OptimizationRule optimizationRules = optimizationStrategy.getOptimizationRules();
+        // 第一层
+        boolean ruleAnd = isAnd(optimizationRules.getConditionType());
+        if (CollectionUtils.isNotEmpty(optimizationRules.getConditions())) {
+            if (ruleAnd) {
+                wrapper.and(true, a1 -> toQueryWrapperByOptimizationRuleFieldCondition(optimizationRules.getConditions(), isAnd(optimizationRules.getConditionType()), a1));
+            } else {
+                wrapper.or(true, a1 -> toQueryWrapperByOptimizationRuleFieldCondition(optimizationRules.getConditions(), isAnd(optimizationRules.getConditionType()), a1));
             }
         }
-        if (CollectionUtils.isNotEmpty(children)) {
-            for (OptimizationRule child : children) {
-                mysqlConformToOptimizationStrategyRuleResourceIdList(child, child.getChildren(), resourceIdList);
+        // 第二层
+        List<OptimizationRule> childrenList = optimizationRules.getChildren();
+        for (OptimizationRule children : childrenList) {
+            if (CollectionUtils.isNotEmpty(children.getConditions())) {
+                if (ruleAnd) {
+                    wrapper.and(true, a1 -> toQueryWrapperByOptimizationRuleFieldCondition(children.getConditions(), isAnd(children.getConditionType()), a1));
+                } else {
+                    wrapper.or(true, a1 -> toQueryWrapperByOptimizationRuleFieldCondition(children.getConditions(), isAnd(children.getConditionType()), a1));
+                }
             }
         }
+        if (StringUtils.isNotEmpty(wrapper.getSqlSegment())) {
+            resourceIdList.addAll(vmCloudServerMapper.selectList(wrapper).stream().map(VmCloudServer::getId).toList());
+        }
     }
-
 
     /**
      * 通过优化规则条件字段包装查询云主机条件
      *
-     * @param optimizationRule 优化规则
-     * @param andCondition     and关系
-     * @param resourceIdList   资源id列表
+     * @param conditions   条件
+     * @param andCondition and关系
+     * @param wrapper      构建查询条件
      */
-    private void toQueryWrapperByOptimizationRuleFieldCondition(OptimizationRule optimizationRule, boolean andCondition, Set<String> resourceIdList) {
-        // 数据库字段查询
-        QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<>();
-        optimizationRule.getConditions().stream().filter(v -> !v.isEsField()).toList().forEach(optimizationRuleFieldCondition -> {
+    private void toQueryWrapperByOptimizationRuleFieldCondition(List<OptimizationRuleFieldCondition> conditions, boolean andCondition, QueryWrapper<VmCloudServer> wrapper) {
+        conditions.stream().filter(v -> !v.isEsField()).toList().forEach(optimizationRuleFieldCondition -> {
             // AND条件
             if (andCondition) {
                 wrapper.and(checkFieldCondition(optimizationRuleFieldCondition.getField(), optimizationRuleFieldCondition.getValue(), VmCloudServer.class), a1 -> vmCloudServerConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, a1));
@@ -598,9 +601,6 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
                 wrapper.or(checkFieldCondition(optimizationRuleFieldCondition.getField(), optimizationRuleFieldCondition.getValue(), VmCloudServerStatusTiming.class), a2 -> vmCloudServerStatusTimingConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, a2));
             }
         });
-        if (StringUtils.isNotEmpty(wrapper.getSqlSegment())) {
-            resourceIdList.addAll(vmCloudServerMapper.selectList(wrapper).stream().map(VmCloudServer::getId).toList());
-        }
     }
 
     /**
@@ -712,4 +712,5 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
         return wrapper;
     }
 }
+
 
