@@ -6,7 +6,6 @@ import com.fit2cloud.common.charging.entity.InstanceState;
 import com.fit2cloud.common.charging.instance.InstanceRecordMappingHandler;
 import com.fit2cloud.common.charging.policy.BillingPolicy;
 import com.fit2cloud.common.charging.policy.impl.SimpleAccurateBillingPolicy;
-import com.fit2cloud.common.charging.policy.impl.SimpleParticleBillingPolicy;
 import com.fit2cloud.common.charging.setting.BillSetting;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.Form;
@@ -89,7 +88,7 @@ public class SimpleBillingSetting implements BillSetting {
                                           Object globalConfigMeta) {
         return new SimpleBillingSetting(
                 new SimpleAccurateBillingPolicy(),
-                new SimpleParticleBillingPolicy(),
+                new SimpleAccurateBillingPolicy(),
                 instanceRecordMappingHandler,
                 resourceInstanceType,
                 resourceInstanceName,

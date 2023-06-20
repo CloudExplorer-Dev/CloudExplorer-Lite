@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 3519945 */
-  src: url('iconfont.woff2?t=1684488046054') format('woff2'),
-       url('iconfont.woff?t=1684488046054') format('woff'),
-       url('iconfont.ttf?t=1684488046054') format('truetype');
+  src: url('iconfont.woff2?t=1687242721930') format('woff2'),
+       url('iconfont.woff?t=1687242721930') format('woff'),
+       url('iconfont.ttf?t=1687242721930') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,34 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.ali-icon-xiazaidaoru:before {
+  content: "\e8c7";
+}
+
+.ali-icon-shezhi1:before {
+  content: "\e77a";
+}
+
+.ali-icon-tongbu3:before {
+  content: "\e77b";
+}
+
+.ali-icon-xiazai:before {
+  content: "\e77c";
+}
+
+.ali-icon-tongbu4:before {
+  content: "\e77d";
+}
+
+.ali-icon-jifeicelve:before {
+  content: "\e779";
+}
+
+.ali-icon-icon_create_planarity:before {
+  content: "\e778";
 }
 
 .ali-icon-guanji-:before {

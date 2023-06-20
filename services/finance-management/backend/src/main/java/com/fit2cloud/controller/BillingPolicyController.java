@@ -5,6 +5,7 @@ import com.fit2cloud.base.entity.BillPolicyCloudAccountMapping;
 import com.fit2cloud.base.entity.BillPolicyDetails;
 import com.fit2cloud.base.mapper.BaseBillPolicyMapper;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
+import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.BillingPolicyRequest;
@@ -85,7 +86,7 @@ public class BillingPolicyController {
     @Operation(summary = "创建策略")
     @PostMapping()
     @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:CREATE')")
-    public ResultHolder<BillPolicy> createBillingPolicy(@Validated @RequestBody BillingPolicyRequest request) {
+    public ResultHolder<BillPolicy> createBillingPolicy(@Validated(ValidationGroup.SAVE.class) @RequestBody BillingPolicyRequest request) {
         BillPolicy billingPolicy = billingPolicyService.createBillingPolicy(request);
         return ResultHolder.success(billingPolicy);
     }

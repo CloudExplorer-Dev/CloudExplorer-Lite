@@ -6,6 +6,55 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1727452",
+      "name": "218下载、导入",
+      "font_class": "xiazaidaoru",
+      "unicode": "e8c7",
+      "unicode_decimal": 59591
+    },
+    {
+      "icon_id": "3456457",
+      "name": "设置",
+      "font_class": "shezhi1",
+      "unicode": "e77a",
+      "unicode_decimal": 59258
+    },
+    {
+      "icon_id": "10156389",
+      "name": "同步",
+      "font_class": "tongbu3",
+      "unicode": "e77b",
+      "unicode_decimal": 59259
+    },
+    {
+      "icon_id": "17886216",
+      "name": "下载",
+      "font_class": "xiazai",
+      "unicode": "e77c",
+      "unicode_decimal": 59260
+    },
+    {
+      "icon_id": "27269538",
+      "name": "同步",
+      "font_class": "tongbu4",
+      "unicode": "e77d",
+      "unicode_decimal": 59261
+    },
+    {
+      "icon_id": "26922606",
+      "name": "计费策略",
+      "font_class": "jifeicelve",
+      "unicode": "e779",
+      "unicode_decimal": 59257
+    },
+    {
+      "icon_id": "35768884",
+      "name": "icon_create_planarity",
+      "font_class": "icon_create_planarity",
+      "unicode": "e778",
+      "unicode_decimal": 59256
+    },
+    {
       "icon_id": "7312902",
       "name": "关机",
       "font_class": "guanji-",

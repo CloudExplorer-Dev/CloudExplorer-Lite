@@ -38,7 +38,18 @@ public class CloudAccountSyncJob {
             List<BillSetting> billSettings = ChargingConfig.getBillSettings().getBillSettings();
             billSettings
                     .parallelStream()
-                    .forEach(billSetting -> SimpleInstanceStateRecorder.of(billSetting).run());
+                    .forEach(billSetting -> SimpleInstanceStateRecorder.of(billSetting).runRecordState());
+        }
+    }
+
+    @Name("实例变更")
+    public static class recorderInstanceChange extends AsyncJob implements Job {
+        @Override
+        protected void run(Map<String, Object> map) {
+            List<BillSetting> billSettings = ChargingConfig.getBillSettings().getBillSettings();
+            billSettings
+                    .parallelStream()
+                    .forEach(billSetting -> SimpleInstanceStateRecorder.of(billSetting).runRecordInstanceChange());
         }
     }
 

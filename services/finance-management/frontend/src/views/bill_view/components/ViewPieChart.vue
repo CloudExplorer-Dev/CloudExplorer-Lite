@@ -78,11 +78,7 @@ const getViewtableData = (billViewData: SimpleMap<Array<BillView>>) => {
     .reduce((pre, next) => {
       return { ...pre, ...next };
     }, {});
-  console.log(
-    "xx",
-    Object.keys(billViewData).includes(props.month),
-    props.month
-  );
+
   if (Object.keys(billViewData).includes(props.month)) {
     // 树形数据
     const data = billViewData[props.month].map((view) => {

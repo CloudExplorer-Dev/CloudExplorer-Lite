@@ -21,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * {@code @Author:张少虎}
@@ -30,6 +31,9 @@ import java.util.List;
  */
 public class SimpleInstanceStateRecorder implements InstanceStateRecorder {
     private final BillSetting setting;
+
+    private final ReentrantLock recordStateLock = new ReentrantLock();
+    private final ReentrantLock recordInstanceChangeLock = new ReentrantLock();
 
     public SimpleInstanceStateRecorder(BillSetting billSetting) {
         this.setting = billSetting;
@@ -49,19 +53,46 @@ public class SimpleInstanceStateRecorder implements InstanceStateRecorder {
         saveInstance(instanceRecords, currentDateTime);
     }
 
+    @Override
+    public void runRecordState() {
+        InstanceRecordMappingHandler resourceInstanceHandler = setting.getResourceInstanceHandler();
+        // 获取需要记录状态的资源实例
+        List<InstanceRecord> instanceRecords = resourceInstanceHandler.mapping();
+        recordState(instanceRecords, LocalDateTime.now());
+    }
+
+    @Override
+    public void runRecordInstanceChange() {
+        InstanceRecordMappingHandler resourceInstanceHandler = setting.getResourceInstanceHandler();
+        // 获取需要记录状态的资源实例
+        List<InstanceRecord> instanceRecords = resourceInstanceHandler.mapping();
+        saveInstance(instanceRecords, LocalDateTime.now());
+
+    }
+
     @SneakyThrows
     private void recordState(List<InstanceRecord> instanceRecords, LocalDateTime currentDateTime) {
-        String month = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        IBaseResourceInstanceStateService resourceInstanceStateService = SpringUtil.getBean(IBaseResourceInstanceStateService.class);
-        List<ResourceInstanceState> resourceInstanceStates = resourceInstanceStateService.list(
-                new LambdaQueryWrapper<ResourceInstanceState>()
-                        .eq(ResourceInstanceState::getMonth, month)
-        );
-        List<ResourceInstanceState> newResourceInstanceState = instanceRecords
-                .parallelStream()
-                .map(instanceRecord -> toResourceInstanceState(instanceRecord, resourceInstanceStates, month, currentDateTime))
-                .toList();
-        resourceInstanceStateService.saveOrUpdateBatch(newResourceInstanceState);
+        if (!recordStateLock.tryLock()) {
+            return;
+        }
+        try {
+            String month = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            IBaseResourceInstanceStateService resourceInstanceStateService = SpringUtil.getBean(IBaseResourceInstanceStateService.class);
+            List<ResourceInstanceState> resourceInstanceStates = resourceInstanceStateService.list(
+                    new LambdaQueryWrapper<ResourceInstanceState>()
+                            .eq(ResourceInstanceState::getMonth, month)
+            );
+            List<ResourceInstanceState> newResourceInstanceState = instanceRecords
+                    .parallelStream()
+                    .map(instanceRecord -> toResourceInstanceState(instanceRecord, resourceInstanceStates, month, currentDateTime))
+                    .toList();
+            resourceInstanceStateService.saveOrUpdateBatch(newResourceInstanceState);
+        } finally {
+            if (recordStateLock.isLocked()) {
+                recordStateLock.unlock();
+            }
+        }
+
     }
 
     /**
@@ -107,28 +138,37 @@ public class SimpleInstanceStateRecorder implements InstanceStateRecorder {
     }
 
     private void saveInstance(List<InstanceRecord> instanceRecordList, LocalDateTime currentDateTime) {
-        List<ResourceInstance> resourceInstances = instanceRecordList.stream().map(instanceRecord -> {
-            ResourceInstance resourceInstance = new ResourceInstance();
-            BeanUtils.copyProperties(instanceRecord, resourceInstance);
-            resourceInstance.setCreateTime(currentDateTime);
-            resourceInstance.setUpdateTime(currentDateTime);
-            return resourceInstance;
-        }).toList();
-        IBaseResourceInstanceService resourceInstanceService = SpringUtil.getBean(IBaseResourceInstanceService.class);
+        if (!recordInstanceChangeLock.tryLock()) {
+            return;
+        }
+        try {
+            List<ResourceInstance> resourceInstances = instanceRecordList.stream().map(instanceRecord -> {
+                ResourceInstance resourceInstance = new ResourceInstance();
+                BeanUtils.copyProperties(instanceRecord, resourceInstance);
+                resourceInstance.setCreateTime(currentDateTime);
+                resourceInstance.setUpdateTime(currentDateTime);
+                return resourceInstance;
+            }).toList();
+            IBaseResourceInstanceService resourceInstanceService = SpringUtil.getBean(IBaseResourceInstanceService.class);
 
-        List<ResourceInstance> resourceInstanceList = resourceInstanceService.listLastResourceInstance(
-                new LambdaQueryWrapper<ResourceInstance>()
-                        .eq(ResourceInstance::getResourceType, setting.getResourceInstanceType())
-        );
+            List<ResourceInstance> resourceInstanceList = resourceInstanceService.listLastResourceInstance(
+                    new LambdaQueryWrapper<ResourceInstance>()
+                            .eq(ResourceInstance::getResourceType, setting.getResourceInstanceType())
+            );
 
-        List<ResourceInstance> diffResourceInstance = resourceInstances
-                .stream()
-                .filter(resourceInstance -> resourceInstanceList.stream()
-                        .noneMatch(cloudResourceInstance -> diffResourceInstance(cloudResourceInstance, resourceInstance))
-                )
-                .toList();
+            List<ResourceInstance> diffResourceInstance = resourceInstances
+                    .stream()
+                    .filter(resourceInstance -> resourceInstanceList.stream()
+                            .noneMatch(cloudResourceInstance -> diffResourceInstance(cloudResourceInstance, resourceInstance))
+                    )
+                    .toList();
 
-        resourceInstanceService.saveBatch(diffResourceInstance);
+            resourceInstanceService.saveBatch(diffResourceInstance);
+        } finally {
+            if (recordInstanceChangeLock.isLocked()) {
+                recordInstanceChangeLock.unlock();
+            }
+        }
     }
 
 

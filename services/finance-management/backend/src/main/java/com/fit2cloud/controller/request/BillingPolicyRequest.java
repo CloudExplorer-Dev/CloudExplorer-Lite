@@ -2,8 +2,14 @@ package com.fit2cloud.controller.request;
 
 import com.fit2cloud.base.entity.json_entity.BillingField;
 import com.fit2cloud.base.entity.json_entity.PackagePriceBillingPolicy;
+import com.fit2cloud.base.mapper.BaseBillPolicyMapper;
 import com.fit2cloud.common.form.vo.Form;
+import com.fit2cloud.common.validator.annnotaion.CustomValidated;
+import com.fit2cloud.common.validator.group.ValidationGroup;
+import com.fit2cloud.common.validator.handler.ExistHandler;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -20,6 +26,8 @@ public class BillingPolicyRequest {
 
     @Schema(title = "策略名称")
     @Length(min = 1, max = 255, message = "计费策略名称长度必须在1-255之间")
+    @CustomValidated(groups = ValidationGroup.SAVE.class, mapper = BaseBillPolicyMapper.class, handler = ExistHandler.class, field = "name", message = "策略名称已存在", exist = true)
+    @NotNull(message = "策略名称不能为空")
     private String name;
 
     @Schema(title = "关联云账号列表")

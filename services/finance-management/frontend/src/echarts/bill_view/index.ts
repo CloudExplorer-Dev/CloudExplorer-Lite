@@ -154,11 +154,11 @@ const getBillViewOptions = (
           },
           rich: {
             title: {
-              fontSize: 14,
+              fontSize: 12,
               color: "#333",
             },
             value: {
-              fontSize: 30,
+              fontSize: 16,
               color: "#000",
               lineHeight: 44,
             },

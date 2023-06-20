@@ -104,7 +104,7 @@ public class MenuConstants {
                             .componentPath("/src/views/billing_policy/index.vue")
                             .path("/billing_policy")
                             .saveRecent(true)
-                            .icon("icon_ledger_settings")
+                            .icon("jifeicelve")
                             .order(5)
                             .requiredPermission(new MenuPermission.Builder()
                                     .role(RoleConstants.ROLE.ADMIN)

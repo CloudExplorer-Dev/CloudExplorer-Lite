@@ -8,7 +8,17 @@ package com.fit2cloud.common.charging.instance;
  */
 public interface InstanceStateRecorder {
     /**
-     * 记录实例状态
+     * 记录实例状态 和 实例变更
      */
     void run();
+
+    /**
+     * 记录实例状态
+     */
+    void runRecordState();
+
+    /**
+     * 记录实例变更
+     */
+    void runRecordInstanceChange();
 }
