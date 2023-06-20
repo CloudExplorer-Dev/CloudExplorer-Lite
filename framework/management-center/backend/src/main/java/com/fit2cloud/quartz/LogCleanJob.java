@@ -50,7 +50,7 @@ public class LogCleanJob {
             logService.deleteEsData(index, months, clazz);
             LogUtil.debug(String.format("%s清理完成.", logType));
         } catch (Exception e) {
-            LogUtil.error(String.format("清理%s个月前%s失败:%s",m,logType,e.getMessage()));
+            LogUtil.error(String.format("清理%s个月前%s失败:%s", m, logType, e.getMessage()));
             e.printStackTrace();
         }
     }
