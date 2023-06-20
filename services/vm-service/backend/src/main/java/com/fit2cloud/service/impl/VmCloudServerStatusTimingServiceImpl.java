@@ -63,7 +63,7 @@ public class VmCloudServerStatusTimingServiceImpl extends ServiceImpl<VmCloudSer
             wrapper.eq(true, ColumnNameUtil.getColumnName(VmCloudServerStatusTiming::getCloudServerId, true), vm.getId());
             wrapper.orderByDesc(true, ColumnNameUtil.getColumnName(VmCloudServerStatusTiming::getId, true));
             List<VmCloudServerStatusTiming> vmCloudServerStatusMeteringList = vmCloudServerStatusTimingMapper.selectList(wrapper);
-            record(vm, operateTime, wrapper, CollectionUtils.isNotEmpty(vmCloudServerStatusMeteringList) ? vmCloudServerStatusMeteringList.get(0) : null);
+            record(vm, operateTime, CollectionUtils.isNotEmpty(vmCloudServerStatusMeteringList) ? vmCloudServerStatusMeteringList.get(0) : null);
         } catch (Exception e) {
             LogUtil.error("记录云主机状态事件失败:" + vm.getInstanceName(), e);
             e.printStackTrace();
@@ -101,9 +101,8 @@ public class VmCloudServerStatusTimingServiceImpl extends ServiceImpl<VmCloudSer
                         }
                         // 获得虚拟机的记录
                         List<VmCloudServerStatusTiming> vmMeteringList = vmCloudServerStatusMeteringList.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getCloudServerId(), vm.getId())).collect(Collectors.toList());
-                        QueryWrapper<VmCloudServerStatusTiming> wrapper = new QueryWrapper<>();
                         try {
-                            record(vm, operateTime, wrapper, CollectionUtils.isNotEmpty(vmMeteringList) ? vmMeteringList.get(0) : null);
+                            record(vm, operateTime, CollectionUtils.isNotEmpty(vmMeteringList) ? vmMeteringList.get(0) : null);
                         } catch (Exception e) {
                             LogUtil.error("初始化云主机状态时间失败[" + vm.getInstanceName() + "]:" + e.getMessage());
                         }
@@ -123,12 +122,11 @@ public class VmCloudServerStatusTimingServiceImpl extends ServiceImpl<VmCloudSer
      *
      * @param vm                          虚拟机
      * @param operateTime                 操作时间
-     * @param wrapper                     包装器
      * @param vmCloudServerStatusMetering vm云服务器状态计量
      * @author jianneng
      * @date 2023/05/30
      */
-    private void record(VmCloudServer vm, LocalDateTime operateTime, QueryWrapper<VmCloudServerStatusTiming> wrapper, VmCloudServerStatusTiming vmCloudServerStatusMetering) {
+    private void record(VmCloudServer vm, LocalDateTime operateTime, VmCloudServerStatusTiming vmCloudServerStatusMetering) {
 
         boolean isRunning = StringUtils.equalsIgnoreCase(vm.getInstanceStatus(), F2CInstanceStatus.Running.name());
         boolean isStopped = StringUtils.equalsIgnoreCase(vm.getInstanceStatus(), F2CInstanceStatus.Stopped.name());
@@ -138,25 +136,35 @@ public class VmCloudServerStatusTimingServiceImpl extends ServiceImpl<VmCloudSer
         }
         vmCloudServerStatusMetering.setCloudServerId(vm.getId());
         // 开机计算关机时长
-        if (isRunning && Objects.nonNull(vmCloudServerStatusMetering.getId()) && Objects.nonNull(vmCloudServerStatusMetering.getOffTime())) {
-            Duration stoppedTime = Duration.between(vmCloudServerStatusMetering.getOffTime(), operateTime);
+        if (isRunning && Objects.nonNull(vmCloudServerStatusMetering.getId())) {
+            LocalDateTime offTime = vmCloudServerStatusMetering.getOffTime();
+            // 开机操作时，如果关机时间为空那么认为是，当前云主机在其他环境更改了状态，这里取之前记录的开机时间为关机时间
+            if (Objects.isNull(offTime) && Objects.nonNull(vmCloudServerStatusMetering.getOnTime())) {
+                offTime = vmCloudServerStatusMetering.getOnTime();
+            }
+            Duration stoppedTime = Duration.between(Objects.nonNull(offTime) ? offTime : operateTime, operateTime);
             vmCloudServerStatusMetering.setShutdownDuration(stoppedTime.getSeconds() + (Objects.isNull(vmCloudServerStatusMetering.getShutdownDuration()) ? 0 : vmCloudServerStatusMetering.getShutdownDuration()));
             vmCloudServerStatusMetering.setOnTime(operateTime);
             vmCloudServerStatusMetering.setOffTime(null);
-            updateInstance(vmCloudServerStatusMetering, wrapper);
+            updateInstance(vmCloudServerStatusMetering);
         }
         // 关机计算开机时长
-        if (isStopped && Objects.nonNull(vmCloudServerStatusMetering.getId()) && Objects.nonNull(vmCloudServerStatusMetering.getOnTime())) {
-            Duration runningTime = Duration.between(vmCloudServerStatusMetering.getOnTime(), operateTime);
+        if (isStopped && Objects.nonNull(vmCloudServerStatusMetering.getId())) {
+            LocalDateTime onTime = vmCloudServerStatusMetering.getOnTime();
+            // 关机操作时，如果开机时间为空那么认为是，当前云主机在其他环境更改了状态，这里取之前记录的关机时间为开机时间
+            if (Objects.isNull(onTime) && Objects.nonNull(vmCloudServerStatusMetering.getOffTime())) {
+                onTime = vmCloudServerStatusMetering.getOffTime();
+            }
+            Duration runningTime = Duration.between(Objects.nonNull(onTime) ? onTime : operateTime, operateTime);
             vmCloudServerStatusMetering.setRunningDuration(runningTime.getSeconds() + (Objects.isNull(vmCloudServerStatusMetering.getRunningDuration()) ? 0 : vmCloudServerStatusMetering.getRunningDuration()));
             vmCloudServerStatusMetering.setOffTime(operateTime);
             vmCloudServerStatusMetering.setOnTime(null);
-            updateInstance(vmCloudServerStatusMetering, wrapper);
+            updateInstance(vmCloudServerStatusMetering);
         }
         // 开机未记录，插入新数据
-        boolean insertRunning = isRunning && Objects.isNull(vmCloudServerStatusMetering.getId()) && Objects.isNull(vmCloudServerStatusMetering.getOnTime());
+        boolean insertRunning = isRunning && Objects.isNull(vmCloudServerStatusMetering.getId());
         // 关机未记录，插入新数据
-        boolean insertStopped = isStopped && Objects.isNull(vmCloudServerStatusMetering.getId()) && Objects.isNull(vmCloudServerStatusMetering.getOffTime());
+        boolean insertStopped = isStopped && Objects.isNull(vmCloudServerStatusMetering.getId());
         if (insertRunning || insertStopped) {
             vmCloudServerStatusMetering.setOnTime(isRunning ? operateTime : null);
             vmCloudServerStatusMetering.setOffTime(isStopped ? operateTime : null);
@@ -164,8 +172,8 @@ public class VmCloudServerStatusTimingServiceImpl extends ServiceImpl<VmCloudSer
         }
     }
 
-    private void updateInstance(VmCloudServerStatusTiming vmCloudServerStatusMetering, QueryWrapper<VmCloudServerStatusTiming> wrapper) {
-        vmCloudServerStatusTimingMapper.update(vmCloudServerStatusMetering, wrapper);
+    private void updateInstance(VmCloudServerStatusTiming vmCloudServerStatusMetering) {
+        vmCloudServerStatusTimingMapper.updateById(vmCloudServerStatusMetering);
     }
 
     private void insertInstance(VmCloudServerStatusTiming vmCloudServerStatusMetering) {

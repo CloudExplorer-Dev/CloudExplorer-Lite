@@ -18,16 +18,8 @@ public class VmCloudServerExcelDTO {
 
     private static final long serialVersionUID = 2780061897725836746L;
 
-    @ExcelProperty(value = "组织名称")
-    private String organizationName;
-    @ExcelProperty("工作空间")
-    private String workspaceName;
     @ExcelProperty(value = "云账号名称", index = 1)
     private String accountName;
-    @ExcelProperty("企业项目")
-    private String cloudProjectName;
-    @ExcelProperty("申请用户名")
-    private String applyUserName;
     @ExcelProperty(value = "CPU使用率最大值(%)", index = 5)
     private Double cpuMaxValue;
     @ExcelProperty(value = "CPU使用率平均值(%)", index = 6)
@@ -44,9 +36,5 @@ public class VmCloudServerExcelDTO {
     private String instanceTypeDescription;
     @ExcelProperty(value = "IP 地址", index = 2)
     private String ipArray;
-    @ExcelProperty("管理 IP")
-    private String managementIp;
-    @ExcelProperty("计费方式")
-    private String instanceChargeType;
 
 }
