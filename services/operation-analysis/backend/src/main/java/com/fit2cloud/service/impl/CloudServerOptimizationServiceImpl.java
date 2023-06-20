@@ -9,10 +9,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.entity.RecycleBin;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.entity.VmCloudServerStatusTiming;
+import com.fit2cloud.base.mapper.BaseRecycleBinMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerStatusTimingMapper;
+import com.fit2cloud.common.constants.RecycleBinStatusConstants;
+import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
@@ -75,6 +79,9 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
     private ElasticsearchTemplate elasticsearchTemplate;
     @Resource
     private IPermissionService permissionService;
+
+    @Resource
+    private BaseRecycleBinMapper baseRecycleBinMapper;
 
     /**
      * 根据优化策略规则，分页获取符合条件的云主机列表
@@ -243,9 +250,11 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
                         .doWrite(list);
             } catch (IOException ioe) {
                 LogUtil.error("导出优化策略资源失败IO:" + ioe.getMessage());
+                ioe.printStackTrace();
                 throw new RuntimeException(ioe);
             } catch (Exception e) {
                 LogUtil.error("导出优化策略资源失败:" + e.getMessage());
+                e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }
@@ -596,24 +605,13 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
             if (andCondition) {
                 wrapper.and(checkFieldCondition(optimizationRuleFieldCondition.getField(), optimizationRuleFieldCondition.getValue(), VmCloudServer.class), a1 -> vmCloudServerConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, a1));
                 wrapper.and(checkFieldCondition(optimizationRuleFieldCondition.getField(), optimizationRuleFieldCondition.getValue(), VmCloudServerStatusTiming.class), a2 -> vmCloudServerStatusTimingConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, a2));
+                vmRecycleBinConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, wrapper, true);
             } else {
                 wrapper.or(checkFieldCondition(optimizationRuleFieldCondition.getField(), optimizationRuleFieldCondition.getValue(), VmCloudServer.class), a1 -> vmCloudServerConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, a1));
                 wrapper.or(checkFieldCondition(optimizationRuleFieldCondition.getField(), optimizationRuleFieldCondition.getValue(), VmCloudServerStatusTiming.class), a2 -> vmCloudServerStatusTimingConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, a2));
+                vmRecycleBinConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, wrapper, false);
             }
         });
-    }
-
-    /**
-     * 检查条件字段是否在对应的实体类中，并且字段值是否为空
-     *
-     * @param columnName  列名
-     * @param columnValue 列值
-     * @param c           字段对应的实体
-     * @return boolean
-     */
-    private boolean checkFieldCondition(String columnName, String columnValue, Class<?> c) {
-        String tableColumnName = ColumnNameUtil.getColumnName(columnName, c);
-        return StringUtils.isNotEmpty(tableColumnName) && StringUtils.isNotEmpty(columnValue);
     }
 
     /**
@@ -636,6 +634,60 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
                 case GT -> wrapper.gt(true, tableColumnName, tableColumnValue);
                 default -> {
                 }
+            }
+        }
+    }
+
+    /**
+     * 检查条件字段是否在对应的实体类中，并且字段值是否为空
+     *
+     * @param columnName  列名
+     * @param columnValue 列值
+     * @param c           字段对应的实体
+     * @return boolean
+     */
+    private boolean checkFieldCondition(String columnName, String columnValue, Class<?> c) {
+        // 实例回收状态单独处理
+        if (StringUtils.equalsIgnoreCase(columnName, "instanceStatus") && StringUtils.equalsIgnoreCase(RecycleBinStatusConstants.ToBeRecycled.name(), columnValue)) {
+            return false;
+        }
+        String tableColumnName = ColumnNameUtil.getColumnName(columnName, c);
+        return StringUtils.isNotEmpty(tableColumnName) && StringUtils.isNotEmpty(columnValue);
+    }
+
+    /**
+     * 回收站表符合优化策略规则条件的云主机ID列表
+     *
+     * @param optimizationRuleFieldCondition 优化规则条件
+     * @param wrapper                        包装器
+     */
+    private void vmRecycleBinConformToOptimizationStrategyRuleResourceIdList(OptimizationRuleFieldCondition optimizationRuleFieldCondition, QueryWrapper<VmCloudServer> wrapper, boolean isAnd) {
+        String tableColumnName = ColumnNameUtil.getColumnName(optimizationRuleFieldCondition.getField(), VmCloudServer.class);
+        String tableColumnValue = optimizationRuleFieldCondition.getValue();
+        if (StringUtils.equalsIgnoreCase(tableColumnName, "instance_status") && StringUtils.equalsIgnoreCase(RecycleBinStatusConstants.ToBeRecycled.name(), tableColumnValue)) {
+            QueryWrapper<RecycleBin> recycleQuery = new QueryWrapper<>();
+            recycleQuery.eq(true, "recycle_bin.resource_type", ResourceTypeConstants.VM.name());
+            recycleQuery.eq(true, "recycle_bin.status", tableColumnValue);
+            // 回收站的
+            List<RecycleBin> recycleBins = baseRecycleBinMapper.selectList(recycleQuery);
+            // 回收站的资源ID
+            List<String> resourceIdList = recycleBins.stream().map(RecycleBin::getResourceId).toList();
+            if (CollectionUtils.isNotEmpty(resourceIdList)) {
+                if (isAnd) {
+                    wrapper.and(true, a1 -> vmRecycleBinConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, a1, resourceIdList));
+                } else {
+                    wrapper.or(true, a1 -> vmRecycleBinConformToOptimizationStrategyRuleResourceIdList(optimizationRuleFieldCondition, a1, resourceIdList));
+                }
+            }
+        }
+    }
+
+    private void vmRecycleBinConformToOptimizationStrategyRuleResourceIdList(OptimizationRuleFieldCondition optimizationRuleFieldCondition, QueryWrapper<VmCloudServer> wrapper, List<String> resourceIdList) {
+        switch (OptimizationRuleFieldCompare.valueOf(optimizationRuleFieldCondition.getCompare())) {
+            case NOT_EQ ->
+                    wrapper.notIn(true, ColumnNameUtil.getColumnName(VmCloudServer::getId, true), resourceIdList);
+            case EQ -> wrapper.in(true, ColumnNameUtil.getColumnName(VmCloudServer::getId, true), resourceIdList);
+            default -> {
             }
         }
     }
