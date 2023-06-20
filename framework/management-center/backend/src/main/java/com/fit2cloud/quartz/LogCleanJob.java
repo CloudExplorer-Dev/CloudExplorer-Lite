@@ -39,24 +39,18 @@ public class LogCleanJob {
 
     private void cleanOperatedLog(String m, String logType, String index, Class<?> clazz) {
         try {
+            LogUtil.debug(String.format("开始清理%s.", logType));
             int months = 3;
             if (StringUtils.isBlank(m)) {
-                LogUtil.info("未设置{}保存月数，使用默认值: {}", logType, months);
+                LogUtil.info(String.format("未设置%s保存月数，使用默认值: %s", logType, months));
             } else {
                 months = Integer.parseInt(m);
             }
-            if (months < 1) {
-                // if 0
-                months = 3;
-            }
-            if (LogUtil.getLogger().isDebugEnabled()) {
-                LogUtil.getLogger().debug("开始清理{}个月前的{}.", months, logType);
-            }
+            LogUtil.debug(String.format("开始清理%s个月前的%s.", months, logType));
             logService.deleteEsData(index, months, clazz);
-            if (LogUtil.getLogger().isDebugEnabled()) {
-                LogUtil.getLogger().debug("{}清理完成.", logType);
-            }
+            LogUtil.debug(String.format("%s清理完成.", logType));
         } catch (Exception e) {
+            LogUtil.error(String.format("清理%s个月前%s失败:%s",m,logType,e.getMessage()));
             e.printStackTrace();
         }
     }
