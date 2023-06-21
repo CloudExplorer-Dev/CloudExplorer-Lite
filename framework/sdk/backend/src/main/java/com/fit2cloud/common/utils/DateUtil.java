@@ -93,5 +93,17 @@ public class DateUtil extends DateUtils {
         return calendar.getTime().getTime();
     }
 
+    /**
+     * 获取当前时间过去n个月的时间
+     *
+     * @param timestamp
+     * @return
+     */
+    public static Long beforeMonthToTimestamp(Long timestamp, int m) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date(timestamp));
+        calendar.add(Calendar.MONTH, -m);
+        return calendar.getTime().getTime();
+    }
 
 }

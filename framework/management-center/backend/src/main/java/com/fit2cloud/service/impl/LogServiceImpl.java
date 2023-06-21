@@ -16,13 +16,16 @@ import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.log.entity.OperatedLogVO;
 import com.fit2cloud.common.log.entity.SystemLogVO;
+import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.controller.request.es.PageOperatedLogRequest;
 import com.fit2cloud.controller.request.es.PageSystemLogRequest;
+import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.service.ILogService;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -30,7 +33,6 @@ import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.util.*;
 
 /**
@@ -171,11 +173,16 @@ public class LogServiceImpl implements ILogService {
 
     @Override
     public void deleteEsData(String index, int m, Class<?> clazz) {
-        //provide.delete(5,"ce-file-system-logs", SystemLog.class);
+        // 获取过去m个月的时间戳
+        Long mTimeMillis = DateUtil.beforeMonthToTimestamp(System.currentTimeMillis(), m);
         RangeQuery.Builder rangeQuery = new RangeQuery.Builder();
-        rangeQuery.field("@timestamp");
-        rangeQuery.lt(JsonData.of("now-" + m + "M"));
-        rangeQuery.format("epoch_millis");
+        // 时间字段类型不一样，监控的是时间戳，其他的日志是时间类型的，所以这里得做一下区分
+        if (PerfMetricMonitorData.class.equals(clazz)) {
+            rangeQuery.field("timestamp");
+        } else {
+            rangeQuery.field("@timestamp");
+        }
+        rangeQuery.lt(JsonData.of(mTimeMillis));
         Query query = new Query.Builder().range(rangeQuery.build()).build();
         NativeQueryBuilder builder = new NativeQueryBuilder();
         builder.withQuery(query);

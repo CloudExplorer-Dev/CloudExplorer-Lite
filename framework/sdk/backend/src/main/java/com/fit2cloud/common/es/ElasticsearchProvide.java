@@ -6,6 +6,7 @@ import com.fit2cloud.common.es.constants.EsErrorCodeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.utils.QueryUtil;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
@@ -16,7 +17,6 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -111,11 +111,11 @@ public class ElasticsearchProvide {
      */
     public void delete(String index, Query query, Class<?> clazz) {
         IndexCoordinates indexCoordinates = IndexCoordinates.of(index);
-        // 删除索引
         try {
-            elasticsearchTemplate.delete(query, clazz, indexCoordinates);
+            org.springframework.data.elasticsearch.core.query.ByQueryResponse response = elasticsearchTemplate.delete(query, clazz, indexCoordinates);
+            LogUtil.debug("清理数量:%s", response.getDeleted());
         } catch (Exception e) {
-            LogUtil.error("[ delete elasticsearch ]CODE[{}] >>{}", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage() + " " + e.getMessage());
+            LogUtil.error(String.format("[ delete elasticsearch ]CODE[%s] >>%s", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage()));
             throw new Fit2cloudException(100010, e.getMessage());
         }
     }
