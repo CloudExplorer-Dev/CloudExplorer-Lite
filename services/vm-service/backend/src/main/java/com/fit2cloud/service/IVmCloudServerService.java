@@ -66,4 +66,6 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
     long countVmCloudServer();
 
     List<Map<String, Object>> countByStatus();
+
+    VmCloudServerDTO getSingleById(String vmId);
 }

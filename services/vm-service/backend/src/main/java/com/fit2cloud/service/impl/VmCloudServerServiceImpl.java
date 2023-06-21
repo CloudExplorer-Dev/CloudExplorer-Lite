@@ -382,6 +382,20 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     }
 
     @Override
+    public VmCloudServerDTO getSingleById(String vmId) {
+        PageVmCloudServerRequest request = new PageVmCloudServerRequest();
+        setCurrentInfos(request);
+        QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<>();
+        wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getSourceIds());
+        wrapper.eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), vmId);
+        List<VmCloudServerDTO> list = vmCloudServerMapper.pageVmCloudServer(wrapper);
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        return list.get(0);
+    }
+
+    @Override
     public List<VmCloudServerDTO> getByIds(List<String> vmIds) {
         if (CollectionUtils.isEmpty(vmIds)) {
             return new ArrayList<>();
