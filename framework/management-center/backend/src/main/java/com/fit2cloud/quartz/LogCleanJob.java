@@ -25,7 +25,7 @@ public class LogCleanJob {
     @Resource
     private ILogService logService;
 
-    @Scheduled(cron = "0 0/10 * * * ?")
+    @Scheduled(cron = "0 30 1 * * ?")
     public void cleanApiLog() {
         String operatedLogValue = baseSystemParameterService.getValue(ParamConstants.Log.KEEP_API_MONTHS.getValue());
         String loginLogValue = baseSystemParameterService.getValue(ParamConstants.Log.KEEP_LOGIN_MONTHS.getValue());
