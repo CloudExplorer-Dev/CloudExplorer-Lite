@@ -16,6 +16,7 @@ import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.log.entity.OperatedLogVO;
 import com.fit2cloud.common.log.entity.SystemLogVO;
+import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.utils.DateUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.PageUtil;
@@ -186,6 +187,7 @@ public class LogServiceImpl implements ILogService {
         Query query = new Query.Builder().range(rangeQuery.build()).build();
         NativeQueryBuilder builder = new NativeQueryBuilder();
         builder.withQuery(query);
+        LogUtil.debug(String.format("清理条件:%s", query));
         provide.delete(index, builder.build(), clazz);
     }
 }
