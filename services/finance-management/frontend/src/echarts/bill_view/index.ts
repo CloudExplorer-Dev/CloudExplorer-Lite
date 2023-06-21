@@ -3,6 +3,7 @@ import type { BillSummary, TrendData } from "@/echarts/bill_view/type";
 import type { SimpleMap } from "@commons/api/base/type";
 import { interpolationColor } from "@commons/utils/color";
 import _ from "lodash";
+import CurrencyFormat from "@commons/utils/currencyFormat";
 /**
  * 重置数据
  * @param billData 数据
@@ -108,7 +109,11 @@ const getBillViewOptions = (
           .reduce((p: number, n: number) => p + n, 0);
         const a = Math.floor(((dataItem?.value as number) / sum) * 10000) / 100;
         const tow =
-          _.round(dataItem ? dataItem.value : 0, 2).toFixed(2) +
+          CurrencyFormat.format(
+            Number.parseFloat(
+              _.round(dataItem ? dataItem.value : 0, 2).toFixed(2)
+            )
+          ) +
           "    (" +
           a +
           "%)";
@@ -122,7 +127,9 @@ const getBillViewOptions = (
     tooltip: {
       trigger: "item",
       formatter: (p: any) => {
-        return `${p.name}:${_.round(p.value, 2).toFixed(2)}`;
+        return `${p.name}:${CurrencyFormat.format(
+          Number.parseFloat(_.round(p.value, 2).toFixed(2))
+        )}`;
       },
     },
     series: [
@@ -150,7 +157,9 @@ const getBillViewOptions = (
               .filter((d) => (selected as SimpleMap<boolean>)[d.name])
               .map((a) => a.value)
               .reduce((p, n) => p + n, 0);
-            return `{title|总费用}\r\n{value|${_.round(sum, 2).toFixed(2)}}`;
+            return `{title|总费用}\r\n{value|${CurrencyFormat.format(
+              Number.parseFloat(_.round(sum, 2).toFixed(2))
+            )}}`;
           },
           rich: {
             title: {
@@ -169,8 +178,8 @@ const getBillViewOptions = (
             show: true,
             width: 120,
             formatter: (a: any) => {
-              return `{title|${a.name}}\r\n{value|${_.round(a.value, 2).toFixed(
-                2
+              return `{title|${a.name}}\r\n{value|${CurrencyFormat.format(
+                Number.parseFloat(_.round(a.value, 2).toFixed(2))
               )}}`;
             },
             fontSize: "18px",
