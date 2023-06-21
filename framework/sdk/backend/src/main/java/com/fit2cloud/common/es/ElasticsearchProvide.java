@@ -113,7 +113,7 @@ public class ElasticsearchProvide {
         IndexCoordinates indexCoordinates = IndexCoordinates.of(index);
         try {
             org.springframework.data.elasticsearch.core.query.ByQueryResponse response = elasticsearchTemplate.delete(query, clazz, indexCoordinates);
-            LogUtil.debug("清理数量:%s", response.getDeleted());
+            LogUtil.debug(String.format("清理数量:%s", response.getDeleted()));
         } catch (Exception e) {
             LogUtil.error(String.format("[ delete elasticsearch ]CODE[%s] >>%s", EsErrorCodeConstants.SEARCH_FAILED.getCode(), e.getMessage()));
             throw new Fit2cloudException(100010, e.getMessage());
