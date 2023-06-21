@@ -17,11 +17,11 @@ import com.fit2cloud.service.IVmCloudServerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -155,7 +155,7 @@ public class VmCloudServerController {
     @Operation(summary = "根据id查询云主机", description = "根据id查询云主机")
     public ResultHolder<VmCloudServerDTO> findCloudServer(@Parameter(description = "云主机id", required = true)
                                                           @PathVariable("id") String id) {
-        return ResultHolder.success(iVmCloudServerService.getById(id));
+        return ResultHolder.success(iVmCloudServerService.getSingleById(id));
     }
 
     @GetMapping("/ids")
