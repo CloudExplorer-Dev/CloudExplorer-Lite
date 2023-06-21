@@ -292,7 +292,7 @@ const tableConfig = ref<TableConfig>({
     search: search,
     quickPlaceholder: "搜索",
     components: [],
-    searchOptions: [{ label: "规则名称", value: "name" }],
+    searchOptions: [{ label: "账单名称", value: "name" }],
   },
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations(
