@@ -406,19 +406,22 @@ onMounted(() => {
     border-top: 1px solid var(--el-border-color);
     box-shadow: 0 -3px 4px rgba(30, 35, 41, 0.1);
     z-index: 2000;
-    height: 95px;
+    height: 81px;
     width: 100%;
     min-width: 1000px;
     .footer {
-      margin-top: 10px;
       display: flex;
       justify-content: start;
       flex-direction: row;
       align-items: center;
       flex-wrap: wrap;
+      height: 100%;
       .footer-form {
         min-width: 200px;
         width: 25.33%;
+        :deep(.el-form-item) {
+          margin-bottom: 0px;
+        }
       }
       .footer-center {
         display: flex;
