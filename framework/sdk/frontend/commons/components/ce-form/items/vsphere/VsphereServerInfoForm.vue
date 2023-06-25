@@ -44,10 +44,9 @@
                       },
                       {
                         message:
-                          'Hostname' +
-                          '只能包含小写字母、大写字母、数字、横线且是合法的FQDN',
+                          'Hostname' + '只能包含小写字母、大写字母、数字、横线',
                         trigger: 'blur',
-                        pattern: /^[A-Za-z]+[A-Za-z0-9\-]*[A-Za-z0-9]$/,
+                        pattern: /^[A-Za-z0-9]+[A-Za-z0-9\-]*[A-Za-z0-9]$/,
                       },
                     ]"
                     :prop="'[' + index + '].hostname'"
@@ -189,6 +188,21 @@ function setServers(count: number | undefined) {
         _data.value = _.concat(_data.value, temp);
       }
     }
+  }
+}
+
+function checkHostname(rule: any, value: string, callback: any) {
+  console.log(value);
+  let inRange = false;
+
+  if (new RegExp(/^[A-Za-z]+[A-Za-z0-9\\-]*[A-Za-z0-9]$/).test(value)) {
+    inRange = true;
+  }
+
+  if (inRange) {
+    callback();
+  } else {
+    callback(new Error("格式错误"));
   }
 }
 

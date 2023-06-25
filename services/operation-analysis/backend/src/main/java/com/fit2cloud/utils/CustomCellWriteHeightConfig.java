@@ -44,7 +44,7 @@ public class CustomCellWriteHeightConfig extends AbstractRowHeightStyleStrategy 
                         try {
                             value = value.substring(0, (i + 1) * 50 + i) + "\n" + value.substring((i + 1) * 50 + i, len + i);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            //e.printStackTrace();
                         }
 
                     }
