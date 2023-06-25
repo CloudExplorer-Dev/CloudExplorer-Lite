@@ -36,7 +36,7 @@ public class CloudAccountSyncJob {
         @Override
         protected void run(Map<String, Object> map) {
             List<BillSetting> billSettings = ChargingConfig.getBillSettings().getBillSettings();
-            billSettings
+             billSettings
                     .parallelStream()
                     .forEach(billSetting -> SimpleInstanceStateRecorder.of(billSetting).runRecordState());
         }

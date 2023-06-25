@@ -4,22 +4,25 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fit2cloud.base.entity.ResourceInstance;
 import com.fit2cloud.base.entity.ResourceInstanceState;
 import com.fit2cloud.base.service.IBaseResourceInstanceService;
-import com.fit2cloud.base.service.IBaseResourceInstanceStateService;
 import com.fit2cloud.common.charging.constants.BillingInstanceStateConstants;
 import com.fit2cloud.common.charging.entity.InstanceRecord;
 import com.fit2cloud.common.charging.entity.InstanceState;
 import com.fit2cloud.common.charging.instance.InstanceRecordMappingHandler;
 import com.fit2cloud.common.charging.instance.InstanceStateRecorder;
+import com.fit2cloud.common.charging.policy.InstanceStatePolicy;
 import com.fit2cloud.common.charging.setting.BillSetting;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import lombok.SneakyThrows;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -77,22 +80,42 @@ public class SimpleInstanceStateRecorder implements InstanceStateRecorder {
         }
         try {
             String month = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-            IBaseResourceInstanceStateService resourceInstanceStateService = SpringUtil.getBean(IBaseResourceInstanceStateService.class);
-            List<ResourceInstanceState> resourceInstanceStates = resourceInstanceStateService.list(
-                    new LambdaQueryWrapper<ResourceInstanceState>()
-                            .eq(ResourceInstanceState::getMonth, month)
-            );
-            List<ResourceInstanceState> newResourceInstanceState = instanceRecords
-                    .parallelStream()
-                    .map(instanceRecord -> toResourceInstanceState(instanceRecord, resourceInstanceStates, month, currentDateTime))
-                    .toList();
-            resourceInstanceStateService.saveOrUpdateBatch(newResourceInstanceState);
+            InstanceStatePolicy instanceStatePolicy = setting.getInstanceStatePolicy();
+            List<ResourceInstanceState> resourceInstanceStates = instanceStatePolicy.list(setting.getResourceInstanceType(), month);
+            if (CollectionUtils.isEmpty(resourceInstanceStates) && currentDateTime.getDayOfMonth() == 1) {
+                LocalDateTime upMonthLocalDateTime = currentDateTime.plusMonths(-1);
+                String upMonth = upMonthLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+                List<ResourceInstanceState> upMonthResourceInstanceStates = instanceStatePolicy.list(setting.getResourceInstanceType(), upMonth);
+                if (CollectionUtils.isNotEmpty(upMonthResourceInstanceStates)) {
+                    updateInstanceState(instanceRecords, LocalDateTime.of(upMonthLocalDateTime.with(TemporalAdjusters.lastDayOfMonth()).toLocalDate(), LocalTime.MAX), upMonth, instanceStatePolicy, upMonthResourceInstanceStates);
+                }
+            }
+            updateInstanceState(instanceRecords, currentDateTime, month, instanceStatePolicy, resourceInstanceStates);
         } finally {
             if (recordStateLock.isLocked()) {
                 recordStateLock.unlock();
             }
         }
 
+    }
+
+
+    /**
+     * 更新实例状态
+     *
+     * @param instanceRecords        实例记录
+     * @param currentDateTime        创建时间
+     * @param month                  月份
+     * @param instanceStatePolicy    实例存储策略
+     * @param resourceInstanceStates 实例状态
+     */
+    private void updateInstanceState(List<InstanceRecord> instanceRecords, LocalDateTime currentDateTime, String month, InstanceStatePolicy instanceStatePolicy, List<ResourceInstanceState> resourceInstanceStates) {
+        List<ResourceInstanceState> newResourceInstanceState = instanceRecords
+                .parallelStream()
+                .map(instanceRecord -> toResourceInstanceState(instanceRecord, resourceInstanceStates, month, currentDateTime))
+                .toList();
+
+        instanceStatePolicy.saveBatch(setting.getResourceInstanceType(), month, newResourceInstanceState);
     }
 
     /**

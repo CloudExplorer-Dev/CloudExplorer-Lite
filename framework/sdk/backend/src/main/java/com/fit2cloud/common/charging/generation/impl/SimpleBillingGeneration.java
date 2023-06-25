@@ -72,15 +72,9 @@ public class SimpleBillingGeneration implements BillingGeneration {
                                          BillingGranularityConstants granularity,
                                          boolean isNowBilling) {
         BaseResourceInstanceMapper resourceInstanceMapper = SpringUtil.getBean(BaseResourceInstanceMapper.class);
-        BaseResourceInstanceStateMapper resourceInstanceStateMapper = SpringUtil.getBean(BaseResourceInstanceStateMapper.class);
 
-        // 资源实例状态
-        List<ResourceInstanceState> resourceInstanceStates = resourceInstanceStateMapper
-                .selectList(new LambdaQueryWrapper<ResourceInstanceState>()
-                        .eq(ResourceInstanceState::getResourceType, setting.getResourceInstanceType())
-                        .eq(ResourceInstanceState::getMonth, month)
-                        .eq(ResourceInstanceState::getCloudAccountId, cloudAccountId)
-                );
+        List<ResourceInstanceState> resourceInstanceStates = setting.getInstanceStatePolicy().list(cloudAccountId, setting.getResourceInstanceType(), month);
+
         // 策略与云账号映射
         List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappings = listBillPolicyCloudAccountMapping(isNowBilling, cloudAccountId);
         if (CollectionUtils.isEmpty(billPolicyCloudAccountMappings)) {
@@ -375,7 +369,7 @@ public class SimpleBillingGeneration implements BillingGeneration {
                     continue;
                 }
                 InstanceState.Time start = InstanceState.Time.of(pre.getCreateTime().getDayOfMonth(), pre.getCreateTime().getHour(), pre.getCreateTime().getMinute());
-                InstanceState.Time end = InstanceState.Time.of(next.getCreateTime().getDayOfMonth(), next.getCreateTime().getHour(), next.getCreateTime().getMinute());
+                InstanceState.Time end = next.getCreateTime().equals(regionEnd) ? null : InstanceState.Time.of(next.getCreateTime().getDayOfMonth(), next.getCreateTime().getHour(), next.getCreateTime().getMinute());
                 result.add(new Region(start, end, currentResourceInstance, currentPolicyMap.get(currentPolicyCloudAccountMapping.getBillPolicyId())));
                 if (next.status.equals(Status.END)) {
                     currentStatus = Status.END;
@@ -388,7 +382,7 @@ public class SimpleBillingGeneration implements BillingGeneration {
 
     private static List<Region> filterRegion(List<Region> regions) {
         // 如果存在开始时间一样的Region 则使用后面的Region
-        return regions.stream().filter(region -> !region.end.toString().equals(region.start.toString())).toList();
+        return regions.stream().filter(region -> Objects.isNull(region.end) || !region.end.toString().equals(region.start.toString())).toList();
     }
 
     private static LocalDateTime getLocalDateTime(String month,

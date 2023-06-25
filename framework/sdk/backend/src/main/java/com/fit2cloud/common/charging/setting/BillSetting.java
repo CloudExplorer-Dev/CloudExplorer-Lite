@@ -4,6 +4,7 @@ import com.fit2cloud.common.charging.entity.BillingFieldMeta;
 import com.fit2cloud.common.charging.entity.InstanceState;
 import com.fit2cloud.common.charging.instance.InstanceRecordMappingHandler;
 import com.fit2cloud.common.charging.policy.BillingPolicy;
+import com.fit2cloud.common.charging.policy.InstanceStatePolicy;
 import com.fit2cloud.common.form.vo.Form;
 
 import java.util.List;
@@ -67,6 +68,13 @@ public interface BillSetting {
      * @return true 计费,false不计费
      */
     BiPredicate<Map<String, Object>, InstanceState.State> stateBilling();
+
+    /**
+     * 实例状态存储策略
+     *
+     * @return 实例状态存储策略
+     */
+    InstanceStatePolicy getInstanceStatePolicy();
 
     /**
      * 全局配置元数据

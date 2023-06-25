@@ -94,7 +94,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         // 同步监控数据
         JobSetting syncMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncMetricMonitor.class, SYNC_METRIC_MONITOR, com.fit2cloud.common.constants.JobConstants.Group.CLOUD_RESOURCE_METRIC_SYNC_GROUP.name(), "同步监控数据", null, "0 30 * * * ? *", p -> true, p -> false, p -> false);
         // 记录实例状态
-        JobSetting recorderInstanceState = new JobSetting(CloudAccountSyncJob.recorderInstanceState.class, "RECORDER_INSTANCE_STATE", com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "记录实例状态", null, 5, DateBuilder.IntervalUnit.MINUTE, p -> false, p -> false, p -> false);
+        JobSetting recorderInstanceState = new JobSetting(CloudAccountSyncJob.recorderInstanceState.class, "RECORDER_INSTANCE_STATE", com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "记录实例状态", null, 2, DateBuilder.IntervalUnit.MINUTE, p -> false, p -> false, p -> false);
         // 记录实例变更
         JobSetting recorderInstanceChange = new JobSetting(CloudAccountSyncJob.recorderInstanceChange.class, "RECORDER_INSTANCE_CHANGE", com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "记录实例变更", null, 1, DateBuilder.IntervalUnit.MINUTE, p -> false, p -> false, p -> false);
 

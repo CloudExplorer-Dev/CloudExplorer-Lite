@@ -5,6 +5,8 @@ import com.fit2cloud.common.charging.entity.BillingFieldMeta;
 import com.fit2cloud.common.charging.entity.InstanceState;
 import com.fit2cloud.common.charging.instance.InstanceRecordMappingHandler;
 import com.fit2cloud.common.charging.policy.BillingPolicy;
+import com.fit2cloud.common.charging.policy.InstanceStatePolicy;
+import com.fit2cloud.common.charging.policy.impl.DiskInstanceStatePolicy;
 import com.fit2cloud.common.charging.policy.impl.SimpleAccurateBillingPolicy;
 import com.fit2cloud.common.charging.setting.BillSetting;
 import com.fit2cloud.common.form.util.FormUtil;
@@ -142,5 +144,10 @@ public class SimpleBillingSetting implements BillSetting {
     @Override
     public List<? extends Form> getGlobalConfigMetaForms() {
         return globalConfigMetaForms;
+    }
+
+    @Override
+    public InstanceStatePolicy getInstanceStatePolicy() {
+        return new DiskInstanceStatePolicy();
     }
 }
