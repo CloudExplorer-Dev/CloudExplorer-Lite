@@ -28,16 +28,17 @@ import java.util.List;
 @FormConfirmInfo(group = 2, name = "资源配置")
 @FormConfirmInfo(group = 3, name = "网络配置")
 @FormConfirmInfo(group = 4, name = "系统配置")
-@FormGroupInfo(group = 1, name = "区域")
-@FormGroupInfo(group = 2, name = "操作系统")
-@FormGroupInfo(group = 3, name = "实例规格")
-@FormGroupInfo(group = 4, name = "磁盘配置")
-@FormGroupInfo(group = 5, name = "计算资源")
-@FormGroupInfo(group = 6, name = "存储资源")
-@FormGroupInfo(group = 7, name = "主机存放位置")
-@FormGroupInfo(group = 8, name = "网络")
-@FormGroupInfo(group = 9, name = "登录凭证")
-@FormGroupInfo(group = 10, name = "主机命名")
+@FormGroupInfo(group = 1, name = "付费方式")
+@FormGroupInfo(group = 10, name = "区域")
+@FormGroupInfo(group = 20, name = "操作系统")
+@FormGroupInfo(group = 30, name = "实例规格")
+@FormGroupInfo(group = 40, name = "磁盘配置")
+@FormGroupInfo(group = 50, name = "计算资源")
+@FormGroupInfo(group = 60, name = "存储资源")
+@FormGroupInfo(group = 70, name = "主机存放位置")
+@FormGroupInfo(group = 80, name = "网络")
+@FormGroupInfo(group = 90, name = "登录凭证")
+@FormGroupInfo(group = 100, name = "主机命名")
 public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICreateServerRequest {
 
     @Form(inputType = InputType.LineNumber,
@@ -78,7 +79,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             method = "getRegions",
             textField = "name",
             valueField = "regionId",
-            group = 1,
+            group = 10,
             step = 1,
             confirmGroup = 0
     )
@@ -92,7 +93,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             formatTextField = true,
             valueField = "name",
             relationTrigger = "region",
-            group = 1,
+            group = 10,
             step = 1,
             confirmGroup = 0,
             textField = "${info}\n" +
@@ -113,7 +114,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             relationTrigger = "region",
             propsInfo = "{\"style\":{\"width\":\"100%\"}}",
             attrs = "{\"placeholder\":\"请选择一个模板\"}",
-            group = 2,
+            group = 20,
             step = 1,
             confirmGroup = 1
     )
@@ -124,7 +125,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             label = "CPU",
             leftLabel = true,
             unit = "核",
-            group = 3,
+            group = 30,
             step = 1,
             defaultValue = "1",
             defaultJsonValue = true,
@@ -138,7 +139,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             label = "内存",
             leftLabel = true,
             unit = "GB",
-            group = 3,
+            group = 30,
             step = 1,
             defaultValue = "1",
             defaultJsonValue = true,
@@ -150,7 +151,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //磁盘配置
     @Form(inputType = InputType.VsphereDiskConfigForm,
             step = 1,
-            group = 4,
+            group = 40,
             defaultValue = "[]",
             defaultJsonValue = true,
             relationTrigger = "template",
@@ -163,7 +164,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //step 2
     @Form(inputType = InputType.VsphereComputeConfigForm,
             step = 2,
-            group = 5,
+            group = 50,
             defaultValue = "{\"location\": \"host\"}",
             defaultJsonValue = true,
             relationTrigger = "cluster",
@@ -182,7 +183,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             valueField = "value",
             defaultValue = "DEFAULT",
             step = 2,
-            group = 6,
+            group = 60,
             confirmGroup = 2
     )
     private String diskType;
@@ -193,7 +194,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             clazz = VsphereCloudProvider.class,
             method = "getDatastoreList",
             step = 2,
-            group = 6,
+            group = 60,
             relationTrigger = "computeConfig",
             confirmGroup = 2,
             confirmSpecial = true
@@ -210,7 +211,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
             relationTrigger = "cluster",
             propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"32px\"}}",
             attrs = "{\"placeholder\":\"请选择主机存放文件夹\"}",
-            group = 7,
+            group = 70,
             step = 2,
             confirmGroup = 2
     )
@@ -221,7 +222,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //网卡
     @Form(inputType = InputType.VsphereNetworkAdapterForm,
             step = 3,
-            group = 8,
+            group = 80,
             defaultValue = "[]",
             defaultJsonValue = true,
             relationTrigger = {"cluster", "computeConfig"},
@@ -263,7 +264,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //todo
     @Form(inputType = InputType.VspherePasswordInfoForm,
             step = 4,
-            group = 9,
+            group = 90,
             defaultValue = "",
             defaultJsonValue = true,
             confirmGroup = 4,
@@ -276,7 +277,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
     //云主机名称
     @Form(inputType = InputType.VsphereServerInfoForm,
             step = 4,
-            group = 10,
+            group = 100,
             defaultValue = "[]",
             defaultJsonValue = true,
             confirmGroup = 4,

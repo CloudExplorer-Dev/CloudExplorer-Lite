@@ -25,14 +25,15 @@ import java.util.List;
 @FormConfirmInfo(group = 1, name = "基础配置")
 @FormConfirmInfo(group = 2, name = "网络配置")
 @FormConfirmInfo(group = 3, name = "系统配置")
-@FormGroupInfo(group = 1, name = "区域")
-@FormGroupInfo(group = 2, name = "操作系统")
-@FormGroupInfo(group = 3, name = "实例规格")
-@FormGroupInfo(group = 4, name = "磁盘配置")
-@FormGroupInfo(group = 5, name = "网络")
-@FormGroupInfo(group = 6, name = "安全组")
-@FormGroupInfo(group = 7, name = "登录凭证")
-@FormGroupInfo(group = 8, name = "主机命名")
+@FormGroupInfo(group = 1, name = "付费方式")
+@FormGroupInfo(group = 10, name = "区域")
+@FormGroupInfo(group = 20, name = "操作系统")
+@FormGroupInfo(group = 30, name = "实例规格")
+@FormGroupInfo(group = 40, name = "磁盘配置")
+@FormGroupInfo(group = 50, name = "网络")
+@FormGroupInfo(group = 60, name = "安全组")
+@FormGroupInfo(group = 70, name = "登录凭证")
+@FormGroupInfo(group = 80, name = "主机命名")
 public class OpenStackServerCreateRequest extends OpenStackBaseRequest implements ICreateServerRequest {
 
     @Form(inputType = InputType.LineNumber,
@@ -74,7 +75,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             method = "getRegions",
             textField = "name",
             valueField = "regionId",
-            group = 1,
+            group = 10,
             step = 1,
             confirmGroup = 0
     )
@@ -87,7 +88,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             textField = "name",
             valueField = "id",
             relationTrigger = {"region"},
-            group = 1,
+            group = 10,
             step = 1,
             confirmGroup = 0
     )
@@ -104,7 +105,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             relationTrigger = {"region"},
             propsInfo = "{\"style\":{\"width\":\"100%\",\"height\":\"32px\"}}",
             attrs = "{\"placeholder\":\"请选择一个镜像\"}",
-            group = 2,
+            group = 20,
             step = 1,
             confirmGroup = 1
     )
@@ -116,7 +117,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             method = "getFlavors",
             relationTrigger = {"region", "imageId"},
             hideLabel = true,
-            group = 3,
+            group = 30,
             step = 1,
             textField = "name",
             valueField = "id",
@@ -132,7 +133,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
             attrs = "{\"active-text\":\"是\",\"inactive-text\":\"否\",\"inline-prompt\":true}",
 //            clazz = OpenStackCloudProvider.class,
 //            method = "getBooleanSelectList",
-            group = 3,
+            group = 30,
             step = 1,
             confirmGroup = 1)
     private boolean bootFormVolume;
@@ -140,7 +141,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
     //磁盘配置
     @Form(inputType = InputType.OpenStackDiskConfigForm,
             step = 1,
-            group = 4,
+            group = 40,
             defaultValue = "[]",
             defaultJsonValue = true,
             confirmGroup = 1,
@@ -152,7 +153,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
     @Form(inputType = InputType.OpenStackNetworkConfigForm,
             label = "网络",
             step = 2,
-            group = 5,
+            group = 50,
             hideLabel = true,
             defaultValue = "[]",
             defaultJsonValue = true,
@@ -169,7 +170,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
     @Form(inputType = InputType.TableCheckbox,
             label = "安全组",
             step = 2,
-            group = 6,
+            group = 60,
             relationTrigger = {"region"},
             clazz = OpenStackCloudProvider.class,
             method = "getSecurityGroups",
@@ -209,7 +210,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
 
     @Form(inputType = InputType.Radio,
             step = 3,
-            group = 7,
+            group = 70,
             label = "登录方式",
             clazz = OpenStackCloudProvider.class,
             method = "getLoginModes",
@@ -222,7 +223,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
 
     @Form(inputType = InputType.Password,
             step = 3,
-            group = 7,
+            group = 70,
             label = "密码",
             defaultJsonValue = true,
             relationTrigger = {"loginMode"}
@@ -233,7 +234,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
     //云主机
     @Form(inputType = InputType.OpenStackServerInfoForm,
             step = 3,
-            group = 8,
+            group = 80,
             defaultValue = "[]",
             defaultJsonValue = true,
             confirmGroup = 3,
