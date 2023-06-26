@@ -11,9 +11,9 @@
     <template #header>
       <span class="title">
         {{ operationType === "edit" ? "编辑" : "创建" }}
-        <span v-if="operationType === 'edit'" style="color: #8f959e"
-          >({{ createOptimizationStrategyForm.name }})</span
-        >
+        <span v-if="operationType === 'edit'" style="color: #8f959e">
+          ({{ createOptimizationStrategyForm.name }})
+        </span>
       </span>
     </template>
     <div>
@@ -61,9 +61,9 @@
                 <el-radio-group
                   v-model="createOptimizationStrategyForm.resourceType"
                 >
-                  <el-radio :key="'1'" :label="'VIRTUAL_MACHINE'"
-                    >云主机</el-radio
-                  >
+                  <el-radio :key="'1'" :label="'VIRTUAL_MACHINE'">
+                    云主机
+                  </el-radio>
                 </el-radio-group>
               </el-form-item>
 
@@ -108,7 +108,7 @@
                     :component="rule_item"
                     ref="ruleTreeRef"
                     :store="fields"
-                  ></ce-rule-tree>
+                  />
                 </div>
               </el-form-item>
             </div>
@@ -144,11 +144,11 @@
                 :optimization-scope="
                   createOptimizationStrategyForm.optimizationScope
                 "
-                :optimization-strategy-id="optimizationStrategyId.value"
+                :optimization-strategy-id="optimizationStrategyId"
                 :create-optimization-strategy-form="
                   _createOptimizationStrategyForm
                 "
-              ></server-list>
+              />
             </div>
           </template>
         </base-container>
@@ -158,9 +158,9 @@
     <template #footer>
       <span>
         <el-button @click="close" :disabled="loading">取消</el-button>
-        <el-button @click="prev" v-if="active === 1" :disabled="loading"
-          >上一步</el-button
-        >
+        <el-button @click="prev" v-if="active === 1" :disabled="loading">
+          上一步
+        </el-button>
         <el-button
           @click="next"
           type="primary"
@@ -276,7 +276,7 @@ const createOptimizationStrategyFormRules = ref<FormRules>({
 /**
  * 数字框格式化值
  */
-function formatNumber(v: number) {
+function formatNumber(v?: number) {
   createOptimizationStrategyForm.value.days = parseInt(
     `${v}`.toString().split(".")[0]
   );
