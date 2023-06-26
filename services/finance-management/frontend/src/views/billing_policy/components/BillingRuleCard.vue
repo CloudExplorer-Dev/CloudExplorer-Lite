@@ -10,7 +10,7 @@
           <el-popover
             placement="top-start"
             popper-class="price_preview"
-            width="auto"
+            width="320"
             popper-style="--el-popover-padding:0px"
             :visible="pricePreview"
           >

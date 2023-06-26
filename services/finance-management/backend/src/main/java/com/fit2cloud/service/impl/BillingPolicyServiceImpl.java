@@ -93,12 +93,15 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
     public List<CloudAccountResponse> listCloudAccountByPolicy(String billingPolicy) {
         List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappingList = billPolicyCloudAccountMappingService
                 .listLast(new LambdaQueryWrapper<>());
+
+        List<String> policyIdList = billPolicyCloudAccountMappingList.stream()
+                .map(BillPolicyCloudAccountMapping::getBillPolicyId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
         List<BillPolicy> policyList = this.list(new LambdaQueryWrapper<BillPolicy>()
-                .in(BillPolicy::getId, billPolicyCloudAccountMappingList.stream()
-                        .map(BillPolicyCloudAccountMapping::getBillPolicyId)
-                        .filter(Objects::nonNull)
-                        .distinct()
-                        .toList()));
+                .in(CollectionUtils.isNotEmpty(policyIdList), BillPolicy::getId, policyIdList));
 
         return cloudAccountService.list().stream().map(cloudAccount -> {
             CloudAccountResponse cloudAccountResponse = new CloudAccountResponse();
