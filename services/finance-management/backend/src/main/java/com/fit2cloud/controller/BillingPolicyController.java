@@ -73,6 +73,16 @@ public class BillingPolicyController {
         return ResultHolder.success(remove);
     }
 
+    @Operation(description = "重命名策略", summary = "重命名策略")
+    @PutMapping("/re_name/{billing_policy_id}")
+    @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:EDIT')")
+    public ResultHolder<BillPolicy> rePolicyName(@Parameter(description = "计费策略id") @CustomValidated(mapper = BaseBillPolicyMapper.class, handler = ExistHandler.class, field = "id", message = "计费策略id不存在", exist = false)
+                                                 @PathVariable("billing_policy_id") String billingPolicyId,
+                                                 @Validated @RequestParam("name") String name) {
+        BillPolicy billPolicy = billingPolicyService.reName(billingPolicyId, name);
+        return ResultHolder.success(billPolicy);
+    }
+
     @Operation(summary = "修改策略")
     @PutMapping("/{billing_policy_id}")
     @PreAuthorize("@cepc.hasAnyCePermission('BILLING_POLICY:EDIT')")

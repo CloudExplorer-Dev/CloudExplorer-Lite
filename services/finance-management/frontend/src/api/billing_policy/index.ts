@@ -95,9 +95,9 @@ const reName: (
   loading?: Ref<boolean>
 ) => Promise<Result<any>> = (billing_policy_id, name, loading) => {
   return put(
-    `/api/billing_policy/${billing_policy_id}`,
+    `/api/billing_policy/re_name/${billing_policy_id}`,
+    { name },
     {},
-    { name: name },
     loading
   );
 };

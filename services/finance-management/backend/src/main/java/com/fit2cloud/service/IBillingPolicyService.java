@@ -72,4 +72,13 @@ public interface IBillingPolicyService extends IService<BillPolicy> {
      * @return 计价策略详情
      */
     List<BillPolicyDetails> calculateConfigPrice(String cloudAccountId);
+
+    /**
+     * 策略重命名
+     *
+     * @param billingPolicyId 策略id
+     * @param name            策略名称
+     * @return 策略对象
+     */
+    BillPolicy reName(String billingPolicyId, String name);
 }

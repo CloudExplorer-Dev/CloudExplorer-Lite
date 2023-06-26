@@ -127,17 +127,7 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
     @Transactional
     public void updateBillingPolicy(String billingPolicyId, BillingPolicyRequest request) {
         if (StringUtils.isNotEmpty(request.getName())) {
-            BillPolicy billPolicy = this.getOne(new LambdaQueryWrapper<BillPolicy>()
-                    .ne(BillPolicy::getId, billingPolicyId)
-                    .eq(BillPolicy::getName, request.getName()));
-            if (Objects.isNull(billPolicy)) {
-                BillPolicy newBillPolicy = new BillPolicy();
-                newBillPolicy.setName(request.getName());
-                newBillPolicy.setId(billingPolicyId);
-                updateById(newBillPolicy);
-            } else {
-                throw new Fit2cloudException(222, "策略名称已存在");
-            }
+            reName(billingPolicyId, request.getName());
         }
         LocalDateTime currentTime = LocalDateTime.now();
         updateBillingPolicyDetails(request.getBillingPolicyDetailsList(), billingPolicyId, currentTime);
@@ -251,6 +241,22 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
                 .in(ColumnNameUtil.getColumnName(BillPolicyDetails::getBillPolicyId, "bill_policy_details"),
                         billPolicyCloudAccountMappingList.stream()
                                 .map(BillPolicyCloudAccountMapping::getBillPolicyId).distinct().toList()));
+    }
+
+    @Override
+    public BillPolicy reName(String billingPolicyId, String name) {
+        List<BillPolicy> billPolicyList = this.list(new LambdaQueryWrapper<BillPolicy>()
+                .ne(BillPolicy::getId, billingPolicyId)
+                .eq(BillPolicy::getName, name));
+        if (CollectionUtils.isEmpty((billPolicyList))) {
+            BillPolicy newBillPolicy = new BillPolicy();
+            newBillPolicy.setName(name);
+            newBillPolicy.setId(billingPolicyId);
+            updateById(newBillPolicy);
+            return getById(billingPolicyId);
+        } else {
+            throw new Fit2cloudException(222, "策略名称已存在");
+        }
     }
 
 

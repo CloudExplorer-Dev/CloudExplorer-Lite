@@ -167,7 +167,7 @@ const rowCloudAccountList = computed(() => {
       margin-top: 11px;
     }
     &:first-child {
-      margin-top: 0;
+      margin-top: 10px;
       .col {
         margin-top: 0;
       }
