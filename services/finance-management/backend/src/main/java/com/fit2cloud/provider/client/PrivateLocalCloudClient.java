@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.client;
 
+import com.fit2cloud.autoconfigure.RestTemplateConfig;
 import com.fit2cloud.base.service.IBaseUserService;
 import com.fit2cloud.common.charging.constants.BillingGranularityConstants;
 import com.fit2cloud.common.charging.entity.InstanceBill;
@@ -15,11 +16,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.KeyValue;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -45,6 +44,11 @@ public class PrivateLocalCloudClient {
         this.jwt = jwt;
     }
 
+    private RestTemplate getRestTemplate() {
+        RestTemplateConfig restTemplateConfig = new RestTemplateConfig();
+        return restTemplateConfig.restTemplate();
+    }
+
     /**
      * 获取云账单
      *
@@ -54,11 +58,13 @@ public class PrivateLocalCloudClient {
     public List<InstanceBill> list(BillRequest request) {
         Set<String> services = ServiceUtil.getServices("gateway", "finance-management");
         String value = jwt.getValue();
-        RestTemplate restTemplate = SpringUtil.getBean(RestTemplate.class);
+        RestTemplate restTemplate = getRestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setAccept(List.of(MediaType.APPLICATION_JSON));
         httpHeaders.set(JwtTokenUtils.TOKEN_NAME, value);
         String requestUrl = "/api/base/billing/instance_bill" + "?" + request.toRequestParams();
-        return services.stream().map(model -> CompletableFuture.supplyAsync(() -> restTemplate.exchange(ServiceUtil.getHttpUrl(model, requestUrl), HttpMethod.GET, new HttpEntity<>(null, httpHeaders), new ParameterizedTypeReference<ResultHolder<List<InstanceBill>>>() {
+        return services.stream()
+                .map(model -> CompletableFuture.supplyAsync(() -> restTemplate.exchange(getHttpUrl(ServiceUtil.getRandomInstance(model), model, requestUrl), HttpMethod.GET, new HttpEntity<>(null, httpHeaders), new ParameterizedTypeReference<ResultHolder<List<InstanceBill>>>() {
                         }))
                 ).map(CompletableFuture::join)
                 .map(ResponseEntity::getBody).filter(Objects::nonNull)
@@ -67,6 +73,10 @@ public class PrivateLocalCloudClient {
                 .toList();
 
 
+    }
+
+    public static String getHttpUrl(ServiceInstance serviceInstance, String module, String apiPath) {
+        return String.format("http://%s/%s/%s", serviceInstance.getHost() + ":" + serviceInstance.getPort(), module, apiPath);
     }
 
     /**
