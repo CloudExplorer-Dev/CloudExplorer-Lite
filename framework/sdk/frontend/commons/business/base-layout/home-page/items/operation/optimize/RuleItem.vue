@@ -1,8 +1,8 @@
 <template>
-  <el-form :model="modelValue" ref="form" :rules="rules">
+  <el-form class="customForm" :model="modelValue" ref="form" :rules="rules">
     <el-row :gutter="8">
       <el-col :span="9">
-        <el-form-item prop="field">
+        <el-form-item prop="field" style="width: 100%">
           <el-select
             style="width: 100%"
             :modelValue="modelValue.field"
@@ -20,7 +20,7 @@
         </el-form-item>
       </el-col>
       <el-col :span="6">
-        <el-form-item prop="compare">
+        <el-form-item prop="compare" style="width: 100%">
           <el-select
             style="width: 100%"
             :modelValue="modelValue.compare"
@@ -39,6 +39,7 @@
       </el-col>
       <el-col :span="9">
         <el-form-item
+          style="width: 100%"
           key="enum_value"
           prop="value"
           v-if="
@@ -64,6 +65,7 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          style="width: 100%"
           v-else-if="
             activeField &&
             ['ArrayNumber', 'Number'].includes(activeField.fieldType) &&
@@ -83,6 +85,7 @@
           </el-input>
         </el-form-item>
         <el-form-item
+          style="width: 100%"
           v-else-if="!['EXIST', 'NOT_EXIST'].includes(modelValue.compare)"
           key="string_value"
           prop="value"
@@ -204,6 +207,9 @@ const validate = () => {
 defineExpose({ validate });
 </script>
 <style lang="scss" scoped>
+.customForm {
+  --el-form-inline-content-width: 100%;
+}
 .el-form-item {
   margin-right: 0;
 }
