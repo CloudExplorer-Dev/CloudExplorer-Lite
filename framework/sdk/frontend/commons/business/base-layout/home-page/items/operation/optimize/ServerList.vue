@@ -475,6 +475,9 @@ const buttons = ref([
 .log-table {
   width: 100%;
   height: calc(100vh - 270px);
+  :deep(.top_right .el-select .el-input) {
+    width: 100% !important;
+  }
 }
 .dropdown_box {
   margin-left: 10px;
