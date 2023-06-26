@@ -13,11 +13,19 @@
     <template #top>
       <el-alert
         style="--el-alert-bg-color: rgba(51, 112, 255, 0.15)"
-        title="当前计费策略是针对私有云资源设置的计费规则，云账号设置计费策略后同公有云账单一样需在【云账号】中【同步账单】，【账单明细】中查看账单，【分账设置】中设置分账。"
         type="info"
         show-icon
         @close="topHeight = 0"
-      />
+      >
+        <template #title>
+          <div>
+            1.当前计费策略仅对私有云生效，1 个云账号只能关联 1 个计费策略；
+          </div>
+          <div>
+            2.按规格计费优先级高于按单价计费说明：当实例配置与按规格计费配置匹配时，优先按规格计费，不匹配时将按单价进行计费。
+          </div>
+        </template>
+      </el-alert>
     </template>
 
     <div class="content">
