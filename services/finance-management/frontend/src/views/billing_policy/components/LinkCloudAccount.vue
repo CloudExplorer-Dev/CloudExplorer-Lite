@@ -24,12 +24,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import CloudAccountCheckbox from "@/views/billing_policy/components/CloudAccountCheckbox.vue";
-import type { CloudAccount } from "@commons/api/cloud_account/type";
 import billingPolicyApi from "@/api/billing_policy/index";
+import type { CloudAccountResponse } from "@/api/billing_policy/type";
+
 const billingPolicyId = ref<string>("");
 const emit = defineEmits(["refrece"]);
 const selectedCloudAccount = ref<Array<string>>([]);
-const cloudAccountList = ref<Array<CloudAccount>>([]);
+const cloudAccountList = ref<Array<CloudAccountResponse>>([]);
 const dialogVisible = ref<boolean>(false);
 const loading = ref<boolean>(false);
 const open = (policyId: string) => {

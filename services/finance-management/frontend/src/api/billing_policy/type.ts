@@ -176,6 +176,10 @@ interface CloudAccountResponse extends CloudAccount {
    * 是否选中
    */
   selected: boolean;
+  /**
+   * 关联的策略
+   */
+  billPolicy?: BillingPolicy;
 }
 
 export type {

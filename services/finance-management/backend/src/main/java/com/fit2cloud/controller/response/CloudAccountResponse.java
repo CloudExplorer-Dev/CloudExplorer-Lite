@@ -1,5 +1,6 @@
 package com.fit2cloud.controller.response;
 
+import com.fit2cloud.base.entity.BillPolicy;
 import com.fit2cloud.base.entity.CloudAccount;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,4 +22,8 @@ public class CloudAccountResponse extends CloudAccount {
      * 是否选中
      */
     private boolean selected;
+    /**
+     * 关联策略信息
+     */
+    private BillPolicy billPolicy;
 }

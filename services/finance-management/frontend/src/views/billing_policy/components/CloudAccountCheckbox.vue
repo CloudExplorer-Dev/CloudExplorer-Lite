@@ -12,7 +12,59 @@
         v-for="cloudAccount in row"
         :key="cloudAccount.id"
       >
+        <el-popover
+          v-if="cloudAccount.billPolicy && !cloudAccount.selected"
+          placement="top-start"
+          :width="350"
+          trigger="hover"
+        >
+          <div style="display: flex">
+            <InfoIcon></InfoIcon>
+            <div style="margin-left: 8px">
+              <span
+                style="
+                  color: rgba(50, 50, 51, 1);
+                  font-size: 14px;
+                  font-weight: 500;
+                "
+                >已关联:{{ cloudAccount.billPolicy.name }}</span
+              >
+              <div style="font-size: 12px; font-weight: 400">
+                勾选后该云账号会使用当前计费策略
+              </div>
+            </div>
+          </div>
+
+          <template #reference>
+            <div
+              class="item"
+              :class="selected[cloudAccount.id] ? 'active' : ''"
+              @click="changeValue(cloudAccount.id)"
+            >
+              <PlatformIcon
+                style="margin-right: 0"
+                class="icon"
+                :platform="cloudAccount.platform"
+              />
+              <div class="text">
+                {{ cloudAccount.name }}
+              </div>
+              <el-icon
+                v-if="cloudAccount.billPolicy"
+                style="margin: 0 4px 0 4px; color: rgba(51, 112, 255, 1)"
+                ><Connection
+              /></el-icon>
+              <el-checkbox
+                v-model="selected[cloudAccount.id]"
+                @click.stop
+                @change="changeValue(cloudAccount.id)"
+                class="checkbox"
+              />
+            </div>
+          </template>
+        </el-popover>
         <div
+          v-else
           class="item"
           :class="selected[cloudAccount.id] ? 'active' : ''"
           @click="changeValue(cloudAccount.id)"
@@ -22,7 +74,9 @@
             class="icon"
             :platform="cloudAccount.platform"
           />
-          <div class="text">{{ cloudAccount.name }}</div>
+          <div class="text">
+            {{ cloudAccount.name }}
+          </div>
           <el-checkbox
             v-model="selected[cloudAccount.id]"
             @click.stop
@@ -38,16 +92,16 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import PlatformIcon from "@commons/components/platform-icon/index.vue";
-import type { CloudAccount } from "@commons/api/cloud_account/type";
+import type { CloudAccountResponse } from "@/api/billing_policy/type";
 import { split } from "@commons/utils/commons";
 import type { SimpleMap } from "@commons/api/base/type";
-
+import InfoIcon from "@/views/billing_policy/components/InfoIcon.vue";
 const props = withDefaults(
   defineProps<{
     /**
      * 云账号列表
      */
-    cloudAccountList: Array<CloudAccount>;
+    cloudAccountList: Array<CloudAccountResponse>;
     /**
      *选中数据
      */
@@ -105,6 +159,11 @@ const rowCloudAccountList = computed(() => {
   .row {
     width: 100%;
     .col {
+      .popover-title {
+        display: flex;
+        flex-wrap: nowrap;
+      }
+
       margin-top: 11px;
     }
     &:first-child {
@@ -142,7 +201,7 @@ const rowCloudAccountList = computed(() => {
         text-overflow: ellipsis;
         overflow: hidden;
         margin-left: 12px;
-        width: calc(100% - 64px);
+        width: calc(100% - 64px - 24px);
         color: #1f2329;
       }
       .checkbox {

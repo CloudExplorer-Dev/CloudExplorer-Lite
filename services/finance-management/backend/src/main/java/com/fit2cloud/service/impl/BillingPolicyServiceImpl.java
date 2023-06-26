@@ -93,14 +93,28 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
     public List<CloudAccountResponse> listCloudAccountByPolicy(String billingPolicy) {
         List<BillPolicyCloudAccountMapping> billPolicyCloudAccountMappingList = billPolicyCloudAccountMappingService
                 .listLast(new LambdaQueryWrapper<>());
+        List<BillPolicy> policyList = this.list(new LambdaQueryWrapper<BillPolicy>()
+                .in(BillPolicy::getId, billPolicyCloudAccountMappingList.stream()
+                        .map(BillPolicyCloudAccountMapping::getBillPolicyId)
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .toList()));
 
         return cloudAccountService.list().stream().map(cloudAccount -> {
             CloudAccountResponse cloudAccountResponse = new CloudAccountResponse();
             BeanUtils.copyProperties(cloudAccount, cloudAccountResponse);
             cloudAccountResponse.setPublicCloud(PlatformConstants.valueOf(cloudAccount.getPlatform()).getPublicCloud());
-            billPolicyCloudAccountMappingList.stream().filter(cb -> StringUtils.equals(cb.getCloudAccountId(), cloudAccount.getId()) &&
+            billPolicyCloudAccountMappingList
+                    .stream()
+                    .peek(cb ->
+                            policyList.stream().filter(p -> StringUtils.equals(cloudAccount.getId(), cb.getCloudAccountId()) &&
+                                            StringUtils.equals(p.getId(), cb.getBillPolicyId()))
+                                    .findFirst().ifPresent(cloudAccountResponse::setBillPolicy)
+                    )
+                    .filter(cb -> StringUtils.equals(cb.getCloudAccountId(), cloudAccount.getId()) &&
                             StringUtils.equals(billingPolicy, cb.getBillPolicyId()))
-                    .findFirst().ifPresent(cb -> cloudAccountResponse.setSelected(StringUtils.isNotEmpty(cb.getBillPolicyId())));
+                    .findFirst()
+                    .ifPresent(cb -> cloudAccountResponse.setSelected(StringUtils.isNotEmpty(cb.getBillPolicyId())));
             return cloudAccountResponse;
         }).toList();
 
