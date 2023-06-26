@@ -194,6 +194,9 @@ defineExpose({ validate });
   display: flex;
   flex-wrap: nowrap;
   margin-left: 0;
+  :deep(.el-input) {
+    width: 100%;
+  }
   .field {
     width: 200px;
     margin-right: 8px;
