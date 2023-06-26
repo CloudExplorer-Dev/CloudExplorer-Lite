@@ -8,7 +8,7 @@
   >
     <el-form-item class="field" prop="field">
       <el-select
-        style="width: 100%"
+        class="field"
         :modelValue="modelValue.field"
         placeholder="规则字段"
         size="default"
@@ -24,7 +24,7 @@
     </el-form-item>
     <el-form-item prop="compare" class="compare">
       <el-select
-        style="width: 100%"
+        class="compare"
         :modelValue="modelValue.compare"
         @change="handler('compare', $event)"
         placeholder="比较器"
@@ -49,7 +49,7 @@
       "
     >
       <el-select
-        style="width: 100%"
+        class="value"
         :modelValue="modelValue.value"
         @change="handler('value', $event)"
         placeholder="请选择"
@@ -75,6 +75,7 @@
     >
       <el-space>
         <el-input
+          class="value"
           v-number="{ min: 1, max: _max, isNull: true, type: 'int' }"
           :modelValue="modelValue.value"
           @input="handler('value', $event)"
@@ -92,7 +93,7 @@
       prop="value"
     >
       <el-input
-        style="width: 100%"
+        class="value"
         :modelValue="modelValue.value"
         @input="handler('value', $event)"
         placeholder="请输入"
