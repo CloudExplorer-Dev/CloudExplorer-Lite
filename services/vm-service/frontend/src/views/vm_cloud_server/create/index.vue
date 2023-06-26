@@ -421,6 +421,9 @@ onMounted(() => {
         width: 25.33%;
         :deep(.el-form-item) {
           margin-bottom: 0px;
+          .el-input {
+            width: 100%;
+          }
         }
       }
       .footer-center {

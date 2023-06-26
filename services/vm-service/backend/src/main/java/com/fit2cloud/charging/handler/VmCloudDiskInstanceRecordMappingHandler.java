@@ -61,7 +61,7 @@ public class VmCloudDiskInstanceRecordMappingHandler implements InstanceRecordMa
                     instanceRecord.setResourceName(instanceRecord.getResourceName());
                     instanceRecord.setProductId("DISK");
                     instanceRecord.setProductName("云磁盘");
-                    instanceRecord.setProductDetail("云磁盘 (" + vmCloudDisk.getSize() + ")");
+                    instanceRecord.setProductDetail("云磁盘 (" + vmCloudDisk.getSize() + "GB)");
                     instanceRecord.setState(getState(vmCloudDisk.getStatus()));
                     instanceRecord.setZone(vmCloudDisk.getZone());
                     String sourceId = vmCloudDisk.getSourceId();
