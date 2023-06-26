@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.client;
 
-import com.fit2cloud.autoconfigure.RestTemplateConfig;
 import com.fit2cloud.base.service.IBaseUserService;
 import com.fit2cloud.common.charging.constants.BillingGranularityConstants;
 import com.fit2cloud.common.charging.entity.InstanceBill;
@@ -45,8 +44,7 @@ public class PrivateLocalCloudClient {
     }
 
     private RestTemplate getRestTemplate() {
-        RestTemplateConfig restTemplateConfig = new RestTemplateConfig();
-        return restTemplateConfig.restTemplate();
+        return new RestTemplate();
     }
 
     /**
