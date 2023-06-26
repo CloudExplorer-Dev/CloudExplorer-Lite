@@ -1,104 +1,101 @@
 <template>
-  <el-form
-    class="content"
-    :inline="true"
-    :model="modelValue"
-    ref="form"
-    :rules="rules"
-  >
-    <el-form-item class="field" prop="field">
-      <el-select
-        class="field"
-        :modelValue="modelValue.field"
-        placeholder="规则字段"
-        size="default"
-        @change="handler('field', $event)"
-      >
-        <el-option
-          v-for="item in store"
-          :key="item.field"
-          :label="item.label"
-          :value="item.field"
-        />
-      </el-select>
-    </el-form-item>
-    <el-form-item prop="compare" class="compare">
-      <el-select
-        class="compare"
-        :modelValue="modelValue.compare"
-        @change="handler('compare', $event)"
-        placeholder="比较器"
-        size="default"
-      >
-        <el-option
-          v-for="item in compares"
-          :key="item.value"
-          :label="item.key"
-          :value="item.value"
-        /> </el-select
-    ></el-form-item>
-    <el-form-item
-      class="value"
-      key="enum_value"
-      prop="value"
-      v-if="
-        activeField &&
-        (activeField.fieldType === 'Enum' ||
-          activeField.fieldType === 'ArrayEnum') &&
-        !['EXIST', 'NOT_EXIST'].includes(modelValue.compare)
-      "
-    >
-      <el-select
-        class="value"
-        :modelValue="modelValue.value"
-        @change="handler('value', $event)"
-        placeholder="请选择"
-        size="default"
-      >
-        <el-option
-          v-for="item in activeField.options"
-          :key="item.value"
-          :label="item.key"
-          :value="item.value"
-        />
-      </el-select>
-    </el-form-item>
-    <el-form-item
-      class="value"
-      v-else-if="
-        activeField &&
-        ['ArrayNumber', 'Number'].includes(activeField.fieldType) &&
-        !['EXIST', 'NOT_EXIST'].includes(modelValue.compare)
-      "
-      key="number_value"
-      prop="value"
-    >
-      <el-space>
-        <el-input
-          class="value"
-          v-number="{ min: 1, max: _max, isNull: true, type: 'int' }"
-          :modelValue="modelValue.value"
-          @input="handler('value', $event)"
+  <el-form :model="modelValue" ref="form" :rules="rules">
+    <el-row :gutter="8">
+      <el-col :span="9">
+        <el-form-item prop="field">
+          <el-select
+            style="width: 100%"
+            :modelValue="modelValue.field"
+            placeholder="规则字段"
+            size="default"
+            @change="handler('field', $event)"
+          >
+            <el-option
+              v-for="item in store"
+              :key="item.field"
+              :label="item.label"
+              :value="item.field"
+            />
+          </el-select>
+        </el-form-item>
+      </el-col>
+      <el-col :span="6">
+        <el-form-item prop="compare">
+          <el-select
+            style="width: 100%"
+            :modelValue="modelValue.compare"
+            @change="handler('compare', $event)"
+            placeholder="比较器"
+            size="default"
+          >
+            <el-option
+              v-for="item in compares"
+              :key="item.value"
+              :label="item.key"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+      </el-col>
+      <el-col :span="9">
+        <el-form-item
+          key="enum_value"
+          prop="value"
+          v-if="
+            activeField &&
+            (activeField.fieldType === 'Enum' ||
+              activeField.fieldType === 'ArrayEnum') &&
+            !['EXIST', 'NOT_EXIST'].includes(modelValue.compare)
+          "
         >
-          <template #append>
-            <span>{{ activeField.unit }}</span>
-          </template>
-        </el-input>
-      </el-space>
-    </el-form-item>
-    <el-form-item
-      class="value"
-      v-else-if="!['EXIST', 'NOT_EXIST'].includes(modelValue.compare)"
-      key="string_value"
-      prop="value"
-    >
-      <el-input
-        class="value"
-        :modelValue="modelValue.value"
-        @input="handler('value', $event)"
-        placeholder="请输入"
-      />
-    </el-form-item>
+          <el-select
+            style="width: 100%"
+            :modelValue="modelValue.value"
+            @change="handler('value', $event)"
+            placeholder="请选择"
+            size="default"
+          >
+            <el-option
+              v-for="item in activeField.options"
+              :key="item.value"
+              :label="item.key"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item
+          v-else-if="
+            activeField &&
+            ['ArrayNumber', 'Number'].includes(activeField.fieldType) &&
+            !['EXIST', 'NOT_EXIST'].includes(modelValue.compare)
+          "
+          key="number_value"
+          prop="value"
+        >
+          <el-input
+            v-number="{ min: 1, max: _max, isNull: true, type: 'int' }"
+            :modelValue="modelValue.value"
+            @input="handler('value', $event)"
+          >
+            <template #append>
+              <span>{{ activeField.unit }}</span>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item
+          v-else-if="!['EXIST', 'NOT_EXIST'].includes(modelValue.compare)"
+          key="string_value"
+          prop="value"
+        >
+          <el-input
+            style="width: 100%"
+            :modelValue="modelValue.value"
+            @input="handler('value', $event)"
+            placeholder="请输入"
+          />
+        </el-form-item>
+      </el-col>
+    </el-row>
   </el-form>
 </template>
 <script setup lang="ts">
@@ -207,22 +204,8 @@ const validate = () => {
 defineExpose({ validate });
 </script>
 <style lang="scss" scoped>
-.content {
-  display: flex;
-  flex-wrap: nowrap;
-  margin-left: 0;
-  .field {
-    width: 200px;
-    margin-right: 8px;
-  }
-  .compare {
-    width: 120px;
-    margin-right: 8px;
-  }
-  .value {
-    width: 200px;
-    margin-right: 0;
-  }
+.el-form-item {
+  margin-right: 0;
 }
 :deep(.el-input-group__append) {
   padding: 0 8px 0 8px;
