@@ -35,7 +35,9 @@
               @change="changeIgnoreResourceTag"
             >
               <el-radio-button :label="false">优化资源</el-radio-button>
-              <el-radio-button :label="true" v-if="showIgnoreResourceTag">已忽略资源</el-radio-button>
+              <el-radio-button :label="true" v-if="showIgnoreResourceTag">
+                已忽略资源
+              </el-radio-button>
             </el-radio-group>
           </el-col>
         </el-row>
@@ -197,8 +199,8 @@
       />
       <template #buttons>
         <!-- 导出 -->
-        <el-button @click="exportData('xlsx')" style="width: 32px;">
-          <ce-icon size="16" code="icon_bottom-align_outlined"></ce-icon>
+        <el-button @click="exportData('xlsx')" style="width: 32px">
+          <ce-icon size="16" code="icon_bottom-align_outlined" />
         </el-button>
 
         <CeTableColumnSelect :columns="columns" />
@@ -228,13 +230,13 @@ import { useRouter } from "vue-router";
 import ServerOptimization from "@commons/business/base-layout/home-page/items/operation/optimize/ServerOptimization.vue";
 import _ from "lodash";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
-import { useUserStore } from "@commons/stores/modules/user";
 import PercentFormat from "@commons/utils/percentFormat";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { usePermissionStore } from "@commons/stores/modules/permission";
-const userStore = useUserStore();
+
 const permissionStore = usePermissionStore();
 const optimizeDivRef = ref<InstanceType<typeof ServerOptimization> | null>();
+
 /**
  * 忽略资源标签
  */
@@ -246,7 +248,7 @@ const checkedId = ref(
   _.defaultTo(router.currentRoute.value.query?.checked as string, null)
 );
 
-const checkedAccountIds = ref(
+const checkedAccountIds = ref<Array<string> | undefined>(
   router.currentRoute.value.query?.accountIds
     ? JSON.parse(
         decodeURI(router.currentRoute.value.query?.accountIds as string)
@@ -367,9 +369,12 @@ const showDetail = (row: VmCloudServerVO) => {
     router
   );
 };
-const needRoles = ref<Array<string>>(["ADMIN"]);
+
 const showSettingIcon = computed<boolean>(() =>
-  _.includes(needRoles.value, userStore.currentRole)
+  permissionStore.hasPermission([
+    "[operation-analysis]OPTIMIZATION_STRATEGY:CREATE",
+    "[operation-analysis]OPTIMIZATION_STRATEGY:EDIT",
+  ])
 );
 
 /**
@@ -377,11 +382,11 @@ const showSettingIcon = computed<boolean>(() =>
 const changeIgnoreResourceTag = () => {
   search(table?.value.getTableSearch());
 };
-const showIgnoreResourceTag = computed(()=>{
+const showIgnoreResourceTag = computed(() => {
   return permissionStore.hasPermission(
-      "[operation-analysis]OPTIMIZATION_STRATEGY_IGNORE_RESOURCE:READ"
-  )
-})
+    "[operation-analysis]OPTIMIZATION_STRATEGY_IGNORE_RESOURCE:READ"
+  );
+});
 /**
  * 导出
  */

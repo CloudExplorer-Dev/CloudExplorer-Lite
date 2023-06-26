@@ -200,10 +200,11 @@ public class OptimizationStrategyServiceImpl extends ServiceImpl<OptimizationStr
      */
     @Override
     public boolean saveOrUpdateStrategy(CreateOrUpdateOptimizationStrategyRequest strategy) {
-        MPJLambdaWrapper<OptimizationStrategy> wrapper = new MPJLambdaWrapper<>();
-        wrapper.eq(OptimizationStrategy::getId, strategy.getId());
-        OptimizationStrategy optimizationStrategy = optimizationStrategyMapper.selectOne(wrapper);
-        if (Objects.isNull(optimizationStrategy)) {
+        OptimizationStrategy optimizationStrategy = null;
+        if (StringUtils.isNotBlank(strategy.getId())) {
+            optimizationStrategy = optimizationStrategyMapper.selectById(strategy.getId());
+        }
+        if (optimizationStrategy == null) {
             optimizationStrategy = toOptimizationStrategyByCreateOrUpdateOptimizationStrategyRequest(strategy);
         } else {
             BeanUtils.copyProperties(strategy, optimizationStrategy);

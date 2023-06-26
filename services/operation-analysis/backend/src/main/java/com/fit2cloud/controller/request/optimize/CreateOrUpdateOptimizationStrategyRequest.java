@@ -6,6 +6,7 @@ import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.dao.mapper.OptimizationStrategyMapper;
 import com.fit2cloud.dto.optimization.OptimizationRule;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.validation.annotation.Validated;
 
@@ -14,6 +15,7 @@ import java.util.List;
 
 /**
  * 描述：创建或更新优化策略请求
+ *
  * @author jianneng
  */
 @Data
@@ -21,11 +23,13 @@ import java.util.List;
 public class CreateOrUpdateOptimizationStrategyRequest {
 
     @Schema(title = "主键ID")
+    @NotNull(groups = {ValidationGroup.UPDATE.class}, message = "主键ID不能为空")
     @CustomValidated(groups = {ValidationGroup.SAVE.class}, field = "id", mapper = OptimizationStrategyMapper.class, handler = ExistHandler.class, message = "策略ID重复", exist = true, ifNullPass = true)
     private String id;
 
     @Schema(title = "策略名称", required = true)
-    @CustomValidated(groups = {ValidationGroup.SAVE.class}, field = "name", mapper = OptimizationStrategyMapper.class, handler = ExistHandler.class, message = "策略名称重复", exist = true, ifNullPass = true)
+    @NotNull(groups = {ValidationGroup.SAVE.class, ValidationGroup.UPDATE.class}, message = "策略名称不能为空")
+    @CustomValidated(groups = {ValidationGroup.SAVE.class}, field = "name", mapper = OptimizationStrategyMapper.class, handler = ExistHandler.class, message = "策略名称重复", exist = true)
     private String name;
 
     /**

@@ -10,7 +10,7 @@
       <el-select
         style="width: 100%"
         :modelValue="modelValue.field"
-        placeholder="请选择规则字段"
+        placeholder="规则字段"
         size="default"
         @change="handler('field', $event)"
       >
@@ -27,7 +27,7 @@
         style="width: 100%"
         :modelValue="modelValue.compare"
         @change="handler('compare', $event)"
-        placeholder="请选择比较器"
+        placeholder="比较器"
         size="default"
       >
         <el-option
@@ -156,7 +156,7 @@ const rules = ref<FormRules>({
   compare: [
     {
       required: true,
-      message: "比较字段不能为空",
+      message: "比较器不能为空",
       type: "string",
       trigger: "change",
     },
@@ -215,7 +215,7 @@ defineExpose({ validate });
     margin-right: 8px;
   }
   .compare {
-    width: 190px;
+    width: 120px;
     margin-right: 8px;
   }
   .value {
@@ -224,7 +224,7 @@ defineExpose({ validate });
   }
 }
 :deep(.el-input-group__append) {
-  padding: 0px 8px 0 8px;
+  padding: 0 8px 0 8px;
   background-color: #eff0f1;
   color: #1f2329;
 }

@@ -5,6 +5,7 @@ import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
+import com.fit2cloud.common.validator.group.ValidationGroup;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.optimize.CreateOrUpdateOptimizationStrategyRequest;
@@ -72,9 +73,9 @@ public class OptimizationStrategyController {
     @Operation(summary = "添加优化策略")
     @PreAuthorize("@cepc.hasAnyCePermission('OPTIMIZATION_STRATEGY:CREATE')")
     @OperatedLog(resourceType = ResourceTypeEnum.OPTIMIZATION_STRATEGY, operated = OperatedTypeEnum.ADD,
-            content = "'创建['+#optimizationStrategyRequest.name+']'",
+            content = "'创建['+#optimizationStrategyRequest.name+ya']'",
             param = "#optimizationStrategyRequest")
-    public ResultHolder<Boolean> save(@RequestBody CreateOrUpdateOptimizationStrategyRequest optimizationStrategyRequest) {
+    public ResultHolder<Boolean> save(@RequestBody @Validated(ValidationGroup.SAVE.class) CreateOrUpdateOptimizationStrategyRequest optimizationStrategyRequest) {
         return ResultHolder.success(optimizationStrategyService.saveOrUpdateStrategy(optimizationStrategyRequest));
     }
 
@@ -84,7 +85,7 @@ public class OptimizationStrategyController {
     @OperatedLog(resourceType = ResourceTypeEnum.OPTIMIZATION_STRATEGY, operated = OperatedTypeEnum.MODIFY,
             content = "'更新了ID为['+#optimizationStrategyRequest.id+']的优化策略'",
             param = "#optimizationStrategyRequest")
-    public ResultHolder<Boolean> update(@RequestBody CreateOrUpdateOptimizationStrategyRequest optimizationStrategyRequest) {
+    public ResultHolder<Boolean> update(@RequestBody @Validated(ValidationGroup.UPDATE.class) CreateOrUpdateOptimizationStrategyRequest optimizationStrategyRequest) {
         return ResultHolder.success(optimizationStrategyService.saveOrUpdateStrategy(optimizationStrategyRequest));
     }
 
