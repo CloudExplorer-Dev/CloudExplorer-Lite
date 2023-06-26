@@ -6,9 +6,21 @@
         :label="policy.resourceName"
         :key="index"
       >
+        <el-alert
+          style="
+            --el-alert-bg-color: rgba(51, 112, 255, 0.15);
+            margin-bottom: 8px;
+          "
+          title="实例配置与按规格计费配置匹配的按规格计费，不匹配的按单价计费。"
+          type="info"
+          show-icon
+          :closable="false"
+        />
         <base-container style="--ce-base-container-height: auto">
           <template #header>
-            <span>按单价计费</span>
+            <div style="display: flex">
+              <span style="width: 200px">按单价计费</span>
+            </div>
           </template>
           <template #content>
             <el-row :gutter="16">
