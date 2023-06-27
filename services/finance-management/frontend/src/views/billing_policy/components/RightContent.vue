@@ -47,6 +47,7 @@ const props = defineProps<{
    */
   operate: "VIEW" | "EDIT" | "CREATE";
 }>();
+
 /**
  * 刷新详情
  * @param policyId 策略id
@@ -73,6 +74,24 @@ const billingPolicyId = computed(() => {
   }
   return undefined;
 });
+
+const billingPolicyName = computed(() => {
+  if (props.billingPolicy) {
+    return props.billingPolicy.name;
+  }
+  return undefined;
+});
+
+watch(
+  () => billingPolicyName,
+  () => {
+    if (billingPolicyName.value) {
+      policyForm.value.name = billingPolicyName.value;
+    }
+  },
+  { deep: true }
+);
+
 watch(
   billingPolicyId,
   () => {
