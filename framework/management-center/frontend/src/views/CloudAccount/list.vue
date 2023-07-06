@@ -18,7 +18,7 @@ import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import MoreOptionsButton from "@commons/components/ce-table/MoreOptionsButton.vue";
 import SyncAccountDialog from "./SyncAccountDialog.vue";
-
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import {
   getStatusIcon,
   getColorByAccountStatus,
@@ -413,15 +413,16 @@ const syncAll = () => {
       >
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <component
-              style="margin-right: 8px"
-              :is="platformIcon[scope.row.platform]?.component"
-              v-bind="platformIcon[scope.row.platform]?.icon"
-              :color="platformIcon[scope.row.platform]?.color"
-              size="16px"
-            ></component>
+            <PlatformIcon
+              style="height: 16px; width: 16px"
+              :platform="scope.row.platform"
+            ></PlatformIcon>
             <span
-              style="cursor: pointer; color: var(--el-color-primary)"
+              style="
+                margin-left: 8px;
+                cursor: pointer;
+                color: var(--el-color-primary);
+              "
               @click="showAccountDetail(scope.row, 'detail')"
             >
               {{ scope.row.name }}

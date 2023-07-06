@@ -1,8 +1,8 @@
 package com.fit2cloud.provider.impl.huawei.entity.request;
 
-import com.fit2cloud.provider.entity.request.BaseDiskRequest;
 import com.huaweicloud.sdk.ecs.v2.model.DetachServerVolumeRequest;
 import lombok.Data;
+import com.fit2cloud.vm.entity.request.BaseDiskRequest;
 
 /**
  * Author: LiuDi

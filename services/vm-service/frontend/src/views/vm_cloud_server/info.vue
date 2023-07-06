@@ -4,10 +4,9 @@ import VmCloudServerApi from "@/api/vm_cloud_server";
 import _ from "lodash";
 import { filterChargeType } from "@commons/utils/util";
 import VmServerStatusIcon from "@/views/vm_cloud_server/VmServerStatusIcon.vue";
-import PlatformIcon from "@commons/components/detail-page/PlatformIcon.vue";
 import IpArray from "@commons/components/detail-page/IpArray.vue";
 import SecurityGroup from "@commons/components/detail-page/SecurityGroup.vue";
-
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 const loading = ref<boolean>(false);
 const props = defineProps<{
   id: string;
@@ -41,6 +40,7 @@ onMounted(() => {
         render: () => {
           return h(PlatformIcon, {
             platform: infoVmCloudServer.value.platform,
+            style: { marginRight: "8px" },
           });
         },
       },

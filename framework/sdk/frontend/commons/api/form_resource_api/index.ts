@@ -3,15 +3,11 @@ import type { Ref } from "vue";
 const getResourceMyMethod = (
   clazz: string,
   method: string,
-  params: unknown,
-  loading?: Ref<boolean>
+  data: unknown,
+  loading?: Ref<boolean>,
+  params?: unknown
 ) => {
-  return post(
-    `/api/base/provider/${clazz}/${method}`,
-    undefined,
-    params,
-    loading
-  );
+  return post(`/api/base/provider/${clazz}/${method}`, params, data, loading);
 };
 
 const getResourceMyServiceMethod = (

@@ -1,15 +1,13 @@
 package com.fit2cloud.provider.impl.vsphere;
 
+import com.fit2cloud.common.constants.ChargeTypeConstants;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
+import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
+import com.fit2cloud.common.provider.impl.vsphere.VsphereBaseCloudProvider;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.provider.AbstractCloudProvider;
-import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.entity.*;
-import com.fit2cloud.provider.entity.request.GetMetricsRequest;
-import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.vsphere.api.VsphereSyncCloudApi;
 import com.fit2cloud.provider.impl.vsphere.entity.*;
 import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskMode;
@@ -17,17 +15,33 @@ import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskType;
 import com.fit2cloud.provider.impl.vsphere.entity.constants.VspherePeriodOption;
 import com.fit2cloud.provider.impl.vsphere.entity.request.*;
 import com.fit2cloud.provider.impl.vsphere.util.DiskType;
+import com.fit2cloud.vm.AbstractCloudProvider;
+import com.fit2cloud.vm.ICloudProvider;
+import com.fit2cloud.vm.ICreateServerRequest;
+import com.fit2cloud.vm.constants.ActionInfoConstants;
+import com.fit2cloud.vm.entity.*;
+import com.fit2cloud.vm.entity.request.GetMetricsRequest;
+import com.fit2cloud.vm.entity.result.CheckCreateServerResult;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.pf4j.Extension;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Author: LiuDi
  * Date: 2022/9/20 5:20 PM
  */
+@Extension
 public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredential> implements ICloudProvider {
+
+    public static final VsphereBaseCloudProvider vsphereBaseCloudProvider = new VsphereBaseCloudProvider();
+
+    private static final Info info = new Info("vm-service", ActionInfoConstants.all(), Map.of());
+
+    @Override
+    public Class<? extends ICreateServerRequest> getCreateServerRequestClass() {
+        return VsphereVmCreateRequest.class;
+    }
 
     @Override
     public FormObject getCreateServerForm() {
@@ -333,5 +347,25 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         vsphereCalculateConfigPriceRequest.setDisks(List.of());
         vsphereCalculateConfigPriceRequest.setInstanceChargeType(calculateConfigUpdatePriceRequest.getInstanceChargeType());
         return VsphereSyncCloudApi.calculateConfigPrice(vsphereCalculateConfigPriceRequest);
+    }
+
+    @Override
+    public F2CBalance getAccountBalance(String getAccountBalanceRequest) {
+        return vsphereBaseCloudProvider.getAccountBalance(getAccountBalanceRequest);
+    }
+
+    @Override
+    public CloudAccountMeta getCloudAccountMeta() {
+        return vsphereBaseCloudProvider.getCloudAccountMeta();
+    }
+
+    @Override
+    public Info getInfo() {
+        return info;
+    }
+
+    public List<DefaultKeyValue<String, String>> getChargeType(String req) {
+        return Arrays.stream(ChargeTypeConstants.values())
+                .map(model -> new DefaultKeyValue<>(model.getMessage(), model.getCode())).toList();
     }
 }

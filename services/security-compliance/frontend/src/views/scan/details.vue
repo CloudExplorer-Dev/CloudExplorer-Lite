@@ -131,9 +131,9 @@
               column-key="cloudAccountId"
             >
               <template #default="scope">
-                <div style="display: flex">
+                <div style="display: flex; align-items: center">
                   <PlatformIcon :platform="scope.row.platform" />
-                  {{ scope.row.cloudAccountName }}
+                  &nbsp;&nbsp;{{ scope.row.cloudAccountName }}
                 </div>
               </template></el-table-column
             >

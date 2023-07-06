@@ -1,9 +1,9 @@
 package com.fit2cloud.controller.request;
 
-import com.fit2cloud.provider.ICloudProvider;
 import io.reactivex.rxjava3.functions.BiFunction;
 import lombok.Builder;
 import lombok.Data;
+import com.fit2cloud.vm.ICloudProvider;
 
 import java.util.HashMap;
 

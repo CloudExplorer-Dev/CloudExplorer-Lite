@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.entity;
 
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import lombok.Data;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
@@ -73,8 +72,8 @@ public class InstanceSearchField {
      * @param resourceType 资源类型
      * @return 实例对象下的属性
      */
-    public InstanceSearchField resetInstanceField(PlatformConstants platform, ResourceTypeConstants resourceType) {
-        this.field = "instance." + platform.name() + "_" + resourceType.name() + "." + this.field;
+    public InstanceSearchField resetInstanceField(String platform, ResourceTypeConstants resourceType) {
+        this.field = "instance." + platform + "_" + resourceType.name() + "." + this.field;
         return this;
     }
 
@@ -85,8 +84,8 @@ public class InstanceSearchField {
      * @param resourceType 资源类型
      * @return 实例查询对象
      */
-    public InstanceSearchField resetFilterObjField(PlatformConstants platform, ResourceTypeConstants resourceType) {
-        this.field = "filterObj." + platform.name() + "_" + resourceType.name() + "." + this.field;
+    public InstanceSearchField resetFilterObjField(String platform, ResourceTypeConstants resourceType) {
+        this.field = "filterObj." + platform + "_" + resourceType.name() + "." + this.field;
         return this;
     }
 
@@ -97,7 +96,7 @@ public class InstanceSearchField {
      * @param resourceType 资源类型
      * @return 实例查询对象
      */
-    public InstanceSearchField resetFilterArrayField(PlatformConstants platform, ResourceTypeConstants resourceType, String filterField) {
+    public InstanceSearchField resetFilterArrayField(String platform, ResourceTypeConstants resourceType, String filterField) {
         return resetFilterArrayField(platform, resourceType, filterField, true);
     }
 
@@ -108,8 +107,8 @@ public class InstanceSearchField {
      * @param resourceType 资源类型
      * @return 实例查询对象
      */
-    public InstanceSearchField resetFilterArrayField(PlatformConstants platform, ResourceTypeConstants resourceType, String filterField, Boolean appendKeyword) {
-        this.field = "filterArray." + platform.name() + "_" + resourceType.name() + "_" + filterField + "." + (this.field.endsWith(".keyword") ? this.field : appendKeyword ? this.field + ".keyword" : this.field);
+    public InstanceSearchField resetFilterArrayField(String platform, ResourceTypeConstants resourceType, String filterField, Boolean appendKeyword) {
+        this.field = "filterArray." + platform + "_" + resourceType.name() + "_" + filterField + "." + (this.field.endsWith(".keyword") ? this.field : appendKeyword ? this.field + ".keyword" : this.field);
         return this;
     }
 }

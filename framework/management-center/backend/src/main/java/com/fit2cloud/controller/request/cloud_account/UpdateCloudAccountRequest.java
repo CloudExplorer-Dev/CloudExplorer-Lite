@@ -5,9 +5,10 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.validator.annnotaion.CustomQueryWrapperValidated;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
@@ -17,12 +18,12 @@ import com.fit2cloud.common.validator.handler.ExistQueryWrapperValidatedHandler;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 
-import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * { @Author:张少虎}
@@ -67,13 +68,16 @@ public class UpdateCloudAccountRequest {
                 throw new Fit2cloudException(ErrorCodeConstants.CLOUD_ACCOUNT_CREDENTIAL_IS_NOT_EMPTY.getCode(), ErrorCodeConstants.CLOUD_ACCOUNT_CREDENTIAL_IS_NOT_EMPTY.getMessage());
             }
             String platform = jsonNode.get("platform").textValue();
-            if (Arrays.stream(PlatformConstants.values()).noneMatch(platformConstants -> StringUtils.equals(platform, platformConstants.name()))) {
+            Optional<IBaseCloudProvider> first = PluginsContextHolder.getExtensions(IBaseCloudProvider.class).stream()
+                    .filter(platformConstants -> StringUtils.equals(platform, platformConstants.getCloudAccountMeta().platform))
+                    .findFirst();
+
+            if (first.isEmpty()) {
                 throw new Fit2cloudException(ErrorCodeConstants.CLOUD_ACCOUNT_NOT_SUPPORT_PLATFORM.getCode(), ErrorCodeConstants.CLOUD_ACCOUNT_NOT_SUPPORT_PLATFORM.getMessage());
             }
-            PlatformConstants platformConstants = PlatformConstants.valueOf(platform);
             UpdateCloudAccountRequest updateCloudAccountRequest = new UpdateCloudAccountRequest();
             try {
-                updateCloudAccountRequest.setCredential(JsonUtil.mapper.readValue(jsonNode.get("credential").traverse(), platformConstants.getCredentialClass()));
+                updateCloudAccountRequest.setCredential(JsonUtil.mapper.readValue(jsonNode.get("credential").traverse(), first.get().getCloudAccountMeta().credential));
             } catch (Exception e) {
                 throw new Fit2cloudException(ErrorCodeConstants.CLOUD_ACCOUNT_CREDENTIAL_FORM_ERROR.getCode(), ErrorCodeConstants.CLOUD_ACCOUNT_CREDENTIAL_FORM_ERROR.getMessage());
             }

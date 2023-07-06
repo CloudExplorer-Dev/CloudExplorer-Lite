@@ -17,13 +17,13 @@ import com.fit2cloud.controller.request.recycle_bin.BatchRecycleRequest;
 import com.fit2cloud.controller.request.recycle_bin.PageRecycleBinRequest;
 import com.fit2cloud.dao.mapper.RecycleBinMapper;
 import com.fit2cloud.dto.RecycleBinDTO;
-import com.fit2cloud.provider.constants.F2CDiskStatus;
 import com.fit2cloud.service.*;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import com.fit2cloud.vm.constants.F2CDiskStatus;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 /**

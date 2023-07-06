@@ -66,7 +66,18 @@ public class Form {
      * 执行函数
      */
     private String method;
+    /**
+     * 插件id
+     */
+    private String pluginId;
+    /**
+     * 执行模块
+     */
+    private String execModule;
 
+    /**
+     * 是否在Spring容器里
+     */
     private boolean serviceMethod;
 
     /**
@@ -114,5 +125,15 @@ public class Form {
      * 加密，密码框之类的
      */
     private boolean encrypted;
+    /**
+     * 值
+     */
+    private String valueField;
+    /**
+     * label 提示
+     */
+    private String textField;
+
+    private boolean formatTextField;
 
 }

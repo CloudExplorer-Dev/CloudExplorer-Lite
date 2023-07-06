@@ -7,6 +7,9 @@
     :key="formItem.field"
     :rules="rules"
   >
+    <template #label>
+      <CeFormItemLabel :formItem="formItem"></CeFormItemLabel>
+    </template>
     <component
       :disabled="readOnly"
       v-model="itemValue"
@@ -23,6 +26,7 @@
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
+import CeFormItemLabel from "@commons/components/ce-form/CeFormItemLabel.vue";
 import { computed, type Ref, ref, watch } from "vue";
 const emit = defineEmits(["change"]);
 const props = defineProps<{
@@ -36,6 +40,8 @@ const props = defineProps<{
   listOptions: (formItem: FormView, loading: Ref<boolean>) => Promise<any>;
   // 初始化默认数据
   initDefaultData: (formItem: FormView) => void;
+  // 默认每个宽度
+  defaultItemWidth: string;
 }>();
 
 const itemValue = computed({
@@ -54,7 +60,7 @@ const loading = ref<boolean>(false);
 const componentStyle = computed(() => {
   return props.formItem.propsInfo.style
     ? props.formItem.propsInfo.style
-    : { width: "75%" };
+    : { width: props.defaultItemWidth };
 });
 /**
  * 表单样式

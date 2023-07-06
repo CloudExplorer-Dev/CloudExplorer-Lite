@@ -22,6 +22,7 @@ import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
 import { DISK_TYPE, DISK_STATUS, getTextByValue } from "@/utils/constants";
 import Enlarge from "@/views/vm_cloud_disk/enlarge.vue";
 import DiskStatusIcon from "@/views/vm_cloud_disk/DiskStatusIcon.vue";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
 const columns = ref([]);
@@ -662,15 +663,11 @@ const buttons = ref([
       :filters="cloudAccount"
       min-width="180px"
       ><template #default="scope">
-        <div style="display: flex">
-          <component
-            style="margin-top: 3px; width: 16px; height: 16px"
-            :is="platformIcon[scope.row.platform]?.component"
-            v-bind="platformIcon[scope.row.platform]?.icon"
-            :color="platformIcon[scope.row.platform]?.color"
-            size="16px"
-            v-if="scope.row.platform"
-          ></component>
+        <div style="display: flex; align-items: center">
+          <PlatformIcon
+            style="height: 16px; width: 16px"
+            :platform="scope.row.platform"
+          ></PlatformIcon>
           <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
         </div>
       </template>

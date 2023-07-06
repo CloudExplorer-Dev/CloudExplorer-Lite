@@ -1,11 +1,11 @@
 package com.fit2cloud.provider.impl.huawei.api;
 
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.util.PageUtil;
 import com.fit2cloud.common.util.CsvUtil;
 import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.constants.BillingSettingConstants;
 import com.fit2cloud.es.entity.CloudBill;
+import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiBillCredential;
 import com.fit2cloud.provider.impl.huawei.entity.csv.HuaweiBillCsvModel;
 import com.fit2cloud.provider.impl.huawei.entity.request.ListBucketMonthRequest;
@@ -57,7 +57,7 @@ public class HuaweiBucketApi {
                 .filter(obsObject -> (exitsMonthFile && Pattern.compile(billMonthFile).matcher(obsObject.getObjectKey().trim()).find()) || (!exitsMonthFile && readDayBillFile && Pattern.compile(billDayFile).matcher(obsObject.getObjectKey().trim()).find()))
                 .filter(obsObject -> obsObject.getObjectKey().contains(request.getCycle().replace("-", "").trim()))
                 .map(obsObject ->
-                        CsvUtil.writeFile(BillingSettingConstants.billingPath + File.separator + PlatformConstants.fit2cloud_huawei_platform.name() + File.separator + request.getCloudAccountId(), obsObject.getObjectKey(),
+                        CsvUtil.writeFile(BillingSettingConstants.billingPath + File.separator + new HuaweiCloudProvider().getCloudAccountMeta().platform + File.separator + request.getCloudAccountId(), obsObject.getObjectKey(),
                                 obsObject.getMetadata().getContentLength(), () -> obsClient.getObject(new GetObjectRequest() {{
                                     setBucketName(obsObject.getBucketName());
                                     setObjectKey(obsObject.getObjectKey());

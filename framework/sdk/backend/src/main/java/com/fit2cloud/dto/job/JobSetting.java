@@ -1,5 +1,6 @@
 package com.fit2cloud.dto.job;
 
+import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.scheduler.util.CronUtils;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,8 @@ import org.quartz.Job;
 
 import java.util.Calendar;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -51,10 +54,6 @@ public class JobSetting {
      */
     private String description = "";
     /**
-     * 任务参数
-     */
-    private Map<String, Object> params;
-    /**
      * cron表达式
      */
     private String cronExpression;
@@ -71,17 +70,32 @@ public class JobSetting {
      */
     private Predicate<String> cronReadOnly;
 
-    public JobSetting(Class<? extends Job> jobHandler, String jobName, String jobGroup, String description, Map<String, Object> params, Predicate<String> cloudAccountShow) {
+    /**
+     * 需要收集表单数据的对象
+     */
+    private Function<String, Class<?>> cloudAccountParamsClass;
+
+    /**
+     * 任务参数 根据同步云账号获取不同的参数
+     */
+    private Function<CloudAccount, Map<String, Object>> defaultParams;
+
+    public JobSetting(Class<? extends Job> jobHandler,
+                      String jobName,
+                      String jobGroup,
+                      String description,
+                      Predicate<String> cloudAccountShow,
+                      Function<CloudAccount, Map<String, Object>> defaultParams) {
         this.jobHandler = jobHandler;
         this.jobName = jobName;
         this.jobGroup = jobGroup;
         this.description = description;
-        this.params = params;
         this.cloudAccountShow = cloudAccountShow;
         this.cronExpression = CronUtils.create(new Integer[]{0}, Calendar.MINUTE);
         this.jobType = JobConstants.JobType.CRON;
         this.activeReadOnly = (p) -> false;
         this.cronReadOnly = (p) -> false;
+        this.defaultParams = defaultParams;
     }
 
     /**
@@ -91,7 +105,6 @@ public class JobSetting {
      * @param jobName          任务名称
      * @param jobGroup         任务分组
      * @param description      任务描述
-     * @param params           任务携带参数
      * @param cronExpression   cron表达式
      * @param cloudAccountShow 云平台是否支持
      * @param activeReadOnly   云平台是否可修改状态
@@ -101,7 +114,6 @@ public class JobSetting {
                       String jobName,
                       String jobGroup,
                       String description,
-                      Map<String, Object> params,
                       String cronExpression,
                       Predicate<String> cloudAccountShow,
                       Predicate<String> activeReadOnly,
@@ -111,12 +123,50 @@ public class JobSetting {
         this.jobName = jobName;
         this.jobGroup = jobGroup;
         this.description = description;
-        this.params = params;
         this.cloudAccountShow = cloudAccountShow;
         this.cronExpression = cronExpression;
         this.jobType = JobConstants.JobType.CRON;
         this.activeReadOnly = activeReadOnly;
         this.cronReadOnly = cronReadOnly;
+        this.defaultParams = (cloudAccount) -> Objects.isNull(cloudAccount) ? Map.of() : Map.of(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), cloudAccount.getId());
+    }
+
+    /**
+     * 云主机模块需要收集到的数据
+     *
+     * @param jobHandler              任务处理器
+     * @param jobName                 任务名称
+     * @param jobGroup                任务分组
+     * @param description             任务描述
+     * @param cronExpression          定时任务表达式
+     * @param cloudAccountShow        云平台是否支持
+     * @param activeReadOnly          云平台是否可修改状态
+     * @param cronReadOnly            云平台是否可修改时间
+     * @param cloudAccountParamsClass 云账号定时任务参数对象
+     */
+    public JobSetting(Class<? extends Job> jobHandler,
+                      String jobName,
+                      String jobGroup,
+                      String description,
+                      String cronExpression,
+                      Predicate<String> cloudAccountShow,
+                      Predicate<String> activeReadOnly,
+                      Predicate<String> cronReadOnly,
+                      Function<String, Class<?>> cloudAccountParamsClass,
+                      Function<CloudAccount, Map<String, Object>> defaultParams
+
+    ) {
+        this.jobHandler = jobHandler;
+        this.jobName = jobName;
+        this.jobGroup = jobGroup;
+        this.description = description;
+        this.cloudAccountShow = cloudAccountShow;
+        this.cronExpression = cronExpression;
+        this.jobType = JobConstants.JobType.CRON;
+        this.activeReadOnly = activeReadOnly;
+        this.cronReadOnly = cronReadOnly;
+        this.cloudAccountParamsClass = cloudAccountParamsClass;
+        this.defaultParams = defaultParams;
     }
 
     /**
@@ -124,7 +174,6 @@ public class JobSetting {
      * @param jobName          任务名称
      * @param jobGroup         任务分组
      * @param description      任务描述
-     * @param params           任务参数
      * @param interval         任务间隔时间
      * @param unit             任务间隔时间单位
      * @param cloudAccountShow 云平台是否支持
@@ -134,7 +183,6 @@ public class JobSetting {
     public JobSetting(Class<? extends Job> jobHandler,
                       String jobName, String jobGroup,
                       String description,
-                      Map<String, Object> params,
                       int interval,
                       DateBuilder.IntervalUnit unit,
                       Predicate<String> cloudAccountShow,
@@ -144,12 +192,12 @@ public class JobSetting {
         this.jobName = jobName;
         this.jobGroup = jobGroup;
         this.description = description;
-        this.params = params;
         this.cloudAccountShow = cloudAccountShow;
         this.interval = interval;
         this.unit = unit;
         this.jobType = JobConstants.JobType.INTERVAL;
         this.activeReadOnly = activeReadOnly;
         this.cronReadOnly = cronReadOnly;
+        this.defaultParams = (cloudAccount) -> Objects.isNull(cloudAccount) ? Map.of() : Map.of(JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), cloudAccount.getId());
     }
 }

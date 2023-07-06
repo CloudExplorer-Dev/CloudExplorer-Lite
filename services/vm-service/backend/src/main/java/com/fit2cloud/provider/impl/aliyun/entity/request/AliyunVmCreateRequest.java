@@ -6,13 +6,13 @@ import com.fit2cloud.common.form.annotaion.FormConfirmInfo;
 import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.constants.InputType;
-import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.aliyun.AliyunCloudProvider;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunChargeType;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import com.fit2cloud.vm.ICreateServerRequest;
 
 import java.util.ArrayList;
 import java.util.List;

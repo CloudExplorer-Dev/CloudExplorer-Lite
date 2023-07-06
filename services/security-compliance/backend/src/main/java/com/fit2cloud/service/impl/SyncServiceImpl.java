@@ -1,11 +1,15 @@
 package com.fit2cloud.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.job.actuator.JobActuator;
 import com.fit2cloud.common.job.context.impl.SimpleJobContext;
 import com.fit2cloud.common.job.job.Job;
+import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.dao.entity.ComplianceRule;
 import com.fit2cloud.dao.entity.ComplianceRuleGroup;
@@ -18,6 +22,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -166,4 +171,9 @@ public class SyncServiceImpl extends BaseSyncService implements ISyncService {
     }
 
 
+    @Override
+    protected Credential getCredential(CloudAccount cloudAccount) {
+        return JsonUtil.parseObject(cloudAccount.getCredential(), PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, cloudAccount.getPlatform())
+                .getCloudAccountMeta().credential);
+    }
 }

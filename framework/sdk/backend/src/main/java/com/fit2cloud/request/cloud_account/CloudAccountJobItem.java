@@ -1,6 +1,7 @@
 package com.fit2cloud.request.cloud_account;
 
 import com.fit2cloud.common.constants.JobConstants;
+import com.fit2cloud.common.form.vo.FormObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.quartz.DateBuilder;
@@ -49,4 +50,7 @@ public class CloudAccountJobItem {
 
     @Schema(title = "定时任务时间 是否只读", description = "定时任务时间 是否只读")
     private boolean cronReadOnly;
+
+    @Schema(title = "表单收集对象", description = "表单收集对象")
+    private FormObject paramsForm;
 }

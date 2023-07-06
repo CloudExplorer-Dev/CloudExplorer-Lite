@@ -120,6 +120,7 @@ const rowCloudAccountList = computed(() => {
         margin-right: 0;
       }
       .text {
+        white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
         margin-left: 12px;

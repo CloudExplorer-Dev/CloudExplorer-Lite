@@ -2,7 +2,7 @@ package com.fit2cloud.base.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.CloudAccount;
-import com.fit2cloud.common.form.vo.Form;
+import com.fit2cloud.dto.PlatformResponse;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
@@ -74,12 +74,19 @@ public interface IBaseCloudAccountService extends IService<CloudAccount> {
      */
     List<ResourceCountResponse> getModuleResourceCount(String accountId);
 
-    List<? extends Form> getBillSettingFormByPlatform(String platform);
-
     /*
      * 获取云账户余额
      * @param accountId
      * @return 未获取到余额将返回--
      */
     Object getAccountBalance(String accountId);
+
+    List<PlatformResponse> getPlatforms();
+
+    /**
+     * 获取支持的云账号数据
+     *
+     * @return 云账号列表
+     */
+    List<CloudAccount> listSupportCloudAccount();
 }

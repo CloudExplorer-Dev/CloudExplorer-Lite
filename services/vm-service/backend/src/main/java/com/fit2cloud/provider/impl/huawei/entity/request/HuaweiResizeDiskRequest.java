@@ -1,11 +1,11 @@
 package com.fit2cloud.provider.impl.huawei.entity.request;
 
-import com.fit2cloud.provider.entity.request.BaseDiskResizeRequest;
 import com.huaweicloud.sdk.evs.v2.model.BssParamForResizeVolume;
 import com.huaweicloud.sdk.evs.v2.model.OsExtend;
 import com.huaweicloud.sdk.evs.v2.model.ResizeVolumeRequest;
 import com.huaweicloud.sdk.evs.v2.model.ResizeVolumeRequestBody;
 import lombok.Data;
+import com.fit2cloud.vm.entity.request.BaseDiskResizeRequest;
 
 /**
  * Author: LiuDi

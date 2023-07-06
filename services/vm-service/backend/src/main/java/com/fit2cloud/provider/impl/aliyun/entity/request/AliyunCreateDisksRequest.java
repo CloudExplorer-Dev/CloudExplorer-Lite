@@ -1,8 +1,8 @@
 package com.fit2cloud.provider.impl.aliyun.entity.request;
 
 import com.aliyun.ecs20140526.models.CreateDiskRequest;
-import com.fit2cloud.provider.entity.F2CDisk;
 import lombok.Data;
+import com.fit2cloud.vm.entity.F2CDisk;
 
 import java.util.List;
 

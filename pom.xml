@@ -58,6 +58,7 @@
         <logback-classic.version>1.2.11</logback-classic.version>
         <logstash-logback-encoder>5.2</logstash-logback-encoder>
         <elasticsearch-java>7.16.2</elasticsearch-java>
+        <pf4j.version>3.9.0</pf4j.version>
         <!--日志-->
         <skipTests>true</skipTests>
     </properties>
@@ -116,11 +117,6 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
@@ -136,18 +132,18 @@
         </dependency>
 
         <!--swagger 文档-->
-<!--        <dependency>-->
-<!--            <groupId>io.springfox</groupId>-->
-<!--            <artifactId>springfox-swagger2</artifactId>-->
-<!--            <version>${swagger.version}</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>io.springfox</groupId>-->
+        <!--            <artifactId>springfox-swagger2</artifactId>-->
+        <!--            <version>${swagger.version}</version>-->
+        <!--        </dependency>-->
 
-<!--        &lt;!&ndash;swagger ui &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>io.springfox</groupId>-->
-<!--            <artifactId>springfox-swagger-ui</artifactId>-->
-<!--            <version>${swagger.version}</version>-->
-<!--        </dependency>-->
+        <!--        &lt;!&ndash;swagger ui &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>io.springfox</groupId>-->
+        <!--            <artifactId>springfox-swagger-ui</artifactId>-->
+        <!--            <version>${swagger.version}</version>-->
+        <!--        </dependency>-->
 
 
         <dependency>
@@ -181,6 +177,11 @@
                 <version>${junit.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.pf4j</groupId>
+                <artifactId>pf4j</artifactId>
+                <version>${pf4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

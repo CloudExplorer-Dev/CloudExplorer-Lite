@@ -8,6 +8,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.TermsQueryField;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.*;
 import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
 import com.fit2cloud.base.service.IBaseVmCloudDatastoreService;
@@ -17,6 +18,7 @@ import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
@@ -25,13 +27,12 @@ import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.dao.entity.VmCloudServerStatusTiming;
 import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.es.repository.PerfMetricMonitorDataRepository;
-import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.constants.F2CDiskStatus;
-import com.fit2cloud.provider.constants.F2CImageStatus;
-import com.fit2cloud.provider.constants.F2CInstanceStatus;
-import com.fit2cloud.provider.constants.ProviderConstants;
-import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.service.*;
+import com.fit2cloud.vm.ICloudProvider;
+import com.fit2cloud.vm.constants.F2CDiskStatus;
+import com.fit2cloud.vm.constants.F2CImageStatus;
+import com.fit2cloud.vm.constants.F2CInstanceStatus;
+import com.fit2cloud.vm.entity.*;
 import com.google.common.base.Joiner;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
@@ -488,8 +489,9 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                            Consumer<SaveBatchOrUpdateParams<T>> saveBatchOrUpdate,
                            Consumer<SaveBatchOrUpdateParams<T>> writeJobRecord,
                            Runnable remote) {
+
         proxy(cloudAccountId, regions, jobSyncResourceType.getMessage(),
-                s -> ProviderConstants.valueOf(s).getCloudProvider(),
+                s -> PluginsContextHolder.getPlatformExtension(ICloudProvider.class, s),
                 syncTime -> initJobRecord(jobSyncResourceType, syncTime, cloudAccountId),
                 execMethod,
                 (account, region) -> getParams(account.getCredential(), region.getRegionId(), account.getSyncTimeStampStr()),
@@ -690,5 +692,11 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         vmCloudDatastore.setUpdateTime(updateTime);
         vmCloudDatastore.setAllocatedSpace(datastore.getAllocatedSpace());
         return vmCloudDatastore;
+    }
+
+    @Override
+    protected Credential getCredential(CloudAccount cloudAccount) {
+        IBaseCloudProvider platformExtension = PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, cloudAccount.getPlatform());
+        return JsonUtil.parseObject(cloudAccount.getCredential(), platformExtension.getCloudAccountMeta().credential);
     }
 }

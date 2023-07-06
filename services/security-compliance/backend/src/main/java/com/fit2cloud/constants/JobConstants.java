@@ -23,8 +23,8 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         // 同步扫描规则
         JobSetting syncScanResource = new JobSetting(CloudAccountSyncJob.SyncScanJob.class,
                 SYNC_SCAN_RESOURCE,
-                com.fit2cloud.common.constants.JobConstants.Group.CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP.name(),
-                "扫描合规资源", null, "0 0 3 * * ? *", p -> true, (p) -> false, (p) -> false);
+                "CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP",
+                "扫描合规资源", "0 0 3 * * ? *", p -> true, (p) -> false, (p) -> false);
         return List.of(syncScanResource);
     }
 }

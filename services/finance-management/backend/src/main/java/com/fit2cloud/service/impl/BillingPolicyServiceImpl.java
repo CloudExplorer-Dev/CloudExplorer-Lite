@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.base.entity.BillPolicy;
 import com.fit2cloud.base.entity.BillPolicyCloudAccountMapping;
@@ -18,8 +19,8 @@ import com.fit2cloud.base.service.IBaseBillPolicyDetailsService;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.charging.constants.UnitPriceConstants;
 import com.fit2cloud.common.charging.entity.BillingFieldMeta;
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.ServiceUtil;
@@ -106,7 +107,7 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
         return cloudAccountService.list().stream().map(cloudAccount -> {
             CloudAccountResponse cloudAccountResponse = new CloudAccountResponse();
             BeanUtils.copyProperties(cloudAccount, cloudAccountResponse);
-            cloudAccountResponse.setPublicCloud(PlatformConstants.valueOf(cloudAccount.getPlatform()).getPublicCloud());
+            cloudAccountResponse.setPublicCloud(PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, cloudAccount.getPlatform()).getCloudAccountMeta().publicCloud);
             billPolicyCloudAccountMappingList
                     .stream()
                     .peek(cb ->
@@ -401,7 +402,9 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
 
         LocalDateTime currentTime = LocalDateTime.now();
 
-        List<String> platformList = Arrays.stream(PlatformConstants.values()).filter(platform -> !platform.getPublicCloud()).map(Enum::name).toList();
+        List<String> platformList = PluginsContextHolder.getExtensions(IBaseCloudProvider.class).stream()
+                .filter(provider -> !provider.getCloudAccountMeta().publicCloud)
+                .map(provider -> provider.getCloudAccountMeta().platform).toList();
 
         List<CloudAccount> cloudAccounts = cloudAccountService.list(new LambdaQueryWrapper<CloudAccount>().in(CloudAccount::getPlatform, platformList));
 

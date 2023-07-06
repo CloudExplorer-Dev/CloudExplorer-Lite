@@ -200,10 +200,10 @@
                                 <phase>install</phase>
                                 <configuration>
                                     <target>
-                                        <echo message="*******************install*******************" />
-                                        <echo message="${project.build.directory}/${artifactId}-${revision}.jar" />
+                                        <echo message="*******************install*******************"/>
+                                        <echo message="${project.build.directory}/${artifactId}-${revision}.jar"/>
                                         <move file="${project.build.directory}/${artifactId}-${revision}.jar"
-                                              tofile="../../../target/${artifactId}-${revision}.jar" />
+                                              tofile="../../../target/${artifactId}-${revision}.jar"/>
                                     </target>
                                 </configuration>
                                 <goals>

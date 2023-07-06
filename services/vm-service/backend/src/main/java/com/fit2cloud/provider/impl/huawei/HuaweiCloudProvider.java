@@ -2,23 +2,28 @@ package com.fit2cloud.provider.impl.huawei;
 
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
+import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
+import com.fit2cloud.common.provider.impl.huawei.HuaweiBaseCloudProvider;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.provider.AbstractCloudProvider;
-import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.constants.DeleteWithInstance;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.entity.request.BaseDiskRequest;
-import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.huawei.api.HuaweiSyncCloudApi;
 import com.fit2cloud.provider.impl.huawei.constants.HuaweiPeriodOption;
 import com.fit2cloud.provider.impl.huawei.entity.*;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
+import com.fit2cloud.vm.AbstractCloudProvider;
+import com.fit2cloud.vm.ICloudProvider;
+import com.fit2cloud.vm.ICreateServerRequest;
+import com.fit2cloud.vm.constants.ActionInfoConstants;
+import com.fit2cloud.vm.constants.DeleteWithInstance;
+import com.fit2cloud.vm.entity.F2CDisk;
+import com.fit2cloud.vm.entity.F2CImage;
+import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.fit2cloud.vm.entity.request.BaseDiskRequest;
+import com.fit2cloud.vm.entity.request.GetMetricsRequest;
 import com.huaweicloud.sdk.ecs.v2.model.NovaSimpleKeypair;
 import org.apache.commons.lang3.StringUtils;
+import org.pf4j.Extension;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +36,20 @@ import java.util.Map;
  * @Version 1.0
  * @注释:
  */
+@Extension
 public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredential> implements ICloudProvider {
+    public static final HuaweiBaseCloudProvider huaweiBaseCloudProvider = new HuaweiBaseCloudProvider();
+
+    private static final Info info = new Info("vm-service", ActionInfoConstants.all(
+            ActionInfoConstants.SYNC_DATA_STORE_MACHINE_METRIC_MONITOR,
+            ActionInfoConstants.SYNC_DATASTORE,
+            ActionInfoConstants.SYNC_HOST,
+            ActionInfoConstants.SYNC_HOST_MACHINE_METRIC_MONITOR), Map.of());
+
+    @Override
+    public Class<? extends ICreateServerRequest> getCreateServerRequestClass() {
+        return HuaweiVmCreateRequest.class;
+    }
 
     @Override
     public FormObject getCreateServerForm() {
@@ -311,5 +329,20 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     @Override
     public List<F2CDisk> getVmF2CDisks(String req) {
         return HuaweiSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, BaseDiskRequest.class));
+    }
+
+    @Override
+    public F2CBalance getAccountBalance(String getAccountBalanceRequest) {
+        return huaweiBaseCloudProvider.getAccountBalance(getAccountBalanceRequest);
+    }
+
+    @Override
+    public CloudAccountMeta getCloudAccountMeta() {
+        return huaweiBaseCloudProvider.getCloudAccountMeta();
+    }
+
+    @Override
+    public Info getInfo() {
+        return info;
     }
 }

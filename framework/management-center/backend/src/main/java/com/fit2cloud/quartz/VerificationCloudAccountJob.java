@@ -1,18 +1,20 @@
 package com.fit2cloud.quartz;
 
-import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.service.ICloudAccountService;
+import jakarta.annotation.Resource;
 import jdk.jfr.Name;
 import lombok.SneakyThrows;
 import org.quartz.Job;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @Author:张少虎
@@ -31,16 +33,27 @@ public class VerificationCloudAccountJob extends AsyncJob implements Job {
     protected void run(Map<String, Object> map) {
         List<CloudAccount> list = cloudAccountService.list();
         for (CloudAccount cloudAccount : list) {
-            PlatformConstants platformConstants = PlatformConstants.valueOf(cloudAccount.getPlatform());
-            Credential verification = platformConstants.getCredentialClass().getConstructor().newInstance().deCode(cloudAccount.getCredential());
-            try {
-                verification.verification();
-                cloudAccount.setState(true);
-                cloudAccountService.updateById(cloudAccount);
-            } catch (Exception e) {
-                cloudAccount.setState(false);
-                cloudAccountService.updateById(cloudAccount);
+
+            Optional<IBaseCloudProvider> first = PluginsContextHolder.getExtensions(IBaseCloudProvider.class).stream()
+                    .filter(p -> p.getCloudAccountMeta().platform.equals(cloudAccount.getPlatform()))
+                    .findFirst();
+
+            if (first.isPresent()) {
+                Credential verification = first.get()
+                        .getCloudAccountMeta().credential
+                        .getConstructor()
+                        .newInstance()
+                        .deCode(cloudAccount.getCredential());
+                try {
+                    verification.verification();
+                    cloudAccount.setState(true);
+                    cloudAccountService.updateById(cloudAccount);
+                } catch (Exception e) {
+                    cloudAccount.setState(false);
+                    cloudAccountService.updateById(cloudAccount);
+                }
             }
+
         }
     }
 }

@@ -1,6 +1,9 @@
 import type { SimpleMap } from "@commons/api/base/type";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
-import type { FormView as Form } from "@commons/components/ce-form/type";
+import type {
+  FormView as Form,
+  FormViewObject,
+} from "@commons/components/ce-form/type";
 
 import type {
   Platform,
@@ -144,6 +147,8 @@ interface JobDetails {
    * 定时任务数据是否只读
    */
   cronReadOnly: boolean;
+
+  paramsForm: FormViewObject;
 }
 interface UpdateJobsRequest extends CloudAccountJobDetailsResponse {
   cloudAccountId: string;

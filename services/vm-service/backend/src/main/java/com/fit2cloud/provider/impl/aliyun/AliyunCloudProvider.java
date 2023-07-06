@@ -5,23 +5,28 @@ import com.aliyun.ecs20140526.models.DescribeSecurityGroupsResponseBody;
 import com.aliyun.ecs20140526.models.DescribeZonesResponseBody;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
+import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
+import com.fit2cloud.common.provider.impl.aliyun.AliyunBaseCloudProvider;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.provider.AbstractCloudProvider;
-import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.constants.DeleteWithInstance;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CNetwork;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.entity.request.BaseDiskRequest;
-import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.aliyun.api.AliyunSyncCloudApi;
 import com.fit2cloud.provider.impl.aliyun.constants.*;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunDiskTypeDTO;
 import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
+import com.fit2cloud.vm.AbstractCloudProvider;
+import com.fit2cloud.vm.ICloudProvider;
+import com.fit2cloud.vm.ICreateServerRequest;
+import com.fit2cloud.vm.constants.ActionInfoConstants;
+import com.fit2cloud.vm.constants.DeleteWithInstance;
+import com.fit2cloud.vm.entity.F2CDisk;
+import com.fit2cloud.vm.entity.F2CImage;
+import com.fit2cloud.vm.entity.F2CNetwork;
+import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.fit2cloud.vm.entity.request.BaseDiskRequest;
+import com.fit2cloud.vm.entity.request.GetMetricsRequest;
+import org.pf4j.Extension;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +40,21 @@ import java.util.stream.Collectors;
  * @Version 1.0
  * @注释:
  */
+@Extension
 public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredential> implements ICloudProvider {
+    public static final AliyunBaseCloudProvider aliyunBaseCloudProvider = new AliyunBaseCloudProvider();
+
+    private static final Info info = new Info("vm-service", ActionInfoConstants.all(
+            ActionInfoConstants.SYNC_DATA_STORE_MACHINE_METRIC_MONITOR,
+            ActionInfoConstants.SYNC_DATASTORE,
+            ActionInfoConstants.SYNC_HOST,
+            ActionInfoConstants.SYNC_HOST_MACHINE_METRIC_MONITOR), Map.of());
+
+    @Override
+    public Class<? extends ICreateServerRequest> getCreateServerRequestClass() {
+        return AliyunVmCreateRequest.class;
+    }
+
     // For Create VM [START]
     @Override
     public FormObject getCreateServerForm() {
@@ -393,5 +412,20 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     @Override
     public List<F2CDisk> getVmF2CDisks(String req) {
         return AliyunSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, BaseDiskRequest.class));
+    }
+
+    @Override
+    public F2CBalance getAccountBalance(String getAccountBalanceRequest) {
+        return aliyunBaseCloudProvider.getAccountBalance(getAccountBalanceRequest);
+    }
+
+    @Override
+    public CloudAccountMeta getCloudAccountMeta() {
+        return aliyunBaseCloudProvider.getCloudAccountMeta();
+    }
+
+    @Override
+    public Info getInfo() {
+        return info;
     }
 }

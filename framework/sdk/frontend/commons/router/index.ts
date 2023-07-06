@@ -5,6 +5,7 @@ import { useUserStore } from "@commons/stores/modules/user";
 import { store } from "@commons/stores";
 import BaseLayout from "@commons/business/base-layout/index.vue";
 import { useModuleStore } from "@commons/stores/modules/module";
+import { usePlatformStore } from "@commons/stores/modules/platform";
 import type { RouteItem } from "@commons/router/type";
 import { RouteObj } from "@commons/router/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
@@ -124,6 +125,8 @@ export async function initRouteObj(): Promise<RouteObj> {
       async () => {
         // 处理新模块上来后,对模块的import路径进行重写,去掉项目名称
         await window.rootMicroApp.updateModule();
+        const p = usePlatformStore(store);
+        p.init();
       }
     );
   } else {
@@ -171,6 +174,10 @@ export async function initRouteObj(): Promise<RouteObj> {
           permissions: permissionStore.userPermissions,
           role: userStore.currentRole,
         };
+      },
+      () => {
+        const p = usePlatformStore(store);
+        p.init();
       }
     );
   }

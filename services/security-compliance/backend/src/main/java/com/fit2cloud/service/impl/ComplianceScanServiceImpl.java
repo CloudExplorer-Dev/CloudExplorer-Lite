@@ -14,12 +14,12 @@ import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import co.elastic.clients.json.JsonData;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.constants.ConditionTypeConstants;
@@ -38,7 +38,6 @@ import com.fit2cloud.dao.jentity.Rule;
 import com.fit2cloud.dao.jentity.Rules;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceFieldCompare;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.*;
@@ -174,9 +173,11 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     public List<SupportCloudAccountResourceResponse> listSupportCloudAccountResource() {
         List<CloudAccount> cloudAccounts = cloudAccountService.list();
         return cloudAccounts.stream()
-                .filter(cloudAccount -> Arrays.stream(ProviderConstants.values()).anyMatch(p -> StringUtils.equals(p.name(), cloudAccount.getPlatform())))
+                .filter(cloudAccount -> PluginsContextHolder.getExtensions(ICloudProvider.class)
+                        .stream().anyMatch(p -> StringUtils.equals(p.getCloudAccountMeta().platform, cloudAccount.getPlatform())))
                 .map(cloudAccount -> {
-                    List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> exec = CommonUtil.exec(ICloudProvider.of(cloudAccount.getPlatform()), ICloudProvider::getResourceSyncDimensionConstants);
+                    ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform());
+                    List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> exec = iCloudProvider.getResourceSyncDimensionConstants();
                     List<DefaultKeyValue<String, String>> resourceTypes = exec.stream().map(DefaultKeyValue::getKey).map(resourceTypeConstants -> new DefaultKeyValue<>(resourceTypeConstants.getMessage(), resourceTypeConstants.name())).toList();
                     SupportCloudAccountResourceResponse cloudAccountResourceResponse = new SupportCloudAccountResourceResponse();
                     cloudAccountResourceResponse.setCloudAccount(cloudAccount);
@@ -189,8 +190,9 @@ public class ComplianceScanServiceImpl implements IComplianceScanService {
     @Override
     public List<JobRecordResourceResponse> listJobRecord() {
         List<CloudAccount> cloudAccounts = cloudAccountService.list();
+        List<ICloudProvider> iCloudProviderList = PluginsContextHolder.getExtensions(ICloudProvider.class);
         List<String> supportResourceIds = cloudAccounts.stream()
-                .filter(cloudAccount -> Arrays.stream(ProviderConstants.values()).anyMatch(p -> StringUtils.equals(p.name(), cloudAccount.getPlatform())))
+                .filter(cloudAccount -> iCloudProviderList.stream().anyMatch(p -> StringUtils.equals(p.getCloudAccountMeta().platform, cloudAccount.getPlatform())))
                 .map(CloudAccount::getId)
                 .toList();
         return jobRecordResourceMappingMapper.findLastResourceJobRecord(supportResourceIds, List.of(JobTypeConstants.SECURITY_COMPLIANCE_CLOUD_ACCOUNT_SYNC_JOB.getCode()));

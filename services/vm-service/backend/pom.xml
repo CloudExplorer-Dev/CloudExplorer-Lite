@@ -26,6 +26,11 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
+            <groupId>com.fit2cloud</groupId>
+            <artifactId>vm-service-plugins-sdk</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-ecs</artifactId>
             <version>3.1.19</version>
@@ -235,10 +240,10 @@
                                 <phase>install</phase>
                                 <configuration>
                                     <target>
-                                        <echo message="*******************install*******************" />
-                                        <echo message="${project.build.directory}/${artifactId}-${revision}.jar" />
+                                        <echo message="*******************install*******************"/>
+                                        <echo message="${project.build.directory}/${artifactId}-${revision}.jar"/>
                                         <move file="${project.build.directory}/${artifactId}-${revision}.jar"
-                                              tofile="../../../target/${artifactId}-${revision}.jar" />
+                                              tofile="../../../target/${artifactId}-${revision}.jar"/>
                                     </target>
                                 </configuration>
                                 <goals>

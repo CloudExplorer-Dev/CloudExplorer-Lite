@@ -45,13 +45,7 @@ function getAccountBalance(
 const getPlatformAll: (
   loading?: Ref<boolean>
 ) => Promise<Result<Array<Platform>>> = (loading) => {
-  return get(
-    (import.meta.env.VITE_APP_NAME === "management-center"
-      ? ""
-      : "/management-center/") + "api/cloud_account/platform",
-    null,
-    loading
-  );
+  return get("/api/base/cloud_account/platform", null, loading);
 };
 
 /**

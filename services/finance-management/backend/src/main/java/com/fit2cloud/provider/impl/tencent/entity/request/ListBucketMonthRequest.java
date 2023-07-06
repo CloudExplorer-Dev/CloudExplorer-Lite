@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.tencent.entity.request;
 
-import com.fit2cloud.common.platform.bill.impl.TencentBill;
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentBillCredential;
 import lombok.Data;
 

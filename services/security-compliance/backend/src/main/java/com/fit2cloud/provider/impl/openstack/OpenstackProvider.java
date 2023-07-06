@@ -1,6 +1,7 @@
 package com.fit2cloud.provider.impl.openstack;
 
-import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.provider.entity.F2CBalance;
+import com.fit2cloud.common.provider.impl.openstack.OpenStackBaseCloudProvider;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
@@ -15,8 +16,10 @@ import com.fit2cloud.provider.impl.openstack.entity.request.ListEcsInstanceReque
 import com.fit2cloud.provider.impl.openstack.entity.request.ListSecurityGroupInstanceRequest;
 import com.fit2cloud.provider.util.ResourceUtil;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.pf4j.Extension;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -24,7 +27,11 @@ import java.util.List;
  * {@code @Version 1.0}
  * {@code @注释: }
  */
+@Extension
 public class OpenstackProvider extends AbstractCloudProvider<OpenstackComplianceCredential> implements ICloudProvider {
+    public static final OpenStackBaseCloudProvider openStackBaseCloudProvider = new OpenStackBaseCloudProvider();
+    public static final Info info = new Info("security-compliance", List.of(), Map.of());
+
     @Override
     public List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> getResourceSyncDimensionConstants() {
         return List.of(
@@ -38,7 +45,7 @@ public class OpenstackProvider extends AbstractCloudProvider<OpenstackCompliance
         return OpenstackApi.listVirtualMachine(request).stream()
                 .map(resource ->
                         ResourceUtil.toResourceInstance(
-                                PlatformConstants.fit2cloud_openstack_platform.name(),
+                                getCloudAccountMeta().platform,
                                 ResourceTypeConstants.ECS,
                                 resource.getInstanceId(),
                                 resource.getName(), resource)
@@ -185,9 +192,9 @@ public class OpenstackProvider extends AbstractCloudProvider<OpenstackCompliance
         ListSecurityGroupInstanceRequest request = JsonUtil.parseObject(req, ListSecurityGroupInstanceRequest.class);
         return OpenstackApi.listSecurityGroup(request).stream()
                 .map(resource ->
-                        ResourceUtil.appendFilterArray(PlatformConstants.fit2cloud_openstack_platform.name(), ResourceTypeConstants.SECURITY_GROUP, "group_rule",
+                        ResourceUtil.appendFilterArray(getCloudAccountMeta().platform, ResourceTypeConstants.SECURITY_GROUP, "group_rule",
                                 ResourceUtil.toResourceInstance(
-                                        PlatformConstants.fit2cloud_openstack_platform.name(),
+                                        getCloudAccountMeta().platform,
                                         ResourceTypeConstants.SECURITY_GROUP,
                                         resource.getId(),
                                         resource.getName(),
@@ -229,5 +236,20 @@ public class OpenstackProvider extends AbstractCloudProvider<OpenstackCompliance
     @Override
     public List<InstanceSearchField> listResourcePoolInstanceSearchField() {
         return List.of();
+    }
+
+    @Override
+    public F2CBalance getAccountBalance(String getAccountBalanceRequest) {
+        return openStackBaseCloudProvider.getAccountBalance(getAccountBalanceRequest);
+    }
+
+    @Override
+    public CloudAccountMeta getCloudAccountMeta() {
+        return openStackBaseCloudProvider.getCloudAccountMeta();
+    }
+
+    @Override
+    public Info getInfo() {
+        return info;
     }
 }

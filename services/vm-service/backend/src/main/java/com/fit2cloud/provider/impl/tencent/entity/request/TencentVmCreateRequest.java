@@ -5,7 +5,6 @@ import com.fit2cloud.common.form.annotaion.FormConfirmInfo;
 import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.constants.InputType;
-import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
 import com.fit2cloud.provider.impl.tencent.constants.TencentBandwidthType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
@@ -15,6 +14,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import com.fit2cloud.vm.ICreateServerRequest;
 
 import java.util.ArrayList;
 import java.util.List;

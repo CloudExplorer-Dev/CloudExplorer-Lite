@@ -1,9 +1,9 @@
 package com.fit2cloud.provider.impl.tencent.entity.request;
 
-import com.fit2cloud.provider.constants.DeleteWithInstance;
-import com.fit2cloud.provider.entity.request.BaseDiskAttachRequest;
 import com.tencentcloudapi.cbs.v20170312.models.AttachDisksRequest;
 import lombok.Data;
+import com.fit2cloud.vm.constants.DeleteWithInstance;
+import com.fit2cloud.vm.entity.request.BaseDiskAttachRequest;
 
 /**
  * Author: LiuDi

@@ -6,7 +6,7 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountResponse;
-import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
+import com.fit2cloud.dto.PlatformResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.request.cloud_account.SyncRequest;
 import com.fit2cloud.response.JobRecordResourceResponse;

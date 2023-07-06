@@ -1,18 +1,22 @@
 package com.fit2cloud.constants;
 
 import com.fit2cloud.autoconfigure.JobSettingConfig;
-import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
+import com.fit2cloud.common.log.utils.LogUtil;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.scheduler.util.CronUtils;
 import com.fit2cloud.dto.job.JobSetting;
+import com.fit2cloud.provider.ICloudProvider;
+import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.quartz.CloudAccountSyncJob;
 
 import java.util.*;
 
 /**
- * @Author:张少虎
- * @Date: 2022/9/8  6:21 PM
- * @Version 1.0
- * @注释:
+ * { @Author:张少虎 }
+ * { @Date: 2022/9/8  6:21 PM }
+ * { @Version 1.0 }
+ * { @注释: }
  */
 public class JobConstants implements JobSettingConfig.JobConfig {
     public enum JobSyncResourceType {
@@ -32,6 +36,8 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         }
     }
 
+    public static final String CLOUD_ACCOUNT_BILL_SYNC_GROUP = "CLOUD_ACCOUNT_BILL_SYNC_GROUP";
+
     /**
      * 同步账单
      */
@@ -45,11 +51,29 @@ public class JobConstants implements JobSettingConfig.JobConfig {
     public List<JobSetting> listJobInitSetting() {
         // 使用全参构造器
         JobSetting syncBill = new JobSetting(CloudAccountSyncJob.SyncBill.class, SYNC_BILL,
-                com.fit2cloud.common.constants.JobConstants.Group.CLOUD_ACCOUNT_BILL_SYNC_GROUP.name(),
-                "同步账单", null, CronUtils.create(new Integer[]{0}, Calendar.HOUR),
-                p -> Arrays.stream(PlatformConstants.values()).filter(platformConstants -> platformConstants.name().equals(p)).map(PlatformConstants::getBillClass).allMatch(Objects::nonNull), (p) -> false, (p) -> false);
-        JobSetting authBill = new JobSetting(CloudAccountSyncJob.BillAuthJob.class, AUTH_BILL, com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name()
-                , "账单授权", Map.of(), "0 0 0 * * ? *", s -> false, s -> false, s -> false);
+                CLOUD_ACCOUNT_BILL_SYNC_GROUP,
+                "同步账单",
+                CronUtils.create(new Integer[]{0}, Calendar.HOUR),
+                p -> Arrays.stream(ProviderConstants.values())
+                        .filter(providerConstants -> providerConstants.name().equals(p))
+                        .map(s -> CommonUtil.exec(s.getCloudProvider(), ICloudProvider::getParamsClass))
+                        .allMatch(Objects::nonNull), (p) -> false, (p) -> false,
+                p -> CommonUtil.exec(ICloudProvider.of(p), ICloudProvider::getParamsClass)
+                , (cloudAccount) -> {
+            Map<String, Object> result = new HashMap<>();
+            result.put(com.fit2cloud.common.constants.JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), cloudAccount.getId());
+            try {
+                Map<String, Object> defaultParams = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform()).getParamsClass().getConstructor().newInstance().getDefaultParams();
+                result.putAll(defaultParams);
+            } catch (Exception e) {
+                LogUtil.error("获取账单默认参数失败", e);
+            }
+            return result;
+        }
+        );
+        JobSetting authBill = new JobSetting(CloudAccountSyncJob.BillAuthJob.class, AUTH_BILL,
+                com.fit2cloud.common.constants.JobConstants.DefaultGroup.SYSTEM_GROUP.name()
+                , "账单授权", "0 0 0 * * ? *", s -> false, s -> false, s -> false);
         return List.of(syncBill, authBill);
     }
 }

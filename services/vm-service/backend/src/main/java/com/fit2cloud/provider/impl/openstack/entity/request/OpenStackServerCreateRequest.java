@@ -8,11 +8,11 @@ import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.provider.impl.openstack.OpenStackBaseCloudProvider;
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
-import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.openstack.OpenStackCloudProvider;
 import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import com.fit2cloud.vm.ICreateServerRequest;
 
 import java.util.List;
 
@@ -56,7 +56,7 @@ public class OpenStackServerCreateRequest extends OpenStackBaseRequest implement
 
     @Form(inputType = InputType.Radio,
             label = "付费方式",
-            clazz = OpenStackBaseCloudProvider.class,
+            clazz = OpenStackCloudProvider.class,
             method = "getChargeType",
             textField = "key",
             valueField = "value",

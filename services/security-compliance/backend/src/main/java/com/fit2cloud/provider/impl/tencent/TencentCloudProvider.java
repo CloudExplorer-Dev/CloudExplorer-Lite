@@ -1,6 +1,7 @@
 package com.fit2cloud.provider.impl.tencent;
 
-import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.provider.entity.F2CBalance;
+import com.fit2cloud.common.provider.impl.tencent.TencentBaseCloudProvider;
 import com.fit2cloud.common.provider.impl.tencent.entity.credential.TencentBaseCredential;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
@@ -28,6 +29,7 @@ import com.tencentcloudapi.sqlserver.v20180328.models.DBInstance;
 import com.tencentcloudapi.vpc.v20170312.models.Address;
 import com.tencentcloudapi.vpc.v20170312.models.Vpc;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.pf4j.Extension;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +42,11 @@ import java.util.Objects;
  * {@code @Version 1.0}
  * {@code @注释: }
  */
+@Extension
 public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCredential> implements ICloudProvider {
+
+    public static final TencentBaseCloudProvider tencentBaseCloudProvider = new TencentBaseCloudProvider();
+    public static final Info info = new Info("security-compliance", List.of(), Map.of());
 
     @Override
     public List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> getResourceSyncDimensionConstants() {
@@ -69,7 +75,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<Instance> instances = TencentApi.listEcsInstance(listCvmInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.ECS,
                         instance.getInstanceId(),
                         instance.getInstanceName(),
@@ -90,7 +96,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<InstanceSet> instances = TencentApi.listRedisInstance(listRedisInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.REDIS,
                         instance.getInstanceId(),
                         instance.getInstanceName(),
@@ -110,7 +116,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<InstanceDetail> instances = TencentApi.listMongodbInstance(listMongoDBInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.MONGO_DB,
                         instance.getInstanceId(),
                         instance.getInstanceName(),
@@ -130,7 +136,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<InstanceInfo> instances = TencentApi.listMysqlInstance(listMysqlInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.MYSQL,
                         instance.getInstanceId(),
                         instance.getInstanceName(),
@@ -150,7 +156,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<DBInstance> instances = TencentApi.listSqlServerInstance(listSqlServerInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.SQL_SERVER,
                         instance.getInstanceId(),
                         instance.getName(),
@@ -170,7 +176,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<com.tencentcloudapi.postgres.v20170312.models.DBInstance> instances = TencentApi.listPostGreSqlInstance(listPostGreSqlInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.POST_GRE_SQL,
                         instance.getDBInstanceId(),
                         instance.getDBInstanceName(),
@@ -190,7 +196,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<com.tencentcloudapi.mariadb.v20170312.models.DBInstance> instances = TencentApi.listMariaDBInstance(listMariaDBInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.MARIA_DB,
                         instance.getInstanceId(),
                         instance.getInstanceName(),
@@ -210,7 +216,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<com.tencentcloudapi.es.v20180416.models.InstanceInfo> instances = TencentApi.listElasticSearchInstance(listElasticsearchInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.ELASTIC_SEARCH,
                         instance.getInstanceId(),
                         instance.getInstanceName(),
@@ -230,7 +236,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<Disk> instances = TencentApi.listDiskInstance(listDiskInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.DISK,
                         instance.getDiskId(),
                         instance.getDiskName(),
@@ -250,7 +256,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<LoadBalancer> instances = TencentApi.listLoadBalancerInstance(listLoadBalancerInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.LOAD_BALANCER,
                         instance.getLoadBalancerId(),
                         instance.getLoadBalancerName(),
@@ -270,7 +276,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<Address> instances = TencentApi.listPublicIpInstance(listPublicIpInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.PUBLIC_IP,
                         instance.getAddressId(),
                         instance.getAddressName(),
@@ -290,7 +296,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<Vpc> instances = TencentApi.listVpcInstance(listVpcInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.VPC,
                         instance.getVpcId(),
                         instance.getVpcName(),
@@ -310,7 +316,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<RamInstanceResponse> instances = TencentApi.listSubUserInstanceCollection(listUsersInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.RAM,
                         instance.getUid().toString(),
                         instance.getName(),
@@ -329,7 +335,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<BucketInstanceResponse> instances = TencentApi.listBucketInstanceCollection(listBucketInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.OSS,
                         instance.getName(),
                         instance.getName(),
@@ -348,7 +354,7 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
         List<SecurityGroupInstanceResponse> instances = TencentApi.listSecurityGroupCollectionInstance(listSecurityGroupInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_tencent_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(getCloudAccountMeta().platform,
                         ResourceTypeConstants.SECURITY_GROUP,
                         instance.getSecurityGroupId(),
                         instance.getSecurityGroupName(),
@@ -393,4 +399,18 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentBaseCrede
     }
 
 
+    @Override
+    public F2CBalance getAccountBalance(String getAccountBalanceRequest) {
+        return tencentBaseCloudProvider.getAccountBalance(getAccountBalanceRequest);
+    }
+
+    @Override
+    public CloudAccountMeta getCloudAccountMeta() {
+        return tencentBaseCloudProvider.getCloudAccountMeta();
+    }
+
+    @Override
+    public Info getInfo() {
+        return info;
+    }
 }

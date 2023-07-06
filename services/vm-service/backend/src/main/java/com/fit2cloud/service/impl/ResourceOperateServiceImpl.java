@@ -15,15 +15,15 @@ import com.fit2cloud.controller.request.CreateJobRecordRequest;
 import com.fit2cloud.controller.request.ExecProviderMethodRequest;
 import com.fit2cloud.controller.request.ResourceState;
 import com.fit2cloud.dto.InitJobRecordDTO;
-import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.service.IResourceOperateService;
 import com.fit2cloud.service.JobRecordCommonService;
 import io.reactivex.rxjava3.functions.BiConsumer;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
-import org.springframework.stereotype.Service;
-
 import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
+import com.fit2cloud.vm.ICloudProvider;
+
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;

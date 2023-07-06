@@ -24,12 +24,12 @@ public class JobConstants implements JobSettingConfig.JobConfig {
     @Override
     public List<JobSetting> listJobInitSetting() {
         JobSetting verificationCloudAccountJob = new JobSetting(VerificationCloudAccountJob.class, VERIFICATION_CLOUD_ACCOUNT,
-                com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "校验云账号",
-                null, CronUtils.create(new Integer[]{0}, Calendar.MINUTE), s -> false, p -> false, p -> false);
+                com.fit2cloud.common.constants.JobConstants.DefaultGroup.SYSTEM_GROUP.name(), "校验云账号",
+                  CronUtils.create(new Integer[]{0}, Calendar.MINUTE), s -> false, p -> false, p -> false);
 
         JobSetting timeOutJob = new JobSetting(JobTimeOutJob.class, TIME_OUT_JOB,
-                com.fit2cloud.common.constants.JobConstants.Group.SYSTEM_GROUP.name(), "检验任务超时状态",
-                null, CronUtils.create(new Integer[]{0}, Calendar.MINUTE), s -> false, p -> false, p -> false);
+                com.fit2cloud.common.constants.JobConstants.DefaultGroup.SYSTEM_GROUP.name(), "检验任务超时状态",
+                CronUtils.create(new Integer[]{0}, Calendar.MINUTE), s -> false, p -> false, p -> false);
         return List.of(verificationCloudAccountJob, timeOutJob);
     }
 }

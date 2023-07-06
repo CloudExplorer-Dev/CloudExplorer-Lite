@@ -15,6 +15,7 @@
     <description>CE framework</description>
 
     <modules>
+        <module>plugins-sdk</module>
         <module>frontend</module>
         <module>backend</module>
     </modules>

@@ -7,11 +7,11 @@ import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.provider.impl.huawei.HuaweiBaseCloudProvider;
-import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;
 import com.fit2cloud.provider.impl.huawei.entity.DiskConfig;
 import com.fit2cloud.provider.impl.huawei.entity.HuaweiServerNameInfo;
 import lombok.Data;
+import com.fit2cloud.vm.ICreateServerRequest;
 
 import java.util.List;
 

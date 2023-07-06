@@ -1,14 +1,19 @@
 package com.fit2cloud.quartz;
 
+import com.fit2cloud.autoconfigure.JobSettingConfig;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.common.utils.SpringUtil;
+import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.service.IBillDimensionSettingService;
 import com.fit2cloud.service.SyncService;
 import jdk.jfr.Name;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.Job;
+import org.quartz.JobKey;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 
 /**

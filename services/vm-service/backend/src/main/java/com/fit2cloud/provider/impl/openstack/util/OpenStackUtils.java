@@ -1,9 +1,6 @@
 package com.fit2cloud.provider.impl.openstack.util;
 
 import com.fit2cloud.common.provider.impl.openstack.utils.OpenStackBaseUtils;
-import com.fit2cloud.provider.constants.F2CDiskStatus;
-import com.fit2cloud.provider.constants.F2CInstanceStatus;
-import com.fit2cloud.provider.entity.*;
 import com.fit2cloud.provider.impl.openstack.entity.CheckStatusResult;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,6 +19,9 @@ import org.openstack4j.model.storage.block.Volume;
 import org.openstack4j.model.storage.block.VolumeAttachment;
 import org.openstack4j.openstack.storage.block.domain.VolumeBackendPool;
 import org.springframework.core.io.ClassPathResource;
+import com.fit2cloud.vm.constants.F2CDiskStatus;
+import com.fit2cloud.vm.constants.F2CInstanceStatus;
+import com.fit2cloud.vm.entity.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;

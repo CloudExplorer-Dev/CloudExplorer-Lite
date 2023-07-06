@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.autoconfigure.ServerInfo;
 import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.VmCloudDisk;
@@ -19,11 +20,10 @@ import com.fit2cloud.base.service.IBaseVmCloudImageService;
 import com.fit2cloud.base.service.IBaseVmCloudServerService;
 import com.fit2cloud.common.constants.CloudAccountConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.constants.RedisConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.common.utils.ServiceUtil;
@@ -32,9 +32,9 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.cloud_account.*;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountJobDetailsResponse;
 import com.fit2cloud.controller.response.cloud_account.CloudAccountResponse;
-import com.fit2cloud.controller.response.cloud_account.PlatformResponse;
 import com.fit2cloud.dao.entity.CloudAccount;
 import com.fit2cloud.dao.mapper.CloudAccountMapper;
+import com.fit2cloud.dto.PlatformResponse;
 import com.fit2cloud.redis.RedisService;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
@@ -51,17 +51,16 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -170,6 +169,16 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
         return exchange.getBody().getData();
     };
 
+    private final Function<String, List<PlatformResponse>> getPlatformResponse = (String module) -> {
+        String httpUrl = ServiceUtil.getHttpUrl(module, "/api/base/cloud_account/platform");
+        ResponseEntity<ResultHolder<List<PlatformResponse>>> exchange = restTemplate.exchange(httpUrl, HttpMethod.GET, HttpEntity.EMPTY, new ParameterizedTypeReference<>() {
+        });
+        if (!Objects.requireNonNull(exchange.getBody()).getCode().equals(200)) {
+            throw new Fit2cloudException(exchange.getBody().getCode(), exchange.getBody().getMessage());
+        }
+        return exchange.getBody().getData();
+    };
+
     @Override
     public IPage<CloudAccountResponse> page(CloudAccountRequest cloudAccountRequest) {
         Page<CloudAccountResponse> cloudAccountPage = PageUtil.of(cloudAccountRequest, CloudAccountResponse.class, new OrderItem("create_time", true));
@@ -186,21 +195,14 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
 
     @Override
     public List<PlatformResponse> getPlatforms() {
-        return Arrays.stream(PlatformConstants.values()).map(platform -> {
-            PlatformResponse platformResponse = new PlatformResponse();
-            Class<? extends Credential> credentialClass = platform.getCredentialClass();
-            platformResponse.setLabel(platform.getMessage());
-            platformResponse.setField(platform.name());
-            platformResponse.setPublicCloud(platform.getPublicCloud());
-            try {
-                List<? extends Form> form = credentialClass.getConstructor().newInstance().toForm();
-                platformResponse.setCredentialForm(form);
-            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                     IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-            return platformResponse;
-        }).toList();
+        return  this.baseCloudAccountService.getPlatforms();
+    }
+
+    private List<PlatformResponse> getPlatform(String module) {
+        if (StringUtils.equals(module, ServerInfo.module)) {
+            return this.baseCloudAccountService.getPlatforms();
+        }
+        return getPlatformResponse.apply(module);
     }
 
     @Override
@@ -218,11 +220,18 @@ public class CloudAccountServiceImpl extends ServiceImpl<CloudAccountMapper, Clo
     @Override
     public List<Credential.Region> listRegions(String accountId) {
         CloudAccount cloudAccount = getById(accountId);
-        PlatformConstants platformConstants = PlatformConstants.valueOf(cloudAccount.getPlatform());
-        try {
-            return platformConstants.getCredentialClass().getConstructor().newInstance().deCode(cloudAccount.getCredential()).regions();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        List<IBaseCloudProvider> extensions = PluginsContextHolder.getExtensions(IBaseCloudProvider.class);
+        Optional<IBaseCloudProvider> first = extensions.stream()
+                .filter(p -> p.getCloudAccountMeta().platform.equals(cloudAccount.getPlatform()))
+                .findFirst();
+        if (first.isPresent()) {
+            try {
+                return first.get().getCloudAccountMeta().credential.getConstructor().newInstance().deCode(cloudAccount.getCredential()).regions();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            throw new RuntimeException("不存在的云平台");
         }
     }
 
