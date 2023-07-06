@@ -3,17 +3,10 @@ package com.fit2cloud.provider.impl.tencent;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.credential.impl.TencentCredential;
+import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
+import com.fit2cloud.common.provider.impl.tencent.TencentBaseCloudProvider;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.provider.AbstractCloudProvider;
-import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.constants.DeleteWithInstance;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CImage;
-import com.fit2cloud.provider.entity.F2CNetwork;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.entity.request.BaseDiskRequest;
-import com.fit2cloud.provider.entity.request.GetMetricsRequest;
 import com.fit2cloud.provider.impl.tencent.api.TencentSyncCloudApi;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentLoginType;
@@ -23,6 +16,18 @@ import com.fit2cloud.provider.impl.tencent.entity.SecurityGroupDTO;
 import com.fit2cloud.provider.impl.tencent.entity.TencentDiskTypeDTO;
 import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
+import com.fit2cloud.vm.AbstractCloudProvider;
+import com.fit2cloud.vm.ICloudProvider;
+import com.fit2cloud.vm.ICreateServerRequest;
+import com.fit2cloud.vm.constants.ActionInfoConstants;
+import com.fit2cloud.vm.constants.DeleteWithInstance;
+import com.fit2cloud.vm.entity.F2CDisk;
+import com.fit2cloud.vm.entity.F2CImage;
+import com.fit2cloud.vm.entity.F2CNetwork;
+import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.fit2cloud.vm.entity.request.BaseDiskRequest;
+import com.fit2cloud.vm.entity.request.GetMetricsRequest;
+import org.pf4j.Extension;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +40,20 @@ import java.util.Map;
  * @Version 1.0
  * @注释:
  */
+@Extension
 public class TencentCloudProvider extends AbstractCloudProvider<TencentCredential> implements ICloudProvider {
+    public static final TencentBaseCloudProvider tencentBaseCloudProvider = new TencentBaseCloudProvider();
+    private static final Info info = new Info("vm-service", ActionInfoConstants.all(
+            ActionInfoConstants.SYNC_DATA_STORE_MACHINE_METRIC_MONITOR,
+            ActionInfoConstants.SYNC_DATASTORE,
+            ActionInfoConstants.SYNC_HOST,
+            ActionInfoConstants.SYNC_HOST_MACHINE_METRIC_MONITOR), Map.of());
+
+    @Override
+    public Class<? extends ICreateServerRequest> getCreateServerRequestClass() {
+        return TencentVmCreateRequest.class;
+    }
+
     // For Create VM [START]
     @Override
     public FormObject getCreateServerForm() {
@@ -400,5 +418,20 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     @Override
     public List<F2CDisk> getVmF2CDisks(String req) {
         return TencentSyncCloudApi.getVmF2CDisks(JsonUtil.parseObject(req, BaseDiskRequest.class));
+    }
+
+    @Override
+    public F2CBalance getAccountBalance(String getAccountBalanceRequest) {
+        return tencentBaseCloudProvider.getAccountBalance(getAccountBalanceRequest);
+    }
+
+    @Override
+    public CloudAccountMeta getCloudAccountMeta() {
+        return tencentBaseCloudProvider.getCloudAccountMeta();
+    }
+
+    @Override
+    public Info getInfo() {
+        return info;
     }
 }

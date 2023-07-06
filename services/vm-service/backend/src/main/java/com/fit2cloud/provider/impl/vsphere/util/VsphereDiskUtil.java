@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.vsphere.util;
 
-import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.impl.vsphere.entity.DiskOpsType;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereDisk;
 import com.fit2cloud.provider.impl.vsphere.entity.constants.VsphereDiskType;
@@ -8,6 +7,7 @@ import com.vmware.vim25.*;
 import com.vmware.vim25.mo.Task;
 import com.vmware.vim25.mo.VirtualMachine;
 import org.springframework.util.CollectionUtils;
+import com.fit2cloud.vm.entity.F2CDisk;
 
 import java.util.ArrayList;
 import java.util.List;

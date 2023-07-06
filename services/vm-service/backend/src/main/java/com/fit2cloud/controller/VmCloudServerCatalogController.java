@@ -1,21 +1,22 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.base.mapper.BaseVmCloudServerMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.form.vo.FormObject;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.Good;
-import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.constants.F2CDiskStatus;
-import com.fit2cloud.provider.constants.F2CInstanceStatus;
-import com.fit2cloud.provider.constants.ProviderConstants;
+import com.fit2cloud.vm.ICloudProvider;
+import com.fit2cloud.vm.constants.F2CDiskStatus;
+import com.fit2cloud.vm.constants.F2CInstanceStatus;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -50,8 +50,8 @@ public class VmCloudServerCatalogController {
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_SERVER:CREATE')")
     public ResultHolder<FormObject> getCreateServerForm(@PathVariable String cloudAccountId) throws Exception {
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
-        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
-        return ResultHolder.success(cloudProvider.getConstructor().newInstance().getCreateServerForm());
+        ICloudProvider platformExtension = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform());
+        return ResultHolder.success(platformExtension.getCreateServerForm());
     }
 
     @GetMapping("/goods")
@@ -110,11 +110,13 @@ public class VmCloudServerCatalogController {
                 Good result = new Good();
                 BeanUtils.copyProperties(cloudAccount, result);
                 Good good = map.get(cloudAccount.getId());
+
                 if (good != null) {
                     result.setBalance(good.getBalance())
                             .setServerCount(good.getServerCount())
                             .setDiskCount(good.getDiskCount())
-                            .setPublicCloud(PlatformConstants.valueOf(result.getPlatform()).getPublicCloud());
+                            .setPublicCloud(PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, cloudAccount.getPlatform()).getCloudAccountMeta().publicCloud)
+                    ;
                 }
                 goods.add(result);
             });

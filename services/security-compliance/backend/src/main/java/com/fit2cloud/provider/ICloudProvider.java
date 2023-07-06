@@ -1,13 +1,12 @@
 package com.fit2cloud.provider;
 
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.es.entity.ResourceInstance;
-import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.entity.InstanceSearchField;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -16,7 +15,7 @@ import java.util.List;
  * {@code @Version 1.0}
  * {@code @注释: todo 查询字段的获取未来存储到数据库,由程序进行增删改查。}
  */
-public interface ICloudProvider {
+public interface ICloudProvider extends IBaseCloudProvider {
 
     /**
      * 获取云的资源同步粒度
@@ -294,14 +293,4 @@ public interface ICloudProvider {
      * @return 资源池可查询字段
      */
     List<InstanceSearchField> listResourcePoolInstanceSearchField();
-
-    /**
-     * 根据供应商获取对应云平台处理器
-     *
-     * @param platform 供应商
-     * @return 处理器
-     */
-    static Class<? extends ICloudProvider> of(String platform) {
-        return (Class<? extends ICloudProvider>) Arrays.stream(ProviderConstants.values()).filter(providerConstants -> providerConstants.name().equals(platform)).findFirst().orElseThrow(() -> new RuntimeException("不支持的云平台")).getCloudProvider();
-    }
 }

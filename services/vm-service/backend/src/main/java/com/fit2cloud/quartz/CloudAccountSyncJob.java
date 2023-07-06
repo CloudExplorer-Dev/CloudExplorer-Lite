@@ -1,31 +1,33 @@
 package com.fit2cloud.quartz;
 
 import com.fit2cloud.autoconfigure.ChargingConfig;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.charging.instance.impl.SimpleInstanceStateRecorder;
 import com.fit2cloud.common.charging.setting.BillSetting;
 import com.fit2cloud.common.constants.JobConstants;
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.service.ISyncProviderService;
+import com.fit2cloud.vm.ICloudProvider;
+import com.fit2cloud.vm.constants.ActionInfoConstants;
 import jdk.jfr.Name;
 import org.quartz.Job;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Predicate;
 
 /**
- * @Author:张少虎
- * @Date: 2022/9/17  5:52 PM
- * @Version 1.0
- * @注释:
+ * { @Author:张少虎 }
+ * { @Date: 2022/9/17  5:52 PM }
+ * { @Version 1.0 }
+ * { @注释:  }
  */
 @Component
 public class CloudAccountSyncJob {
@@ -36,7 +38,7 @@ public class CloudAccountSyncJob {
         @Override
         protected void run(Map<String, Object> map) {
             List<BillSetting> billSettings = ChargingConfig.getBillSettings().getBillSettings();
-             billSettings
+            billSettings
                     .parallelStream()
                     .forEach(billSetting -> SimpleInstanceStateRecorder.of(billSetting).runRecordState());
         }
@@ -122,25 +124,6 @@ public class CloudAccountSyncJob {
             LogUtil.info("结束同步监控数据: " + cloudAccount.getName());
 
         }
-
-
-        /**
-         * 获取执行参数
-         *
-         * @return 所有云账号的执行参数
-         */
-        private List<Map<String, Object>> getExecParams() {
-            List<CloudAccount> cloudAccounts = SpringUtil.getBean(IBaseCloudAccountService.class).list();
-            return cloudAccounts.stream().map(cloudAccount -> {
-                try {
-                    List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
-                    return JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions);
-                } catch (Exception e) {
-                    return null;
-                }
-
-            }).filter(Objects::nonNull).toList();
-        }
     }
 
     @Name("云主机监控")
@@ -152,15 +135,10 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步云主机监控数据结束:", map);
         }
 
-        public Predicate<String> supportPlatform() {
-            return (platform) -> true;
-        }
-
         public void exec(CloudAccount cloudAccount) {
-            if (supportPlatform().test(cloudAccount.getPlatform())) {
+            if (supportAction(cloudAccount, ActionInfoConstants.SYNC_VIRTUAL_MACHINE_METRIC_MONITOR)) {
                 try {
-                    List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
-                    exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                    exec(getJobExecParams(cloudAccount));
                 } catch (Exception e) {
                     LogUtil.error(cloudAccount.getName() + "-" + e.getMessage());
                 }
@@ -177,15 +155,10 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步宿主机监控数据结束:", map);
         }
 
-        public Predicate<String> supportPlatform() {
-            return (platform) -> PlatformConstants.fit2cloud_vsphere_platform.name().equals(platform) || PlatformConstants.fit2cloud_openstack_platform.name().equals(platform);
-        }
-
         public void exec(CloudAccount cloudAccount) {
-            if (supportPlatform().test(cloudAccount.getPlatform())) {
+            if (supportAction(cloudAccount, ActionInfoConstants.SYNC_HOST_MACHINE_METRIC_MONITOR)) {
                 try {
-                    List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
-                    exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                    exec(getJobExecParams(cloudAccount));
                 } catch (Exception e) {
                     LogUtil.error(cloudAccount.getName() + "-" + e.getMessage());
                 }
@@ -202,15 +175,10 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步云磁盘监控数据结束:", map);
         }
 
-        public Predicate<String> supportPlatform() {
-            return (platform) -> true;
-        }
-
         public void exec(CloudAccount cloudAccount) {
-            if (supportPlatform().test(cloudAccount.getPlatform())) {
+            if (supportAction(cloudAccount, ActionInfoConstants.SYNC_DISK_MACHINE_METRIC_MONITOR)) {
                 try {
-                    List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
-                    exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                    exec(getJobExecParams(cloudAccount));
                 } catch (Exception e) {
                     LogUtil.error(cloudAccount.getName() + "-" + e.getMessage());
                 }
@@ -227,20 +195,40 @@ public class CloudAccountSyncJob {
             LogUtil.info("同步存储器监控数据结束:", map);
         }
 
-        public Predicate<String> supportPlatform() {
-            return (platform) -> PlatformConstants.fit2cloud_vsphere_platform.name().equals(platform);
-        }
-
         public void exec(CloudAccount cloudAccount) {
-            if (supportPlatform().test(cloudAccount.getPlatform())) {
+            if (supportAction(cloudAccount, ActionInfoConstants.SYNC_DATA_STORE_MACHINE_METRIC_MONITOR)) {
                 try {
-                    List<Credential.Region> regions = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()).regions();
-                    exec(JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions));
+                    exec(getJobExecParams(cloudAccount));
                 } catch (Exception e) {
                     LogUtil.error(cloudAccount.getName() + "-" + e.getMessage());
                 }
             }
         }
+    }
+
+    /**
+     * 是否支持某项操作
+     *
+     * @param cloudAccount 云账号
+     * @param actionInfo   操作数据
+     * @return 是否支持
+     */
+    public static boolean supportAction(CloudAccount cloudAccount, ActionInfoConstants actionInfo) {
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform());
+        return iCloudProvider.getInfo().supportActionList.contains(actionInfo);
+    }
+
+    /**
+     * 获取执行参数
+     *
+     * @param cloudAccount 云账号
+     * @return 执行参数
+     */
+    public static Map<String, Object> getJobExecParams(CloudAccount cloudAccount) {
+        Class<? extends Credential> credential = PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, cloudAccount.getPlatform())
+                .getCloudAccountMeta().credential;
+        List<Credential.Region> regions = JsonUtil.parseObject(cloudAccount.getCredential(), credential).regions();
+        return JobConstants.CloudAccount.getCloudAccountJobParams(cloudAccount.getId(), regions);
     }
 
 }

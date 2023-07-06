@@ -12,6 +12,7 @@ import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.bulk.IndexOperation;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.job.context.JobContext;
@@ -20,6 +21,7 @@ import com.fit2cloud.common.job.result.impl.SimpleResult;
 import com.fit2cloud.common.job.step.JobStep;
 import com.fit2cloud.common.job.step.impl.SimpleJobStep;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -31,13 +33,13 @@ import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.es.entity.ResourceInstance;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.service.*;
+import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
 
@@ -72,8 +74,9 @@ public class JobStepServiceImpl implements IJobStepService {
             })));
             return SimpleResult.of(500, "云账号不存在", true);
         }
-        Class<? extends ICloudProvider> iCloudProviderClazz = ICloudProvider.of(context.getContext().cloudAccount.getPlatform());
-        List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> map = CommonUtil.exec(iCloudProviderClazz, ICloudProvider::getResourceSyncDimensionConstants);
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, context.getContext().cloudAccount.getPlatform());
+
+        List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> map = iCloudProvider.getResourceSyncDimensionConstants();
         // 如果不存在同步粒度则为不支持的资源类型
         Optional<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> first = map
                 .stream()
@@ -98,7 +101,8 @@ public class JobStepServiceImpl implements IJobStepService {
             })));
             return SimpleResult.of(500, "云账号不存在", true);
         }
-        context.getContext().credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
+        context.getContext().credential = JsonUtil.parseObject(cloudAccount.getCredential(), PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, cloudAccount.getPlatform())
+                .getCloudAccountMeta().credential);
         try {
             boolean verification = context.getContext().credential.verification();
             if (verification) {
@@ -139,14 +143,13 @@ public class JobStepServiceImpl implements IJobStepService {
     @Override
     public Result syncResourceChildren(JobContext<Context> context, JobStep<Context> step) {
         Credential.Region region = (Credential.Region) step.getStepContext();
-        Credential credential = Credential.of(context.getContext().cloudAccount.getPlatform(), context.getContext().cloudAccount.getCredential());
-        Class<? extends ICloudProvider> iCloudProviderClazz = ICloudProvider.of(context.getContext().cloudAccount.getPlatform());
+        Credential credential = JsonUtil.parseObject(context.getContext().cloudAccount.getCredential(), PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, context.getContext().cloudAccount.getPlatform())
+                .getCloudAccountMeta().credential);
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, context.getContext().cloudAccount.getPlatform());
         List<ResourceInstance> result;
         try {
-            result = CommonUtil.exec(iCloudProviderClazz,
-                    JsonUtil.toJSONString(Objects.equals(context.getContext().syncDimensionConstants, SyncDimensionConstants.REGION) ?
-                            Map.of("regionId", region.getRegionId(), "credential", credential) : Map.of("credential", credential)),
-                    context.getContext().instanceType.getExec());
+            result = context.getContext().instanceType.getExec().apply(iCloudProvider, JsonUtil.toJSONString(Objects.equals(context.getContext().syncDimensionConstants, SyncDimensionConstants.REGION) ?
+                    Map.of("regionId", region.getRegionId(), "credential", credential) : Map.of("credential", credential)));
             result = CollectionUtils.isEmpty(result) ? new ArrayList<>() : result;
             result.forEach(resource -> {
                 resource.setCloudAccountId(context.getContext().cloudAccountId);
@@ -157,6 +160,8 @@ public class JobStepServiceImpl implements IJobStepService {
             return SimpleResult.of(200, "同步", false, StepResultData.of(result.size(), region));
         } catch (SkipPageException e) {
             return SimpleResult.of(200, "同步", false, StepResultData.of(0, region));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
         }
     }
 

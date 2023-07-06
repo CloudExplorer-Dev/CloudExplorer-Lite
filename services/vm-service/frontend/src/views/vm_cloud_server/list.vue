@@ -13,8 +13,6 @@ import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox, ElPopover } from "element-plus";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
-import variables_server from "../../styles/vm_cloud_server/server.module.scss";
-import { platformIcon } from "@commons/utils/platform";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import RecycleBinsApi from "@/api/recycle_bin";
 import Grant from "@/views/vm_cloud_server/grant.vue";
@@ -30,7 +28,7 @@ import AddDisk from "@/views/vm_cloud_server/AddDisk.vue";
 import ChangeConfig from "@/views/vm_cloud_server/ChangeConfig.vue";
 import { classifyIP } from "@commons/utils/util";
 import CeIcon from "@commons/components/ce-icon/index.vue";
-
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
 const useRoute = useRouter();
@@ -902,15 +900,11 @@ const buttons = ref([
       min-width="180px"
     >
       <template #default="scope">
-        <div style="display: flex">
-          <component
-            style="margin-top: 3px; width: 16px; height: 16px"
-            :is="platformIcon[scope.row.platform]?.component"
-            v-bind="platformIcon[scope.row.platform]?.icon"
-            :color="platformIcon[scope.row.platform]?.color"
-            size="16px"
-            v-if="scope.row.platform"
-          ></component>
+        <div style="display: flex; align-items: center">
+          <PlatformIcon
+            style="height: 16px; width: 16px"
+            :platform="scope.row.platform"
+          ></PlatformIcon>
           <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
         </div>
       </template>

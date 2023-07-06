@@ -1,7 +1,7 @@
 package com.fit2cloud.provider.impl.tencent.entity.request;
 
-import com.fit2cloud.provider.entity.request.BaseDiskCreateRequest;
 import lombok.Data;
+import com.fit2cloud.vm.entity.request.BaseDiskCreateRequest;
 
 /**
  * Author: LiuDi

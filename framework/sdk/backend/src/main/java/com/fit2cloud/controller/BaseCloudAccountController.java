@@ -3,20 +3,20 @@ package com.fit2cloud.controller;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.mapper.BaseCloudAccountMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
-import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
+import com.fit2cloud.dto.PlatformResponse;
 import com.fit2cloud.request.cloud_account.CloudAccountModuleJob;
 import com.fit2cloud.request.cloud_account.SyncRequest;
 import com.fit2cloud.response.cloud_account.ResourceCountResponse;
 import com.fit2cloud.response.cloud_account.SyncResource;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import org.springframework.web.bind.annotation.*;
-
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 /**
@@ -33,7 +33,7 @@ public class BaseCloudAccountController {
 
     @GetMapping("/list")
     public ResultHolder<List<CloudAccount>> list() {
-        return ResultHolder.success(cloudAccountService.list());
+        return ResultHolder.success(cloudAccountService.listSupportCloudAccount());
     }
 
     @GetMapping("/{id}")
@@ -92,13 +92,6 @@ public class BaseCloudAccountController {
         return ResultHolder.success(cloudAccountService.getModuleResourceCount(accountId));
     }
 
-    @GetMapping("/bill/form")
-    @Operation(summary = "获取账单设置form表单", description = "获取账单设置form表单")
-    public ResultHolder<List<? extends Form>> getBillSettingFormByPlatform(@RequestParam("platform") String platform) {
-        List<? extends Form> forms = cloudAccountService.getBillSettingFormByPlatform(platform);
-        return ResultHolder.success(forms);
-    }
-
     @GetMapping("/balance/{id}")
     @Operation(summary = "获取云账号余额")
     public ResultHolder<Object> getAccountBalance(@Parameter(description = "云账号id", required = true)
@@ -107,4 +100,10 @@ public class BaseCloudAccountController {
         return ResultHolder.success(cloudAccountService.getAccountBalance(id));
     }
 
+    @GetMapping("/platform")
+    @Operation(summary = "获取当前云平台所有供应商", description = "获取当前云平台所有供应商")
+    public ResultHolder<List<PlatformResponse>> getPlatform() {
+        List<PlatformResponse> platformResponses = cloudAccountService.getPlatforms();
+        return ResultHolder.success(platformResponses);
+    }
 }

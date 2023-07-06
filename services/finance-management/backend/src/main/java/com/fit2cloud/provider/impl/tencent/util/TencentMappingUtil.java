@@ -1,10 +1,10 @@
 package com.fit2cloud.provider.impl.tencent.util;
 
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.constants.BillModeConstants;
+import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
 import com.fit2cloud.provider.impl.tencent.entity.csv.TencentCsvModel;
 import com.fit2cloud.provider.impl.tencent.entity.request.SyncBillRequest;
 import com.tencentcloudapi.billing.v20180709.models.BillDetail;
@@ -56,7 +56,7 @@ public class TencentMappingUtil {
         cloudBill.setProductId(csvModel.getProductName());
         cloudBill.setTotalCost(BigDecimal.valueOf(csvModel.getComponentOriginalPrice()));
         cloudBill.setRealTotalCost(BigDecimal.valueOf(csvModel.getDiscountTotalPrice()));
-        cloudBill.setProvider(PlatformConstants.fit2cloud_tencent_platform.name());
+        cloudBill.setProvider(TencentCloudProvider.tencentBaseCloudProvider.getCloudAccountMeta().platform);
         return cloudBill;
     }
 
@@ -86,7 +86,7 @@ public class TencentMappingUtil {
         cloudBill.setProductName(item.getBusinessCodeName());
         cloudBill.setProductDetail(item.getProductCodeName());
         cloudBill.setProductId(item.getBusinessCode());
-        cloudBill.setProvider(PlatformConstants.fit2cloud_tencent_platform.name());
+        cloudBill.setProvider(TencentCloudProvider.tencentBaseCloudProvider.getCloudAccountMeta().platform);
         BillDetailComponent[] componentSet = item.getComponentSet();
         DoubleSummaryStatistics cost = Arrays.stream(componentSet).collect(Collectors.summarizingDouble(c -> Double.parseDouble(c.getCost())));
         DoubleSummaryStatistics realTotalCost = Arrays.stream(componentSet).collect(Collectors.summarizingDouble(c -> Double.parseDouble(c.getRealCost())));

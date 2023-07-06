@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.autoconfigure.ThreadPoolConfig;
 import com.fit2cloud.base.entity.*;
 import com.fit2cloud.base.mapper.BaseJobRecordResourceMappingMapper;
@@ -21,7 +22,6 @@ import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.constants.RecycleBinStatusConstants;
 import com.fit2cloud.common.constants.ResourceTypeConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
@@ -41,19 +41,17 @@ import com.fit2cloud.dao.mapper.VmCloudServerMapper;
 import com.fit2cloud.dto.InitJobRecordDTO;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.dto.VmCloudServerDTO;
-import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.ICreateServerRequest;
-import com.fit2cloud.provider.constants.CreateServerRequestConstants;
-import com.fit2cloud.provider.constants.F2CDiskStatus;
-import com.fit2cloud.provider.constants.F2CInstanceStatus;
-import com.fit2cloud.provider.constants.ProviderConstants;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
-import com.fit2cloud.provider.entity.request.BaseDiskRequest;
-import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.*;
+import com.fit2cloud.vm.ICloudProvider;
+import com.fit2cloud.vm.ICreateServerRequest;
+import com.fit2cloud.vm.constants.F2CDiskStatus;
+import com.fit2cloud.vm.constants.F2CInstanceStatus;
+import com.fit2cloud.vm.entity.F2CDisk;
+import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.fit2cloud.vm.entity.request.BaseDiskRequest;
+import com.fit2cloud.vm.entity.result.CheckCreateServerResult;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
@@ -450,12 +448,12 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 vmCloudServer.setInstanceStatus(beforeStatus);
                 modifyResource.accept(vmCloudServer);
                 CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
-                Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
+                ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform());
                 HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
                 params.put("uuid", vmCloudServer.getInstanceUuid());
 
                 try {
-                    boolean result = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(params), execMethod);
+                    Boolean result = execMethod.apply(iCloudProvider, JsonUtil.toJSONString(params));
                     if (result) {
                         vmCloudServer.setInstanceStatus(afterStatus);
                         vmCloudServer.setLastOperateTime(DateUtil.getSyncTime());
@@ -540,17 +538,15 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
     public boolean createServer(CreateServerRequest request) {
 
         CloudAccount cloudAccount = cloudAccountService.getById(request.getAccountId());
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform());
 
-        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
-
-        Class<? extends ICreateServerRequest> createRequest = CreateServerRequestConstants.valueOf(cloudAccount.getPlatform()).getCreateRequest();
+        Class<? extends ICreateServerRequest> createRequest = iCloudProvider.getCreateServerRequestClass();
 
         ICreateServerRequest requestObj = JsonUtil.parseObject(request.getCreateRequest(), createRequest);
 
         //设置账号信息
         requestObj.setCredential(cloudAccount.getCredential());
-
-        CheckCreateServerResult checkCreateServerResult = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(requestObj), ICloudProvider::validateServerCreateRequest);
+        CheckCreateServerResult checkCreateServerResult = iCloudProvider.validateServerCreateRequest(JsonUtil.toJSONString(requestObj));
         if (!checkCreateServerResult.isPass()) {
             throw new RuntimeException(checkCreateServerResult.getErrorInfo());
         }
@@ -571,7 +567,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             requestObj.setId(uuid);
 
             //先插入数据库占位
-            F2CVirtualMachine tempData = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(requestObj), ICloudProvider::getSimpleServerByCreateRequest);
+            F2CVirtualMachine tempData = iCloudProvider.getSimpleServerByCreateRequest(JsonUtil.toJSONString(requestObj));
 
             VmCloudServer vmCloudServer = new VmCloudServer();
             BeanUtils.copyProperties(tempData, vmCloudServer);
@@ -638,11 +634,11 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 modifyResource.accept(vmCloudServer);
 
                 CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
-                Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
+                ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform());
                 HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
                 params.put("id", vmCloudServer.getId());
                 try {
-                    F2CVirtualMachine result = CommonUtil.exec(cloudProvider, createRequest, ICloudProvider::createVirtualMachine);
+                    F2CVirtualMachine result = iCloudProvider.createVirtualMachine(createRequest);
                     vmCloudServer = SyncProviderServiceImpl.toVmCloudServer(result, vmCloudServer.getAccountId(), DateUtil.getSyncTime());
                     jobRecord.setStatus(JobStatusConstants.SUCCESS);
                 } catch (Exception e) {
@@ -655,11 +651,12 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
                 //设置密码
                 try {
-                    if (cloudProvider.getConstructor().newInstance().supportResetPassword()) {
+                    if (iCloudProvider.supportResetPassword()) {
                         Map<String, Object> map = JsonUtil.parseObject(createRequest, new TypeReference<>() {
                         });
                         map.put("serverId", vmCloudServer.getInstanceName());
-                        boolean reset = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(map), ICloudProvider::resetPassword);
+                        boolean reset = iCloudProvider.resetPassword(JsonUtil.toJSONString(map));
+                        ;
                     }
                 } catch (Exception e) {
                     //设置密码失败的话仅将任务置为失败
@@ -758,8 +755,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
         params.put("instanceUuid", vmCloudServer.getInstanceUuid());
 
-        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(cloudAccount.getPlatform()).getCloudProvider();
-        List<F2CDisk> f2CDisks = CommonUtil.exec(cloudProvider, JsonUtil.toJSONString(params), ICloudProvider::getVmF2CDisks);
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform());
+        List<F2CDisk> f2CDisks = iCloudProvider.getVmF2CDisks(JsonUtil.toJSONString(params));
         for (F2CDisk f2CDisk : f2CDisks) {
             if (StringUtils.isEmpty(f2CDisk.getDiskChargeType())) {
                 f2CDisk.setDiskChargeType(vmCloudServer.getInstanceChargeType());
@@ -853,9 +850,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public FormObject getConfigUpdateForm(String platform) {
-        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(platform).getCloudProvider();
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, platform);
         try {
-            return cloudProvider.getConstructor().newInstance().getConfigUpdateForm();
+            return iCloudProvider.getConfigUpdateForm();
         } catch (Exception e) {
             throw new RuntimeException("Failed to get config update form!" + e.getMessage(), e);
         }
@@ -863,9 +860,9 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
 
     @Override
     public String calculateConfigUpdatePrice(String platform, Map<String, Object> params) {
-        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(platform).getCloudProvider();
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, platform);
         try {
-            return (String) FormUtil.exec(cloudProvider.getName(), false, "calculateConfigUpdatePrice", params);
+            return iCloudProvider.calculateConfigUpdatePrice(JsonUtil.toJSONString(params));
         } catch (Exception e) {
             throw new RuntimeException("Failed to get config update price!" + e.getMessage(), e);
         }

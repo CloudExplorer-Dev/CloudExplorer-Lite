@@ -2,7 +2,6 @@
 import { ref, onMounted, computed, reactive } from "vue";
 import { ElMessage } from "element-plus";
 import cloudAccountApi from "@commons/api/cloud_account";
-import { platformIcon } from "@commons/utils/platform";
 import type { Platform, CreateAccount } from "@commons/api/cloud_account/type";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
@@ -11,7 +10,7 @@ import CeIcon from "@commons/components/ce-icon/index.vue";
 import _ from "lodash";
 import MicroAppRouterUtil from "@commons/router/MicroAppRouterUtil";
 import CloudAccountCredentialForm from "@commons/business/cloud-account/CloudAccountCredentialForm.vue";
-
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 const props = withDefaults(
   defineProps<{
     showAside?: boolean;
@@ -151,22 +150,20 @@ function choosePlatform(p: string) {
  * 保存云账号
  */
 const submit = () => {
-  (credentialFormRef.value?.formRef as FormInstance)?.validate((valid) => {
-    if (valid) {
-      cloudAccountApi.save(form.value, loading).then((res) => {
-        if (props.type === "model") {
-          router.push({ name: "cloud_account_list" });
-        } else {
-          MicroAppRouterUtil.jumpToChildrenPath(
-            "management-center",
-            "/management-center/cloud_account/list",
-            router
-          );
-        }
-        ElMessage.success(t("commons.msg.save_success", "保存成功"));
-        emit("close");
-      });
-    }
+  credentialFormRef.value?.validate()?.then(() => {
+    cloudAccountApi.save(form.value, loading).then((res) => {
+      if (props.type === "model") {
+        router.push({ name: "cloud_account_list" });
+      } else {
+        MicroAppRouterUtil.jumpToChildrenPath(
+          "management-center",
+          "/management-center/cloud_account/list",
+          router
+        );
+      }
+      ElMessage.success(t("commons.msg.save_success", "保存成功"));
+      emit("close");
+    });
   });
 };
 </script>
@@ -245,11 +242,11 @@ const submit = () => {
                     @click="choosePlatform(platform.field)"
                   >
                     <div class="image-container">
-                      <el-image
+                      <PlatformIcon
+                        type="logo"
                         class="image"
-                        fit="contain"
-                        :src="platformIcon[platform.field].logo"
-                      ></el-image>
+                        :platform="platform.field"
+                      ></PlatformIcon>
                     </div>
                     <div class="border-line"></div>
                     <div
@@ -457,11 +454,12 @@ const submit = () => {
 
         .image-container {
           height: 100px;
-
+          display: flex;
+          justify-content: center;
+          align-items: center;
           .image {
             width: 160px;
             height: 38px;
-            margin: 30px 20px;
           }
         }
 

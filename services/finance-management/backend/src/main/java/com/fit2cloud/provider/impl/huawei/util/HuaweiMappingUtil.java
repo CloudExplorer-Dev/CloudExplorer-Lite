@@ -1,9 +1,9 @@
 package com.fit2cloud.provider.impl.huawei.util;
 
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.constants.BillModeConstants;
+import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;
 import com.fit2cloud.provider.impl.huawei.entity.csv.HuaweiBillCsvModel;
 import com.fit2cloud.provider.impl.huawei.entity.request.SyncBillRequest;
 import com.huaweicloud.sdk.bss.v2.model.ResFeeRecordV2;
@@ -34,7 +34,7 @@ public class HuaweiMappingUtil {
     public static CloudBill toCloudBill(HuaweiBillCsvModel huaweiBillCsvModel, SyncBillRequest request) {
         CloudBill cloudBill = new CloudBill();
         cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
-        cloudBill.setProvider(PlatformConstants.fit2cloud_huawei_platform.name());
+        cloudBill.setProvider(new HuaweiCloudProvider().getCloudAccountMeta().platform);
         cloudBill.setRegionId(huaweiBillCsvModel.getRegionId());
         cloudBill.setRegionName(huaweiBillCsvModel.getRegionName());
         cloudBill.setProjectId(huaweiBillCsvModel.getProjectId());
@@ -67,7 +67,7 @@ public class HuaweiMappingUtil {
     public static CloudBill toCloudBill(ResFeeRecordV2 item) {
         CloudBill cloudBill = new CloudBill();
         cloudBill.setId(UUID.randomUUID().toString().replace("-", ""));
-        cloudBill.setProvider(PlatformConstants.fit2cloud_huawei_platform.name());
+        cloudBill.setProvider(new HuaweiCloudProvider().getCloudAccountMeta().platform);
         cloudBill.setRegionId(item.getRegion());
         cloudBill.setRegionName(item.getRegionName());
         cloudBill.setProjectId(item.getEnterpriseProjectId());

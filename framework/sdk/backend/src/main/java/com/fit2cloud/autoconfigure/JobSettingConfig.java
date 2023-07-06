@@ -79,20 +79,15 @@ public class JobSettingConfig implements ApplicationContextAware {
         // 当前模块所有已存在的定时任务
         List<QuartzJobDetail> quartzJobDetails = schedulerService.list();
         // 默认参数缓存, 因为获取默认参数的区域是调取api
-        HashMap<JobConstants.Group, Map<String, Map<String, Object>>> paramsCache = new HashMap<>();
+        HashMap<String, Map<String, Map<String, Object>>> paramsCache = new HashMap<>();
         for (JobSetting localJob : jobSettings) {
-            Map<String, Object> params = MapUtils.isEmpty(localJob.getParams()) ? new HashMap<>() : new HashMap<>(localJob.getParams());
-            Arrays.stream(JobConstants.Group.values())
-                    .filter(group -> StringUtils.equals(group.name(), localJob.getJobGroup()))
-                    .findFirst()
-                    .ifPresent(group -> {
-                        if (group.equals(JobConstants.Group.SYSTEM_GROUP)) {
-                            initSystemJob(quartzJobDetails, localJob, params, group);
-                        } else {
-                            initCloudAccountJob(cloudAccounts, quartzJobDetails, paramsCache, localJob, params, group);
+            Map<String, Object> params = new HashMap<>();
+            if (localJob.getJobGroup().equals(JobConstants.DefaultGroup.SYSTEM_GROUP.name())) {
+                initSystemJob(quartzJobDetails, localJob, params);
+            } else {
+                initCloudAccountJob(cloudAccounts, quartzJobDetails, paramsCache, localJob, params);
 
-                        }
-                    });
+            }
         }
     }
 
@@ -104,32 +99,31 @@ public class JobSettingConfig implements ApplicationContextAware {
      * @param paramsCache      任务参数缓存
      * @param localJob         本地任务
      * @param params           本地任务参数
-     * @param group            任务分组
      */
-    private void initCloudAccountJob(List<CloudAccount> cloudAccounts, List<QuartzJobDetail> quartzJobDetails, HashMap<JobConstants.Group, Map<String, Map<String, Object>>> paramsCache, JobSetting localJob, Map<String, Object> params, JobConstants.Group group) {
+    private void initCloudAccountJob(List<CloudAccount> cloudAccounts, List<QuartzJobDetail> quartzJobDetails, HashMap<String, Map<String, Map<String, Object>>> paramsCache, JobSetting localJob, Map<String, Object> params) {
         for (CloudAccount cloudAccount : cloudAccounts) {
             if (localJob.getCloudAccountShow().test(cloudAccount.getPlatform())) {
                 quartzJobDetails
                         .stream()
-                        .filter(job -> StringUtils.equals(group.name(), job.getJobGroup()) &&
-                                StringUtils.equals(group.getJobName.apply(localJob.getJobName(), cloudAccount.getId()), job.getJobName()))
+                        .filter(job -> StringUtils.equals(localJob.getJobGroup(), job.getJobGroup()) &&
+                                StringUtils.equals(JobConstants.getCloudAccountJobName(localJob.getJobName(), cloudAccount.getId()), job.getJobName()))
                         .findFirst().orElseGet(() -> {
                             // 初始化任务参数
-                            if (!paramsCache.getOrDefault(group, new HashMap<>()).containsKey(cloudAccount.getId())) {
-                                Map<String, Object> defaultParams = group.getDefaultParams.apply(cloudAccount);
-                                if (MapUtils.isNotEmpty(paramsCache.get(group))) {
-                                    paramsCache.get(group).put(cloudAccount.getId(), defaultParams);
+                            if (!paramsCache.getOrDefault(localJob.getJobGroup(), new HashMap<>()).containsKey(cloudAccount.getId())) {
+                                Map<String, Object> defaultParams = localJob.getDefaultParams().apply(cloudAccount);
+                                if (MapUtils.isNotEmpty(paramsCache.get(localJob.getJobGroup()))) {
+                                    paramsCache.get(localJob.getJobGroup()).put(cloudAccount.getId(), defaultParams);
                                 } else {
-                                    paramsCache.put(group, new HashMap<>(Map.of(cloudAccount.getId(), defaultParams)));
+                                    paramsCache.put(localJob.getJobGroup(), new HashMap<>(Map.of(cloudAccount.getId(), defaultParams)));
                                 }
                             }
                             HashMap<String, Object> cloudAccountJobParams = new HashMap<>(params);
-                            cloudAccountJobParams.putAll(paramsCache.get(group).get(cloudAccount.getId()));
+                            cloudAccountJobParams.putAll(paramsCache.get(localJob.getJobGroup()).get(cloudAccount.getId()));
                             // todo 云账号相关定时任务不存在 则创建
                             if (localJob.getJobType().equals(JobConstants.JobType.CRON)) {
                                 schedulerService.addJob(
                                         localJob.getJobHandler(),
-                                        group.getJobName.apply(localJob.getJobName(), cloudAccount.getId()),
+                                        JobConstants.getCloudAccountJobName(localJob.getJobName(), cloudAccount.getId()),
                                         localJob.getJobGroup(),
                                         localJob.getDescription(),
                                         localJob.getCronExpression(),
@@ -137,7 +131,7 @@ public class JobSettingConfig implements ApplicationContextAware {
                             } else if (localJob.getJobType().equals(JobConstants.JobType.INTERVAL)) {
                                 schedulerService.addJob(
                                         localJob.getJobHandler(),
-                                        group.getJobName.apply(localJob.getJobName(), cloudAccount.getId()),
+                                        JobConstants.getCloudAccountJobName(localJob.getJobName(), cloudAccount.getId()),
                                         localJob.getJobGroup(),
                                         localJob.getDescription(),
                                         cloudAccountJobParams,
@@ -157,13 +151,12 @@ public class JobSettingConfig implements ApplicationContextAware {
      * @param quartzJobDetails 存量任务
      * @param localJob         本地任务
      * @param params           本地任务参数
-     * @param group            任务组
      */
-    private void initSystemJob(List<QuartzJobDetail> quartzJobDetails, JobSetting localJob, Map<String, Object> params, JobConstants.Group group) {
+    private void initSystemJob(List<QuartzJobDetail> quartzJobDetails, JobSetting localJob, Map<String, Object> params) {
         quartzJobDetails
                 .stream()
-                .filter(job -> StringUtils.equals(group.name(), job.getJobGroup()) &&
-                        StringUtils.equals(group.getJobName.apply(localJob.getJobName(), null), job.getJobName()))
+                .filter(job -> StringUtils.equals(localJob.getJobGroup(), job.getJobGroup()) &&
+                        StringUtils.equals(localJob.getJobName(), job.getJobName()))
                 .findFirst()
                 .map(job -> {
                     // 系统定时任务直接修改
@@ -178,11 +171,11 @@ public class JobSettingConfig implements ApplicationContextAware {
                 }).orElseGet(() -> {
                     // 云账号相关定时任务不存在 则创建
                     if (localJob.getJobType().equals(JobConstants.JobType.CRON)) {
-                        schedulerService.addJob(localJob.getJobHandler(), group.getJobName.apply(localJob.getJobName(), null),
+                        schedulerService.addJob(localJob.getJobHandler(), localJob.getJobName(),
                                 localJob.getJobGroup(), localJob.getDescription(), localJob.getCronExpression(), params);
                     }
                     if (localJob.getJobType().equals(JobConstants.JobType.INTERVAL)) {
-                        schedulerService.addJob(localJob.getJobHandler(), group.getJobName.apply(localJob.getJobName(), null),
+                        schedulerService.addJob(localJob.getJobHandler(), localJob.getJobName(),
                                 localJob.getJobGroup(), localJob.getDescription(), params, localJob.getInterval(), localJob.getUnit());
                     }
                     return null;

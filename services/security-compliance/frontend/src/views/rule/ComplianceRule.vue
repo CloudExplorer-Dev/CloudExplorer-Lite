@@ -34,7 +34,7 @@
       <el-table-column
         prop="platform"
         label="云平台"
-        width="100"
+        width="150"
         :column-key="'platform'"
         :filters="
           Object.keys(platformIcon).map((key) => ({
@@ -47,7 +47,9 @@
         <template #default="scope">
           <div style="display: flex; align-items: center">
             <PlatformIcon :platform="scope.row.platform" />
-            <span>{{ platformIcon[scope.row.platform].name }}</span>
+            <span style="margin-left: 8px; width: calc(100% - 30px)">{{
+              platformIcon[scope.row.platform].name
+            }}</span>
           </div>
         </template>
       </el-table-column>

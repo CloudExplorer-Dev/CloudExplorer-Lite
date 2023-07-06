@@ -23,8 +23,10 @@ const props = withDefaults(
     readOnly?: boolean;
     // 收集到的数据
     modelValue: SimpleMap<any>;
+    // 默认每个宽度
+    defaultItemWidth: string;
   }>(),
-  { readOnly: false }
+  { readOnly: false, defaultItemWidth: "75%" }
 );
 // 因为emit是异步的 发送后数据未更新,所有需要一个本地变量桥接
 const cacheModelValue = ref<SimpleMap<any>>(props.modelValue);
@@ -73,7 +75,11 @@ const relationChange = (formItem: FormView) => {
             ...cacheModelValue.value,
             ...props.otherParams,
           },
-          resourceLoading
+          resourceLoading,
+          filterNullValue({
+            execModule: formItem.execModule,
+            pluginId: formItem.pluginId,
+          })
         )
         .then((ok) => {
           relationItem.optionList = ok.data;
@@ -83,6 +89,14 @@ const relationChange = (formItem: FormView) => {
   });
 };
 
+const filterNullValue = (obj: any) => {
+  return Object.keys(obj)
+    .filter((key) => obj[key] != null && obj[key] != undefined)
+    .map((key) => ({
+      [key]: obj[key],
+    }))
+    .reduce((pre, next) => ({ ...pre, ...next }));
+};
 /**
  * 获取列表数据
  * @param formItem
@@ -104,7 +118,11 @@ const listOptions = (formItem: FormView, loading: Ref<boolean>) => {
           ...props.modelValue,
           ...props.otherParams,
         },
-        loading
+        loading,
+        filterNullValue({
+          execModule: formItem.execModule,
+          pluginId: formItem.pluginId,
+        })
       )
       .then((ok) => {
         formItem.optionList = ok.data;
@@ -168,6 +186,7 @@ defineExpose({
         :listOptions="listOptions"
         :readOnly="readOnly"
         :initDefaultData="initDefaultData"
+        :defaultItemWidth="defaultItemWidth"
       >
       </CeFormItem>
     </div>

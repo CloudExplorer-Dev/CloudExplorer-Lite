@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.tencent.api;
 
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.PageUtil;
@@ -9,6 +8,7 @@ import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.constants.BillingSettingConstants;
 import com.fit2cloud.constants.ErrorCodeConstants;
 import com.fit2cloud.es.entity.CloudBill;
+import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
 import com.fit2cloud.provider.impl.tencent.entity.csv.TencentCsvModel;
 import com.fit2cloud.provider.impl.tencent.entity.request.ListBucketMonthRequest;
 import com.fit2cloud.provider.impl.tencent.entity.request.SyncBillRequest;
@@ -86,7 +86,7 @@ public class TencentBucketApi {
                 entry.getValue()
                         .map(cosObjectSummary ->
                                 CsvUtil.writeFile(
-                                        BillingSettingConstants.billingPath + File.separator + PlatformConstants.fit2cloud_tencent_platform.name() + File.separator + request.getCloudAccountId(),
+                                        BillingSettingConstants.billingPath + File.separator + TencentCloudProvider.tencentBaseCloudProvider.getCloudAccountMeta().platform + File.separator + request.getCloudAccountId(),
                                         cosObjectSummary.getKey(),
                                         cosObjectSummary.getSize(),
                                         () -> {

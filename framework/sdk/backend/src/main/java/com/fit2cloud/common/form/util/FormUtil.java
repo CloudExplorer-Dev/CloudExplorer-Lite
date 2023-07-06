@@ -1,5 +1,6 @@
 package com.fit2cloud.common.form.util;
 
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.common.form.annotaion.FormConfirmInfo;
 import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
@@ -34,7 +35,7 @@ public class FormUtil {
                     objectMap.put("group", annotation.group());
                     objectMap.put("name", annotation.name());
                     objectMap.put("description", annotation.description());
-                    objectMap.put("inline",annotation.inline());
+                    objectMap.put("inline", annotation.inline());
                     return objectMap;
                 }));
 
@@ -93,6 +94,12 @@ public class FormUtil {
             map.put("regexpDescription", annotation.regexpDescription());
             map.put("regexList", JsonUtil.parseArray(annotation.regexList()));
             map.put("encrypted", annotation.encrypted());
+            if (StringUtils.isNotEmpty(annotation.pluginId())) {
+                map.put("pluginId", annotation.pluginId());
+            }
+            if (StringUtils.isNotEmpty(annotation.execModule())) {
+                map.put("execModule", annotation.execModule());
+            }
             if (StringUtils.isNotEmpty(annotation.method())) {
                 map.put("method", annotation.method());
                 map.put("clazz", annotation.clazz().getName());
@@ -142,15 +149,18 @@ public class FormUtil {
      * @param params 参数
      * @return 执行返回值
      */
-    public static Object exec(String clazz, boolean serviceMethod, String method, Map<String, Object> params) {
+    public static Object exec(String clazz, boolean serviceMethod, String method, String pluginId, Map<String, Object> params) {
         try {
             if (serviceMethod) {
                 return MethodUtils.invokeMethod(SpringUtil.getBean(Class.forName(clazz)), true, method, JsonUtil.toJSONString(params));
             } else {
-                return MethodUtils.invokeMethod(Class.forName(clazz).getConstructor().newInstance(), true, method, JsonUtil.toJSONString(params));
+                if (StringUtils.isNotEmpty(pluginId)) {
+                    Class<?> aClass = PluginsContextHolder.pluginManager.getPluginClassLoader(pluginId).loadClass(clazz);
+                    return MethodUtils.invokeMethod(aClass.getConstructor().newInstance(), true, method, JsonUtil.toJSONString(params));
+                } else {
+                    return MethodUtils.invokeMethod(Class.forName(clazz).getConstructor().newInstance(), true, method, JsonUtil.toJSONString(params));
+                }
             }
-
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

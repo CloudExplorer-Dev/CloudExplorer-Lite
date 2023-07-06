@@ -5,7 +5,6 @@ import com.fit2cloud.common.platform.credential.impl.VsphereCredential;
 import com.fit2cloud.common.provider.impl.vsphere.utils.ClsApiClient;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VapiAuthenticationHelper;
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
-import com.fit2cloud.provider.constants.F2CInstanceStatus;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereTemplate;
 import com.fit2cloud.provider.impl.vsphere.entity.request.VsphereVmCreateRequest;
 import com.vmware.vapi.bindings.StubConfiguration;
@@ -17,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import com.fit2cloud.vm.constants.F2CInstanceStatus;
 
 import java.rmi.RemoteException;
 import java.util.*;

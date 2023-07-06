@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.json.JsonData;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
@@ -13,8 +14,9 @@ import com.fit2cloud.base.service.IBaseJobRecordResourceMappingService;
 import com.fit2cloud.common.constants.JobConstants;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.constants.JobTypeConstants;
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.common.utils.JsonUtil;
@@ -29,6 +31,7 @@ import com.fit2cloud.service.IBillDimensionSettingService;
 import com.fit2cloud.service.SyncService;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
@@ -39,7 +42,6 @@ import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -254,7 +256,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         Map<String, Object> defaultParams = null;
         try {
             if (MapUtils.isEmpty(billSetting)) {
-                defaultParams = PlatformConstants.valueOf(cloudAccount.getPlatform()).getBillClass().getConstructor().newInstance().getDefaultParams();
+                defaultParams = Map.of();
             } else {
                 defaultParams = billSetting;
             }
@@ -402,4 +404,9 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
 
     }
 
+    @Override
+    protected Credential getCredential(CloudAccount cloudAccount) {
+        IBaseCloudProvider platformExtension = PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, cloudAccount.getPlatform());
+        return JsonUtil.parseObject(cloudAccount.getCredential(), platformExtension.getCloudAccountMeta().credential);
+    }
 }

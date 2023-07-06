@@ -1,32 +1,47 @@
 package com.fit2cloud.provider.impl.openstack;
 
+import com.fit2cloud.common.constants.ChargeTypeConstants;
 import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.credential.impl.OpenStackCredential;
+import com.fit2cloud.common.provider.entity.F2CBalance;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
+import com.fit2cloud.common.provider.impl.openstack.OpenStackBaseCloudProvider;
 import com.fit2cloud.common.provider.impl.openstack.entity.request.OpenStackBaseRequest;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.provider.AbstractCloudProvider;
-import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.entity.*;
-import com.fit2cloud.provider.entity.request.BaseDiskRequest;
-import com.fit2cloud.provider.entity.request.GetMetricsRequest;
-import com.fit2cloud.provider.entity.result.CheckCreateServerResult;
 import com.fit2cloud.provider.impl.openstack.api.OpenStackCloudApi;
 import com.fit2cloud.provider.impl.openstack.constants.OpenstackPeriodOption;
 import com.fit2cloud.provider.impl.openstack.entity.OpenStackFlavor;
 import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
+import com.fit2cloud.vm.AbstractCloudProvider;
+import com.fit2cloud.vm.ICloudProvider;
+import com.fit2cloud.vm.ICreateServerRequest;
+import com.fit2cloud.vm.constants.ActionInfoConstants;
+import com.fit2cloud.vm.entity.*;
+import com.fit2cloud.vm.entity.request.BaseDiskRequest;
+import com.fit2cloud.vm.entity.request.GetMetricsRequest;
+import com.fit2cloud.vm.entity.result.CheckCreateServerResult;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.openstack4j.model.compute.Flavor;
 import org.openstack4j.model.network.Network;
 import org.openstack4j.model.network.SecurityGroup;
+import org.pf4j.Extension;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+@Extension
 public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCredential> implements ICloudProvider {
+    public static final OpenStackBaseCloudProvider openStackBaseCloudProvider = new OpenStackBaseCloudProvider();
+
+    private static final Info info = new Info("vm-service", ActionInfoConstants.all(
+            ActionInfoConstants.SYNC_DATA_STORE_MACHINE_METRIC_MONITOR
+    ), Map.of());
+
+    @Override
+    public Class<? extends ICreateServerRequest> getCreateServerRequestClass() {
+        return OpenStackServerCreateRequest.class;
+    }
 
     @Override
     public FormObject getCreateServerForm() {
@@ -225,5 +240,25 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
         openstackCalculateConfigPriceRequest.setOpenStackCredential(calculateConfigUpdatePriceRequest.getOpenStackCredential());
         openstackCalculateConfigPriceRequest.setAccountId(calculateConfigUpdatePriceRequest.getCloudAccountId());
         return OpenStackCloudApi.calculateConfigPrice(openstackCalculateConfigPriceRequest);
+    }
+
+    @Override
+    public F2CBalance getAccountBalance(String getAccountBalanceRequest) {
+        return openStackBaseCloudProvider.getAccountBalance(getAccountBalanceRequest);
+    }
+
+    @Override
+    public CloudAccountMeta getCloudAccountMeta() {
+        return openStackBaseCloudProvider.getCloudAccountMeta();
+    }
+
+    @Override
+    public Info getInfo() {
+        return info;
+    }
+
+    public List<DefaultKeyValue<String, String>> getChargeType(String req) {
+        return Arrays.stream(ChargeTypeConstants.values())
+                .map(model -> new DefaultKeyValue<>(model.getMessage(), model.getCode())).toList();
     }
 }

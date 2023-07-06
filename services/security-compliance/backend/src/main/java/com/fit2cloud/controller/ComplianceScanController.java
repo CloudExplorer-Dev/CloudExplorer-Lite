@@ -1,19 +1,25 @@
 package com.fit2cloud.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
+import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.common.advice.annnotaion.TokenRenewal;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceResourceRequest;
 import com.fit2cloud.controller.request.compliance_scan.ComplianceSyncRequest;
 import com.fit2cloud.controller.response.compliance_scan.ComplianceResourceResponse;
 import com.fit2cloud.controller.response.compliance_scan.SupportCloudAccountResourceResponse;
+import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IComplianceScanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 
 /**
@@ -36,7 +43,17 @@ import java.util.List;
 public class ComplianceScanController {
     @Resource
     private IComplianceScanService complianceScanService;
+    @Resource
+    private IBaseCloudAccountService cloudAccountService;
 
+    @GetMapping("/cloud_account")
+    public ResultHolder<List<CloudAccount>> listCloudAccount() {
+        List<ICloudProvider> iCloudProviderList = PluginsContextHolder.getExtensions(ICloudProvider.class);
+        List<CloudAccount> cloudAccounts = cloudAccountService.list()
+                .stream().filter(cloudAccount -> iCloudProviderList.stream().anyMatch(p -> StringUtils.equals(p.getCloudAccountMeta().platform, cloudAccount.getPlatform())))
+                .toList();
+        return ResultHolder.success(cloudAccounts);
+    }
 
     @GetMapping("/resource/{complianceRuleId}/{currentPage}/{limit}")
     @Operation(summary = "分页查询资源")

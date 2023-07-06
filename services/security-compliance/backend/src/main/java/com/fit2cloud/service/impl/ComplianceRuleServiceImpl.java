@@ -7,10 +7,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.job.actuator.JobActuator;
 import com.fit2cloud.common.page.PageImpl;
-import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
@@ -27,8 +27,8 @@ import com.fit2cloud.dao.entity.ComplianceScanResourceResult;
 import com.fit2cloud.dao.entity.ComplianceScanResult;
 import com.fit2cloud.dao.mapper.ComplianceRuleMapper;
 import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.service.*;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +36,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -65,8 +64,8 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
                 .filter(instance -> instance.name().equals(resourceType))
                 .findFirst()
                 .orElseThrow(() -> new Fit2cloudException(4000, "不支持的资源类型"));
-
-        return CommonUtil.exec(ICloudProvider.of(platform), instanceTypeConstants.getListInstanceSearchField()).stream().map(instanceSearchField -> {
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, platform);
+        return instanceTypeConstants.getListInstanceSearchField().apply(iCloudProvider).stream().map(instanceSearchField -> {
             ComplianceRuleSearchFieldResponse searchFieldResponse = new ComplianceRuleSearchFieldResponse();
             BeanUtils.copyProperties(instanceSearchField, searchFieldResponse);
             searchFieldResponse.setCompares(instanceSearchField.getFieldType().getCompares().stream().map(c -> new DefaultKeyValue<>(c.getMessage(), c.name())).toList());
@@ -138,11 +137,12 @@ public class ComplianceRuleServiceImpl extends ServiceImpl<ComplianceRuleMapper,
 
     @Override
     public List<SupportPlatformResourceResponse> listSupportPlatformResource() {
-        return Arrays.stream(ProviderConstants.values()).map(platform -> {
-            List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> exec = CommonUtil.exec(ICloudProvider.of(platform.name()), ICloudProvider::getResourceSyncDimensionConstants);
+        List<ICloudProvider> iCloudProviderList = PluginsContextHolder.getExtensions(ICloudProvider.class);
+        return iCloudProviderList.stream().map(provider -> {
+            List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> exec = provider.getResourceSyncDimensionConstants();
             List<DefaultKeyValue<String, String>> resourceTypes = exec.stream().map(resourceTypeConstants -> new DefaultKeyValue<>(resourceTypeConstants.getKey().getMessage(), resourceTypeConstants.getKey().name())).toList();
             SupportPlatformResourceResponse supportPlatformResourceResponse = new SupportPlatformResourceResponse();
-            supportPlatformResourceResponse.setPlatform(platform.name());
+            supportPlatformResourceResponse.setPlatform(provider.getCloudAccountMeta().platform);
             supportPlatformResourceResponse.setResourceTypes(resourceTypes);
             return supportPlatformResourceResponse;
         }).toList();

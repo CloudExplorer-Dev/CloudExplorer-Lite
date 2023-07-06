@@ -7,12 +7,12 @@ import com.fit2cloud.common.form.annotaion.FormGroupInfo;
 import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.constants.InputType;
 import com.fit2cloud.common.provider.impl.vsphere.VsphereBaseCloudProvider;
-import com.fit2cloud.provider.ICreateServerRequest;
 import com.fit2cloud.provider.impl.vsphere.VsphereCloudProvider;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.service.impl.VmCloudImageServiceImpl;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import com.fit2cloud.vm.ICreateServerRequest;
 
 import java.util.List;
 
@@ -60,7 +60,7 @@ public class VsphereVmCreateRequest extends VsphereVmBaseRequest implements ICre
 
     @Form(inputType = InputType.Radio,
             label = "付费方式",
-            clazz = VsphereBaseCloudProvider.class,
+            clazz = VsphereCloudProvider.class,
             method = "getChargeType",
             textField = "key",
             valueField = "value",

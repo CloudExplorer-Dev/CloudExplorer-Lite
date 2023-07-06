@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.RecycleBin;
 import com.fit2cloud.base.entity.VmCloudDisk;
@@ -39,15 +40,14 @@ import com.fit2cloud.dao.mapper.VmCloudDiskMapper;
 import com.fit2cloud.dao.mapper.VmCloudServerMapper;
 import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
-import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.constants.DeleteWithInstance;
-import com.fit2cloud.provider.constants.F2CDiskStatus;
-import com.fit2cloud.provider.constants.F2CInstanceStatus;
-import com.fit2cloud.provider.constants.ProviderConstants;
-import com.fit2cloud.provider.entity.F2CDisk;
 import com.fit2cloud.provider.impl.vsphere.util.ResourceConstants;
 import com.fit2cloud.service.*;
 import com.fit2cloud.utils.ConvertUtils;
+import com.fit2cloud.vm.ICloudProvider;
+import com.fit2cloud.vm.constants.DeleteWithInstance;
+import com.fit2cloud.vm.constants.F2CDiskStatus;
+import com.fit2cloud.vm.constants.F2CInstanceStatus;
+import com.fit2cloud.vm.entity.F2CDisk;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -191,9 +191,9 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
 
     @Override
     public FormObject getCreateDiskForm(String platform) {
-        Class<? extends ICloudProvider> cloudProvider = ProviderConstants.valueOf(platform).getCloudProvider();
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, platform);
         try {
-            return cloudProvider.getConstructor().newInstance().getCreateDiskForm();
+            return iCloudProvider.getCreateDiskForm();
         } catch (Exception e) {
             throw new RuntimeException("Failed to get create disk form!" + e.getMessage(), e);
         }

@@ -4,9 +4,9 @@ import com.aliyun.ecs20140526.models.AttachDiskRequest;
 import com.aliyun.ecs20140526.models.DescribeDisksRequest;
 import com.aliyun.ecs20140526.models.DescribeInstancesRequest;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.provider.constants.DeleteWithInstance;
-import com.fit2cloud.provider.entity.request.BaseDiskAttachRequest;
 import lombok.Data;
+import com.fit2cloud.vm.constants.DeleteWithInstance;
+import com.fit2cloud.vm.entity.request.BaseDiskAttachRequest;
 
 /**
  * Author: LiuDi

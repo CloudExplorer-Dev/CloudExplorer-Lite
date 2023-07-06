@@ -7,8 +7,8 @@ import type {
 } from "@commons/api/cloud_account/type";
 import { useI18n } from "vue-i18n";
 import type { FormInstance, FormRules } from "element-plus";
-import CeIcon from "@commons/components/ce-icon/index.vue";
-
+import CeForm from "@commons/components/ce-form/index.vue";
+import type { FormView } from "@commons/components/ce-form/type";
 const props = withDefaults(
   defineProps<{
     modelValue?: CreateAccount | UpdateAccount;
@@ -26,11 +26,14 @@ const props = withDefaults(
     type: "model",
   }
 );
-
+const formViewData = computed(() => {
+  return [...props.activePlatform.credentialForm];
+});
 const { t } = useI18n();
 // 校验实例对象
 const formRef = ref<FormInstance>();
 
+const accountFormRef = ref<FormInstance>();
 const emit = defineEmits(["update:modelValue"]);
 
 const form = computed<CreateAccount | UpdateAccount>({
@@ -62,34 +65,30 @@ const rules = reactive<FormRules>({
   ],
 });
 
-function validate(): Promise<boolean> | undefined {
-  return formRef.value?.validate();
+function validate(): Promise<boolean | undefined> | undefined {
+  return accountFormRef.value?.validate().then(() => {
+    return formRef.value?.validate();
+  });
 }
 
 defineExpose({
   validate,
   formRef,
 });
-
-function jumpTo(url: string) {
-  if (url) {
-    window.open(url, "_blank");
-  }
-}
 </script>
 <template>
   <el-form
-    ref="formRef"
-    :model="form"
     :inline="true"
     status-icon
     label-width="130px"
     label-suffix=":"
+    :model="form"
+    ref="accountFormRef"
     label-position="top"
     :class="{ 'model-form': type === 'model' }"
   >
     <el-form-item
-      style="width: 100%"
+      style="width: 100%; margin-right: 0px"
       :label="t('cloud_account.name', '云账号名称')"
       prop="name"
       :rules="rules.name"
@@ -100,63 +99,20 @@ function jumpTo(url: string) {
         :placeholder="t('cloud_account.name_placeholder', '请输入云账号名称')"
       />
     </el-form-item>
-    <el-form-item
-      style="width: 100%; position: relative"
-      v-for="item in activePlatform?.credentialForm"
-      :prop="`credential.${item.field}`"
-      :key="item.field"
-      :label="item.label"
-      :rules="[
-        {
-          message:
-            item.label + t('cloud_account.field_is_not_null', '字段不能为空'),
-          trigger: 'blur',
-          required: item.required,
-        },
-      ]"
-    >
-      <template #label>
-        {{ item.label }}
-        <el-tooltip
-          effect="dark"
-          v-if="item.hint"
-          :key="(hint = JSON.parse(item.hint))"
-        >
-          <template #content>
-            <div class="tooltip-title" v-if="hint.title">
-              {{ hint.title }}
-            </div>
-            <pre class="tooltip-content" v-if="hint.content">{{
-              hint.content
-            }}</pre>
-          </template>
-          <CeIcon code="icon-maybe_outlined" size="1em" />
-        </el-tooltip>
-        <div
-          style="float: right; color: var(--el-color-primary); cursor: pointer"
-          v-if="item.extraInfo"
-          :key="(extraInfo = JSON.parse(item.extraInfo))"
-          @click="jumpTo(extraInfo?.url)"
-        >
-          {{ extraInfo?.text }}
-        </div>
-      </template>
-
-      <el-input
-        v-model.trim="form.credential[item.field]"
-        :type="item.inputType === 'Text' ? 'text' : ''"
-        :show-password="item.inputType === 'Password'"
-        autocomplete="new-password"
-        v-if="item.inputType === 'Text' || item.inputType === 'Password'"
-      />
-
-      <el-switch
-        v-model="form.credential[item.field]"
-        v-if="item.inputType === 'SwitchBtn'"
-      >
-      </el-switch>
-    </el-form-item>
   </el-form>
+  <CeForm
+    :inline="true"
+    status-icon
+    label-width="130px"
+    label-suffix=":"
+    label-position="top"
+    :class="{ 'model-form': type === 'model' }"
+    v-model="form.credential"
+    ref="formRef"
+    default-item-width="100%"
+    :form-view-data="formViewData"
+    :otherParams="{}"
+  ></CeForm>
 </template>
 
 <style lang="scss" scoped>

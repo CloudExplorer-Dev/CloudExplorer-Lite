@@ -1,6 +1,7 @@
 package com.fit2cloud.provider.impl.vsphere;
 
-import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.provider.entity.F2CBalance;
+import com.fit2cloud.common.provider.impl.vsphere.VsphereBaseCloudProvider;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
@@ -17,8 +18,10 @@ import com.fit2cloud.provider.impl.vsphere.entity.request.ListHostInstanceReques
 import com.fit2cloud.provider.impl.vsphere.entity.request.ListResourcePoolRequest;
 import com.fit2cloud.provider.util.ResourceUtil;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.pf4j.Extension;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @Author:张少虎}
@@ -26,7 +29,11 @@ import java.util.List;
  * {@code @Version 1.0}
  * {@code @注释: }
  */
+@Extension
 public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCredential> implements ICloudProvider {
+    public static final VsphereBaseCloudProvider vsphereBaseCloudProvider = new VsphereBaseCloudProvider();
+    public static final Info info = new Info("security-compliance", List.of(), Map.of());
+
     @Override
     public List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> getResourceSyncDimensionConstants() {
         return List.of(new DefaultKeyValue<>(ResourceTypeConstants.ECS, SyncDimensionConstants.REGION),
@@ -40,7 +47,7 @@ public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCred
         ListEcsInstanceRequest request = JsonUtil.parseObject(req, ListEcsInstanceRequest.class);
         return VsphereApi.listVirtualMachine(request).stream()
                 .map(resource -> ResourceUtil.
-                        toResourceInstance(PlatformConstants.fit2cloud_vsphere_platform.name(), ResourceTypeConstants.ECS,
+                        toResourceInstance(getCloudAccountMeta().platform, ResourceTypeConstants.ECS,
                                 resource.getInstanceId(), resource.getName(), resource)).toList();
     }
 
@@ -194,7 +201,7 @@ public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCred
         ListHostInstanceRequest request = JsonUtil.parseObject(req, ListHostInstanceRequest.class);
         return VsphereApi.listHost(request).stream()
                 .map(resource -> ResourceUtil.
-                        toResourceInstance(PlatformConstants.fit2cloud_vsphere_platform.name(), ResourceTypeConstants.HOST,
+                        toResourceInstance(getCloudAccountMeta().platform, ResourceTypeConstants.HOST,
                                 resource.getHostId(), resource.getHostName(), resource)).toList();
     }
 
@@ -208,7 +215,7 @@ public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCred
         ListDataStoreInstanceRequest request = JsonUtil.parseObject(req, ListDataStoreInstanceRequest.class);
         return VsphereApi.listDataStore(request).stream()
                 .map(resource -> ResourceUtil.
-                        toResourceInstance(PlatformConstants.fit2cloud_vsphere_platform.name(), ResourceTypeConstants.DATA_STORE,
+                        toResourceInstance(getCloudAccountMeta().platform, ResourceTypeConstants.DATA_STORE,
                                 resource.getDataStoreId(), resource.getDataStoreName(), resource)).toList();
     }
 
@@ -222,12 +229,27 @@ public class VsphereProvider extends AbstractCloudProvider<VsphereComplianceCred
         ListResourcePoolRequest request = JsonUtil.parseObject(req, ListResourcePoolRequest.class);
         return VsphereApi.listResourcePool(request).stream()
                 .map(resource -> ResourceUtil.
-                        toResourceInstance(PlatformConstants.fit2cloud_vsphere_platform.name(), ResourceTypeConstants.RESOURCE_POOL,
+                        toResourceInstance(getCloudAccountMeta().platform, ResourceTypeConstants.RESOURCE_POOL,
                                 resource.getMor(), resource.getName(), resource)).toList();
     }
 
     @Override
     public List<InstanceSearchField> listResourcePoolInstanceSearchField() {
         return VsphereInstanceSearchApi.listResourcePoolInstanceSearchField();
+    }
+
+    @Override
+    public F2CBalance getAccountBalance(String getAccountBalanceRequest) {
+        return vsphereBaseCloudProvider.getAccountBalance(getAccountBalanceRequest);
+    }
+
+    @Override
+    public CloudAccountMeta getCloudAccountMeta() {
+        return vsphereBaseCloudProvider.getCloudAccountMeta();
+    }
+
+    @Override
+    public Info getInfo() {
+        return info;
     }
 }

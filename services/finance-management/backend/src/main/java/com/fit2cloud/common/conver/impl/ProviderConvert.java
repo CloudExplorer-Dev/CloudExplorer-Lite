@@ -1,7 +1,8 @@
 package com.fit2cloud.common.conver.impl;
 
-import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.common.conver.Convert;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 
 /**
  * {@code @Author:张少虎}
@@ -12,6 +13,6 @@ import com.fit2cloud.common.conver.Convert;
 public class ProviderConvert implements Convert {
     @Override
     public String conver(String o) {
-        return PlatformConstants.valueOf(o).getMessage();
+        return PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, o).getCloudAccountMeta().message;
     }
 }

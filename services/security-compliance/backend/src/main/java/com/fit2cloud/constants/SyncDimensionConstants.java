@@ -1,10 +1,13 @@
 package com.fit2cloud.constants;
 
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.common.job_record.JobLink;
 import com.fit2cloud.common.job_record.JobLinkTypeConstants;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.util.ResourceUtil;
 
 import java.util.HashMap;
@@ -24,15 +27,20 @@ public enum SyncDimensionConstants {
      * 区域粒度
      */
     REGION("区域", (cloudAccount, otherParams) ->
-            Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential())
-                    .regions()
-                    .stream()
-                    .map(region -> ResourceUtil.objectsToMap(Map.of("regionId", region.getRegionId()), otherParams, new HashMap<String, Object>() {{
-                        put("credential", Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()));
-                        put("cloudAccount", cloudAccount);
-                        put("regionObj", region);
-                    }}))
-                    .toList()
+    {
+        Class<? extends Credential> credential = PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, cloudAccount.getPlatform())
+                .getCloudAccountMeta().credential;
+        return JsonUtil.parseObject(cloudAccount.getCredential(), credential)
+                .regions()
+                .stream()
+                .map(region -> ResourceUtil.objectsToMap(Map.of("regionId", region.getRegionId()), otherParams, new HashMap<String, Object>() {{
+                    put("credential", JsonUtil.parseObject(cloudAccount.getCredential(), credential));
+                    put("cloudAccount", cloudAccount);
+                    put("regionObj", region);
+                }}))
+                .toList();
+
+    }
             , map -> new HashMap<String, Object>() {
         {
             put("region", map.get("regionObj"));
@@ -49,7 +57,8 @@ public enum SyncDimensionConstants {
      * 云账户粒度
      */
     CloudAccount("云账户", (cloudAccount, otherParams) -> List.of(ResourceUtil.objectsToMap(otherParams, new HashMap<String, Object>() {{
-        put("credential", Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential()));
+        put("credential", JsonUtil.parseObject(cloudAccount.getCredential(), PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, cloudAccount.getPlatform())
+                .getCloudAccountMeta().credential));
         put("cloudAccount", cloudAccount);
     }})), map -> new HashMap<>(), ((jobRecord, stringObjectMap) -> {
         JobLink jobLink = new JobLink();

@@ -1,7 +1,6 @@
 package com.fit2cloud.provider.impl.aliyun.entity.request;
 
 import com.aliyun.bssopenapi20171214.models.DescribeInstanceBillRequest;
-import com.fit2cloud.common.platform.bill.impl.AliBill;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunBillCredential;
 import lombok.Data;
 

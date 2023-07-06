@@ -14,13 +14,12 @@ import ButtonToolBar from "@commons/components/button-tool-bar/ButtonToolBar.vue
 import { ButtonAction } from "@commons/components/button-tool-bar/type";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { platformIcon } from "@commons/utils/platform";
 import type { SimpleMap } from "@commons/api/base/type";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
 import { ResourceType } from "@/api/recycle_bin/type";
 import IpArray from "@commons/components/detail-page/IpArray.vue";
-
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 const permissionStore = usePermissionStore();
 const { t } = useI18n();
 const columns = ref([]);
@@ -561,15 +560,11 @@ const refresh = () => {
       min-width="180px"
     >
       <template #default="scope">
-        <div style="display: flex">
-          <component
-            style="margin-top: 3px; width: 16px; height: 16px"
-            :is="platformIcon[scope.row.platform]?.component"
-            v-bind="platformIcon[scope.row.platform]?.icon"
-            :color="platformIcon[scope.row.platform]?.color"
-            size="16px"
-            v-if="scope.row.platform"
-          ></component>
+        <div style="display: flex; align-items: center">
+          <PlatformIcon
+            style="height: 16px; width: 16px"
+            :platform="scope.row.platform"
+          ></PlatformIcon>
           <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
         </div>
       </template>

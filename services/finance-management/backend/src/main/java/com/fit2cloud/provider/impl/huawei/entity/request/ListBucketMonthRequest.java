@@ -1,6 +1,5 @@
 package com.fit2cloud.provider.impl.huawei.entity.request;
 
-import com.fit2cloud.common.platform.bill.impl.HuaweiBill;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiBillCredential;
 import lombok.Data;
 

@@ -1,7 +1,7 @@
 package com.fit2cloud.provider.impl.aliyun.entity.request;
 
-import com.fit2cloud.provider.entity.F2CNetwork;
 import lombok.Data;
+import com.fit2cloud.vm.entity.F2CNetwork;
 
 /**
  * Author: LiuDi

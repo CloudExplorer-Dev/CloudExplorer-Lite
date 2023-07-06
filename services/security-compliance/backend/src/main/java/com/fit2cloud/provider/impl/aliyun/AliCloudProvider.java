@@ -6,7 +6,8 @@ import com.aliyun.ram20150501.models.GetLoginProfileResponse;
 import com.aliyun.ram20150501.models.ListUsersResponseBody;
 import com.aliyun.slb20140515.models.DescribeLoadBalancersResponseBody;
 import com.aliyun.vpc20160428.models.DescribeEipAddressesResponseBody;
-import com.fit2cloud.common.constants.PlatformConstants;
+import com.fit2cloud.common.provider.entity.F2CBalance;
+import com.fit2cloud.common.provider.impl.aliyun.AliyunBaseCloudProvider;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
@@ -22,6 +23,7 @@ import com.fit2cloud.provider.impl.aliyun.entity.response.*;
 import com.fit2cloud.provider.util.ResourceUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.pf4j.Extension;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +35,11 @@ import java.util.Objects;
  * {@code @Version 1.0}
  * {@code @注释: }
  */
+@Extension
 public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianceCredential> implements ICloudProvider {
+    public static final AliyunBaseCloudProvider aliyunBaseCloudProvider = new AliyunBaseCloudProvider();
+
+    public static final Info info = new Info("security-compliance", List.of(), Map.of());
 
     @Override
     public List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> getResourceSyncDimensionConstants() {
@@ -63,7 +69,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<EcsInstanceResponse> ecsInstanceResponses = AliApi.listECSInstanceCollection(listEcsInstancesRequest);
         return ecsInstanceResponses
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.ECS,
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform, ResourceTypeConstants.ECS,
                         instance.getInstanceId(), instance.getInstanceName(),
                         Map.of(
                                 "disks", instance.getDisks(),
@@ -85,7 +91,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<RedisInstanceResponse> redisInstanceResponses = AliApi.listRedisInstanceCollection(listRdsInstanceRequest);
         return redisInstanceResponses
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform,
                         ResourceTypeConstants.REDIS,
                         instance.getInstanceId(),
                         instance.getInstanceName(),
@@ -105,7 +111,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<MongoDBInstanceResponse> instances = AliApi.listMongoDBInstanceCollection(listMongoDBRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.MONGO_DB, instance.getDBInstanceId(), instance.getDBInstanceDescription(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform, ResourceTypeConstants.MONGO_DB, instance.getDBInstanceId(), instance.getDBInstanceDescription(),
                         Map.of("tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()), instance))
                 .toList();
     }
@@ -121,7 +127,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<RdsInstanceResponse> instances = AliApi.listMysqlInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform,
                         ResourceTypeConstants.MYSQL,
                         instance.getDBInstanceId(),
                         instance.getDBInstanceDescription(),
@@ -141,7 +147,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<RdsInstanceResponse> instances = AliApi.listSqlServerInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform,
                         ResourceTypeConstants.SQL_SERVER,
                         instance.getDBInstanceId(),
                         instance.getDBInstanceDescription(),
@@ -161,7 +167,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<RdsInstanceResponse> instances = AliApi.listPostgreSqlInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform,
                         ResourceTypeConstants.POST_GRE_SQL,
                         instance.getDBInstanceId(),
                         instance.getDBInstanceDescription(),
@@ -181,7 +187,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<RdsInstanceResponse> instances = AliApi.listMariaDBInstanceCollection(listRdsInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform,
                         ResourceTypeConstants.MARIA_DB,
                         instance.getDBInstanceId(),
                         instance.getDBInstanceDescription(),
@@ -201,7 +207,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<ListInstanceResponseBody.ListInstanceResponseBodyResult> instances = AliApi.listElasticsearchInstance(listElasticSearchInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform,
                         ResourceTypeConstants.ELASTIC_SEARCH,
                         instance.getInstanceId(),
                         instance.getDescription(),
@@ -221,7 +227,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<DescribeDisksResponseBody.DescribeDisksResponseBodyDisksDisk> instances = AliApi.listDiskInstance(listDiskInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform,
                         ResourceTypeConstants.DISK, instance.getDiskId(), instance.getDiskName()
                         , Map.of("tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()), instance))
                 .toList();
@@ -238,7 +244,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<DescribeLoadBalancersResponseBody.DescribeLoadBalancersResponseBodyLoadBalancersLoadBalancer> instances = AliApi.listLoadBalancerInstance(listLoadBalancerInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.LOAD_BALANCER,
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform, ResourceTypeConstants.LOAD_BALANCER,
                         instance.getLoadBalancerId(),
                         instance.getLoadBalancerName(),
                         Map.of("tags", Objects.nonNull(instance.getTags()) ? instance.getTags().tag : List.of()),
@@ -257,7 +263,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<DescribeEipAddressesResponseBody.DescribeEipAddressesResponseBodyEipAddressesEipAddress> instances = AliApi.listPublicIpInstance(listPublicIpInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform,
                         ResourceTypeConstants.PUBLIC_IP,
                         instance.getAllocationId(),
                         instance.getName(),
@@ -277,7 +283,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<VpcInstanceResponse> instances = AliApi.listVpcInstanceCollection(listVpcInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform,
                         ResourceTypeConstants.VPC,
                         instance.vpcId,
                         instance.vpcName,
@@ -301,7 +307,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<GetLoginProfileResponse> getLoginProfileResponses = AliApi.listLoginProfile(listLoginProfileInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.RAM,
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform, ResourceTypeConstants.RAM,
                         instance.getUserId(), instance.getUserName(), instance, "loginProfile", getLoginProfileResponses.stream().map(r -> r.body.loginProfile).filter(r -> r.getUserName().equals(instance.getUserName())).findAny().orElse(null)))
                 .toList();
     }
@@ -317,7 +323,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<BucketInstanceResponse> instances = AliApi.listBucketCollectionInstance(listBucketInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(), ResourceTypeConstants.OSS,
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform, ResourceTypeConstants.OSS,
                         instance.getName(), instance.getName(), instance))
                 .toList();
     }
@@ -333,7 +339,7 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
         List<SecurityGroupsSecurityGroupInstanceResponse> instances = AliApi.listSecurityGroupCollectionInstance(listSecurityGroupInstanceRequest);
         return instances
                 .stream()
-                .map(instance -> ResourceUtil.toResourceInstance(PlatformConstants.fit2cloud_ali_platform.name(),
+                .map(instance -> ResourceUtil.toResourceInstance(aliyunBaseCloudProvider.getCloudAccountMeta().platform,
                         ResourceTypeConstants.SECURITY_GROUP,
                         instance.getSecurityGroupId(),
                         instance.getSecurityGroupName(),
@@ -375,5 +381,20 @@ public class AliCloudProvider extends AbstractCloudProvider<AliSecurityComplianc
     @Override
     public List<InstanceSearchField> listResourcePoolInstanceSearchField() {
         return List.of();
+    }
+
+    @Override
+    public F2CBalance getAccountBalance(String getAccountBalanceRequest) {
+        return aliyunBaseCloudProvider.getAccountBalance(getAccountBalanceRequest);
+    }
+
+    @Override
+    public CloudAccountMeta getCloudAccountMeta() {
+        return aliyunBaseCloudProvider.getCloudAccountMeta();
+    }
+
+    @Override
+    public Info getInfo() {
+        return info;
     }
 }

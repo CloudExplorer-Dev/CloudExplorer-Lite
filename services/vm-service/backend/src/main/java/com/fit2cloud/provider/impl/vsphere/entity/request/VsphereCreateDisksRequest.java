@@ -1,7 +1,7 @@
 package com.fit2cloud.provider.impl.vsphere.entity.request;
 
-import com.fit2cloud.provider.entity.F2CDisk;
 import lombok.Data;
+import com.fit2cloud.vm.entity.F2CDisk;
 
 import java.util.List;
 

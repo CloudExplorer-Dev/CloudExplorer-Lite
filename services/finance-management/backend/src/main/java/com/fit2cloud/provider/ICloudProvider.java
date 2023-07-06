@@ -1,8 +1,10 @@
 package com.fit2cloud.provider;
 
 
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.constants.ProviderConstants;
+import com.fit2cloud.provider.entity.Bill;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +15,15 @@ import java.util.List;
  * @Version 1.0
  * @注释:
  */
-public interface ICloudProvider {
+public interface ICloudProvider extends IBaseCloudProvider {
+
+    /**
+     * 获取参数对象
+     *
+     * @return 参数对象
+     */
+    Class<? extends Bill> getParamsClass();
+
     List<CloudBill> syncBill(String request);
 
     /**

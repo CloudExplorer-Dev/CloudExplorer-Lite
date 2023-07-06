@@ -4,8 +4,8 @@ import com.aliyun.ecs20140526.models.DescribeDisksRequest;
 import com.aliyun.ecs20140526.models.DescribeInstancesRequest;
 import com.aliyun.ecs20140526.models.ResizeDiskRequest;
 import com.fit2cloud.common.utils.JsonUtil;
-import com.fit2cloud.provider.entity.request.BaseDiskResizeRequest;
 import lombok.Data;
+import com.fit2cloud.vm.entity.request.BaseDiskResizeRequest;
 
 /**
  * Author: LiuDi

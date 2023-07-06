@@ -1,7 +1,6 @@
 package com.fit2cloud.provider.impl.aliyun.uitil;
 
 import com.aliyun.bssopenapi20171214.models.DescribeInstanceBillResponseBody;
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
@@ -48,7 +47,7 @@ public class AliyunMappingUtil {
         cloudBill.setTags(toTagsMap(aliBillCsvModel.getInstanceTag()));
         cloudBill.setTotalCost(BigDecimal.valueOf(aliBillCsvModel.getOfficialWebsitePrice()));
         cloudBill.setRealTotalCost(BigDecimal.valueOf(aliBillCsvModel.getAmountPayable()));
-        cloudBill.setProvider(PlatformConstants.fit2cloud_ali_platform.name());
+        cloudBill.setProvider("fit2cloud_ali_platform");
         LocalDateTime deductionDate = CommonUtil.getLocalDateTime(aliBillCsvModel.getBillingCycle());
         if (Objects.nonNull(aliBillCsvModel.getDate())) {
             deductionDate = CommonUtil.getLocalDateTime(aliBillCsvModel.getDate());
@@ -86,7 +85,7 @@ public class AliyunMappingUtil {
         cloudBill.setProductId(item.getProductCode());
         cloudBill.setProductDetail(item.getProductDetail());
         cloudBill.setResourceName(item.getNickName());
-        cloudBill.setProvider(PlatformConstants.fit2cloud_ali_platform.name());
+        cloudBill.setProvider("fit2cloud_ali_platform");
         if (StringUtils.isNotEmpty(item.getBillingDate())) {
             cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(item.getBillingDate(), "yyyy-MM-dd"));
             cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(item.getBillingDate(), "yyyy-MM-dd"));

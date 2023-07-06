@@ -6,7 +6,8 @@ import type { VmCloudDiskVO } from "@/api/vm_cloud_disk/type";
 import VmCloudDiskApi from "@/api/vm_cloud_disk";
 import { useI18n } from "vue-i18n";
 import { filterChargeType } from "@commons/utils/util";
-import PlatformIcon from "@commons/components/detail-page/PlatformIcon.vue";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
+
 import VmLink from "@commons/components/detail-page/VmLink.vue";
 import { DISK_TYPE, DISK_STATUS, getTextByValue } from "@/utils/constants";
 
@@ -38,7 +39,10 @@ onMounted(() => {
         value: vmCloudDiskDetail.value.accountName,
         render: () => {
           return h(PlatformIcon, {
-            platform: vmCloudDiskDetail.value?.platform,
+            platform: vmCloudDiskDetail.value
+              ? vmCloudDiskDetail.value.platform
+              : "",
+            style: { marginRight: "8px" },
           });
         },
       },

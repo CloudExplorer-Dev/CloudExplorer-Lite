@@ -95,9 +95,21 @@ export interface Platform {
    */
   field: string;
 
+  /**
+   * 是否是公有云
+   */
   publicCloud: boolean;
 
   credentialForm: Array<FormView>;
+
+  /**
+   * icon SvgString
+   */
+  icon: string;
+  /**
+   * logo SvgString
+   */
+  logo: string;
 }
 
 export interface CreateAccount {

@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.entity.JobRecordResourceMapping;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
@@ -15,16 +16,15 @@ import com.fit2cloud.common.job.job.SimpleJob;
 import com.fit2cloud.common.job.step.JobStep;
 import com.fit2cloud.common.job.step.impl.SimpleJobStep;
 import com.fit2cloud.common.log.utils.LogUtil;
-import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.constants.ResourceTypeConstants;
 import com.fit2cloud.constants.SyncDimensionConstants;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.service.IJobService;
 import com.fit2cloud.service.IJobStepService;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -157,8 +157,8 @@ public class JobServiceImpl implements IJobService {
      * @return 是否支持
      */
     private boolean checkSupportResource(IJobStepService.Context context) {
-        Class<? extends ICloudProvider> iCloudProviderClazz = ICloudProvider.of(context.cloudAccount.getPlatform());
-        List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> map = CommonUtil.exec(iCloudProviderClazz, ICloudProvider::getResourceSyncDimensionConstants);
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, context.cloudAccount.getPlatform());
+        List<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> map = iCloudProvider.getResourceSyncDimensionConstants();
         // 如果不存在同步粒度则为不支持的资源类型
         Optional<DefaultKeyValue<ResourceTypeConstants, SyncDimensionConstants>> first = map
                 .stream()

@@ -2,9 +2,9 @@ package com.fit2cloud.utils;
 
 import com.fit2cloud.base.entity.VmCloudDisk;
 import com.fit2cloud.common.log.utils.LogUtil;
-import com.fit2cloud.provider.entity.F2CDisk;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
+import com.fit2cloud.vm.entity.F2CDisk;
 
 import java.util.function.Function;
 

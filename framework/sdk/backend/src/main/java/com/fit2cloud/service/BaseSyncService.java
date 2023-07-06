@@ -5,20 +5,15 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
-import com.fit2cloud.base.entity.User;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseJobRecordService;
 import com.fit2cloud.common.constants.JobStatusConstants;
-import com.fit2cloud.common.constants.PlatformConstants;
-import com.fit2cloud.common.exception.Fit2cloudException;
-import com.fit2cloud.common.job.context.JobContext;
-import com.fit2cloud.common.job.result.Result;
-import com.fit2cloud.common.job.step.JobStep;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
+import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,13 +22,10 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -52,6 +44,8 @@ public abstract class BaseSyncService {
     protected IBaseCloudAccountService cloudAccountService;
     @Resource
     protected IBaseJobRecordService baseJobRecordService;
+
+    protected abstract Credential getCredential(CloudAccount cloudAccount);
 
     /**
      * 代理同步数据
@@ -85,7 +79,7 @@ public abstract class BaseSyncService {
             if (lock.tryLock()) {
                 CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
                 if (Objects.nonNull(cloudAccount)) {
-                    Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
+                    Credential credential = getCredential(cloudAccount);
                     // 如果云账号无效 跳过执行
                     try {
                         credential.verification();
@@ -198,7 +192,7 @@ public abstract class BaseSyncService {
     protected <T, P> void proxy(String cloudAccountId,
                                 List<Credential.Region> regions,
                                 String jobDescription,
-                                Function<String, Class<? extends P>> getCloudProvider,
+                                Function<String, P> getCloudProvider,
                                 Function<LocalDateTime, JobRecord> initJobRecord,
                                 BiFunction<P, String, List<T>> execMethod,
                                 BiFunction<CloudAccount, Credential.Region, String> getExecMethodArgs,
@@ -210,9 +204,8 @@ public abstract class BaseSyncService {
         try {
             if (lock.tryLock()) {
                 CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
-
                 if (Objects.nonNull(cloudAccount)) {
-                    Credential credential = Credential.of(cloudAccount.getPlatform(), cloudAccount.getCredential());
+                    Credential credential = getCredential(cloudAccount);
                     // 如果云账号无效 跳过执行
                     try {
                         credential.verification();
@@ -228,12 +221,12 @@ public abstract class BaseSyncService {
                     cloudAccount.setSyncTimeStampStr(String.valueOf(syncTime.toInstant(ZoneOffset.of("+8")).toEpochMilli()));
                     // 初始化一条定时任务记录
                     JobRecord jobRecord = initJobRecord.apply(syncTime);
-                    Class<? extends P> cloudProvider = getCloudProvider.apply(cloudAccount.getPlatform());
+                    P apply = getCloudProvider.apply(cloudAccount.getPlatform());
                     try {
                         for (Credential.Region region : regions) {
                             try {
                                 // 同步数据
-                                List<T> syncRecord = CommonUtil.exec(cloudProvider, getExecMethodArgs.apply(cloudAccount, region), execMethod);
+                                List<T> syncRecord = execMethod.apply(apply, getExecMethodArgs.apply(cloudAccount, region));
                                 SaveBatchOrUpdateParams<T> tSaveBatchOrUpdateParams = new SaveBatchOrUpdateParams<>(cloudAccountId, syncTime, region, syncRecord, jobRecord);
                                 // 插入并且更新数据
                                 saveBatchOrUpdate.accept(tSaveBatchOrUpdateParams);
@@ -297,14 +290,7 @@ public abstract class BaseSyncService {
      */
     protected List<Credential.Region> getRegions(String accountId) {
         CloudAccount cloudAccount = cloudAccountService.getById(accountId);
-        return Arrays.stream(PlatformConstants.values()).filter(platformConstants -> platformConstants.name().equals(cloudAccount.getPlatform())).findFirst().map(platformConstants -> {
-            try {
-                return platformConstants.getCredentialClass().getConstructor().newInstance().deCode(cloudAccount.getCredential()).regions();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException e) {
-                throw new Fit2cloudException(10001, "获取区域错误");
-            }
-        }).orElseThrow(() -> new Fit2cloudException(10001, "获取区域错误"));
+        return getCredential(cloudAccount).regions();
     }
 
 

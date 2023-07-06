@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudDatastore;
 import com.fit2cloud.base.entity.VmCloudHost;
@@ -13,10 +14,10 @@ import com.fit2cloud.base.mapper.BaseVmCloudHostMapper;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
 import com.fit2cloud.base.service.IBaseVmCloudDatastoreService;
 import com.fit2cloud.base.service.IBaseVmCloudHostService;
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.es.ElasticsearchProvide;
 import com.fit2cloud.common.es.constants.IndexConstants;
 import com.fit2cloud.common.log.utils.LogUtil;
+import com.fit2cloud.common.provider.IBaseCloudProvider;
 import com.fit2cloud.common.provider.entity.F2CEntityType;
 import com.fit2cloud.common.utils.ColumnNameUtil;
 import com.fit2cloud.common.utils.DateUtil;
@@ -36,6 +37,7 @@ import com.fit2cloud.es.entity.PerfMetricMonitorData;
 import com.fit2cloud.service.IBaseResourceAnalysisService;
 import com.fit2cloud.utils.OperationUtils;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
@@ -49,7 +51,6 @@ import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -158,7 +159,12 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     @Override
     public List<CloudAccount> getAllPrivateCloudAccount() {
         QueryWrapper<CloudAccount> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in(ColumnNameUtil.getColumnName(CloudAccount::getPlatform, true), Arrays.asList(PlatformConstants.fit2cloud_vsphere_platform, PlatformConstants.fit2cloud_openstack_platform));
+        List<String> strings = PluginsContextHolder.getExtensions(IBaseCloudProvider.class)
+                .stream().filter(p -> !p.getCloudAccountMeta().publicCloud)
+                .map(p -> p.getCloudAccountMeta().platform).distinct()
+                .toList();
+        queryWrapper.in(ColumnNameUtil.getColumnName(CloudAccount::getPlatform, true)
+                , strings);
         return iBaseCloudAccountService.list(queryWrapper);
     }
 

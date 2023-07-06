@@ -123,6 +123,20 @@ public @interface Form {
     String method() default "";
 
     /**
+     * 插件id
+     *
+     * @return 插件id
+     */
+    String pluginId() default "";
+
+    /**
+     * 执行模块
+     *
+     * @return 执行模块
+     */
+    String execModule() default "";
+
+    /**
      * 调用的类是否为spring的bean
      *
      * @return
@@ -212,12 +226,12 @@ public @interface Form {
 
     /**
      * 正则组验证
-     *
      */
     String regexList() default "[]";
 
     /**
      * 是否加密输入内容
+     *
      * @return
      */
     boolean encrypted() default false;

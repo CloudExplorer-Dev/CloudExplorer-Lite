@@ -1,8 +1,8 @@
 package com.fit2cloud.provider.impl.vsphere.entity;
 
-import com.fit2cloud.provider.entity.F2CDatastore;
 import com.vmware.vim25.ManagedObjectReference;
 import lombok.Data;
+import com.fit2cloud.vm.entity.F2CDatastore;
 
 /**
  * @author jianneng

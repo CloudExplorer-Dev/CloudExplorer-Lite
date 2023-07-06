@@ -2,14 +2,13 @@ package com.fit2cloud.event;
 
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.service.IBaseCloudAccountService;
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.event.annotaion.Event;
 import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.service.ISyncProviderService;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 /**
@@ -44,7 +43,7 @@ public class EventListener {
         AsyncJob.run(() -> syncService.syncCloudServerPerfMetricMonitor(cloudAccountId));
 
         // -----------云资源(私)-------------------
-        if (List.of(PlatformConstants.fit2cloud_openstack_platform.name(), PlatformConstants.fit2cloud_vsphere_platform.name()).contains(cloudAccount.getPlatform())) {
+        if (List.of("fit2cloud_openstack_platform", "fit2cloud_vsphere_platform").contains(cloudAccount.getPlatform())) {
             // 同步存储器
             AsyncJob.run(() -> syncService.syncCloudDatastore(cloudAccountId));
             // 同步主机

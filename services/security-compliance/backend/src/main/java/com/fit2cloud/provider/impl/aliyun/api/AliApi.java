@@ -28,15 +28,14 @@ import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.provider.exception.ReTryException;
 import com.fit2cloud.common.provider.exception.SkipPageException;
 import com.fit2cloud.common.provider.util.PageUtil;
-import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliSecurityComplianceCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.impl.aliyun.entity.response.*;
+import jakarta.validation.constraints.NotNull;
 import jodd.util.StringUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +48,8 @@ import java.util.Objects;
  * {@code @注释: }
  */
 public class AliApi {
+
+    private static final int retryNum = 3;
 
     /**
      * 获取阿里云实例列表
@@ -71,7 +72,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getInstances().instance
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().instance.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
     }
 
     public static List<EcsInstanceResponse> listECSInstanceCollection(ListEcsInstancesRequest request) {
@@ -170,7 +171,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getInstanceRenewAttributes().instanceRenewAttribute
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstanceRenewAttributes().instanceRenewAttribute.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
 
 
     }
@@ -189,7 +190,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getDisks().disk
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getDisks().disk.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
 
     }
 
@@ -214,7 +215,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getImages().image
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getImages().image.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
 
     }
 
@@ -256,7 +257,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getInstances().getKVStoreInstance()
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().getKVStoreInstance().size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
 
     }
 
@@ -290,7 +291,7 @@ public class AliApi {
                 SkipPageException.throwSkip(e);
                 throw new Fit2cloudException(10002, "获取阿里云Redis网络失败" + e.getMessage());
             }
-        }, ProviderConstants.retryNum);
+        }, retryNum);
         assert describeDBInstanceNetInfoResponse != null;
         return describeDBInstanceNetInfoResponse.getBody();
     }
@@ -333,7 +334,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getDBInstances().getDBInstance()
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getDBInstances().getDBInstance().size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
 
     }
 
@@ -367,7 +368,7 @@ public class AliApi {
                 SkipPageException.throwSkip(e);
                 throw new Fit2cloudException(10002, "获取阿里云MongoDB实例失败" + e.getMessage());
             }
-        }, ProviderConstants.retryNum);
+        }, retryNum);
         assert describeShardingNetworkAddressResponse != null;
         return describeShardingNetworkAddressResponse.getBody();
     }
@@ -485,7 +486,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getItems().getDBInstance()
                 , (req, res) -> req.getPageSize() <= res.getBody().getItems().getDBInstance().size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
     }
 
     /**
@@ -573,7 +574,7 @@ public class AliApi {
                 SkipPageException.throwSkip(e);
                 throw new Fit2cloudException(10002, "获取阿里云Mysql实例失败" + e.getMessage());
             }
-        }, ProviderConstants.retryNum);
+        }, retryNum);
         assert describeDBInstanceNetInfoResponse != null;
         return describeDBInstanceNetInfoResponse.getBody();
     }
@@ -599,7 +600,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getResult()
                 , (req, res) -> req.getSize() <= res.getBody().getResult().size()
-                , req -> req.setPage(req.getPage() + 1), ProviderConstants.retryNum);
+                , req -> req.setPage(req.getPage() + 1), retryNum);
 
     }
 
@@ -624,7 +625,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getDisks().disk
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getDisks().disk.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
 
     }
 
@@ -649,7 +650,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getLoadBalancers().loadBalancer
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getLoadBalancers().loadBalancer.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
     }
 
     /**
@@ -673,7 +674,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getEipAddresses().eipAddress
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getEipAddresses().eipAddress.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
     }
 
     /**
@@ -756,7 +757,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getVpcs().vpc
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getVpcs().vpc.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
 
     }
 
@@ -781,7 +782,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getFlowLogs().flowLog
                 , (req, res) -> Integer.parseInt(res.getBody().getPageSize()) <= res.getBody().getFlowLogs().flowLog.size()
-                , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
 
     }
 
@@ -806,7 +807,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getVpnGateways().vpnGateway
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getVpnGateways().vpnGateway.size()
-                , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
     }
 
     /**
@@ -831,7 +832,7 @@ public class AliApi {
                         }
                         , res -> res.getBody().getVSwitches().vSwitch
                         , (req, res) -> res.getBody().getPageSize() <= res.getBody().getVSwitches().vSwitch.size()
-                        , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                        , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
     }
 
     /**
@@ -855,7 +856,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getVpnConnections().vpnConnection
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getVpnConnections().vpnConnection.size()
-                , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , (req, res) -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
 
     }
 
@@ -879,7 +880,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getUsers().user
                 , (req, res) -> res.getBody().isTruncated
-                , (req, res) -> req.setMarker(res.getBody().marker), ProviderConstants.retryNum);
+                , (req, res) -> req.setMarker(res.getBody().marker), retryNum);
     }
 
     /**
@@ -902,7 +903,7 @@ public class AliApi {
                     SkipPageException.throwSkip(e);
                     return null;
                 }
-            }, ProviderConstants.retryNum);
+            }, retryNum);
         }).filter(Objects::nonNull).toList();
 
     }
@@ -926,7 +927,7 @@ public class AliApi {
                     return null;
                 }
 
-            }, ProviderConstants.retryNum);
+            }, retryNum);
             GetBucketEncryptionResponseBody encryptionResponse = PageUtil.reTry(() -> {
                 try {
                     return ossClient.getBucketEncryption(GetBucketEncryptionRequest.builder().bucket(bucket.getName()).build()).join().getBody();
@@ -935,7 +936,7 @@ public class AliApi {
                     return null;
                 }
 
-            }, ProviderConstants.retryNum);
+            }, retryNum);
             GetBucketAclResponseBody aclResponse = PageUtil.reTry(() -> {
                 try {
                     return ossClient.getBucketAcl(GetBucketAclRequest.builder().bucket(bucket.getName()).build()).join().getBody();
@@ -944,7 +945,7 @@ public class AliApi {
                     return null;
                 }
 
-            }, ProviderConstants.retryNum);
+            }, retryNum);
             bucketInstanceResponse.setAcl(aclResponse);
             bucketInstanceResponse.setReferer(refererResponse);
             bucketInstanceResponse.setEncryption(encryptionResponse);
@@ -1008,7 +1009,7 @@ public class AliApi {
                 }
                 , res -> res.getBody().getSecurityGroups().securityGroup
                 , (req, res) -> res.getBody().getPageSize() <= res.getBody().getSecurityGroups().securityGroup.size()
-                , req -> req.setPageNumber(req.getPageNumber() + 1), ProviderConstants.retryNum);
+                , req -> req.setPageNumber(req.getPageNumber() + 1), retryNum);
     }
 
     /**
@@ -1041,7 +1042,7 @@ public class AliApi {
                 SkipPageException.throwSkip(e);
                 throw new Fit2cloudException(10002, "获取阿里云安全组实例失败" + e.getMessage());
             }
-        }, ProviderConstants.retryNum);
+        }, retryNum);
         assert describeSecurityGroupAttributeResponse != null;
         return describeSecurityGroupAttributeResponse.getBody();
 

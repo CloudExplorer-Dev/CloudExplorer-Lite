@@ -1,12 +1,6 @@
 package com.fit2cloud.provider.impl.vsphere.util;
 
 import com.fit2cloud.common.provider.impl.vsphere.utils.VsphereClient;
-import com.fit2cloud.provider.constants.DeleteWithInstance;
-import com.fit2cloud.provider.constants.F2CDiskStatus;
-import com.fit2cloud.provider.constants.F2CInstanceStatus;
-import com.fit2cloud.provider.entity.F2CDisk;
-import com.fit2cloud.provider.entity.F2CHost;
-import com.fit2cloud.provider.entity.F2CVirtualMachine;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereDatastore;
 import com.fit2cloud.provider.impl.vsphere.entity.F2CVsphereHost;
 import com.fit2cloud.provider.impl.vsphere.entity.VsphereFolder;
@@ -17,6 +11,12 @@ import com.vmware.vim25.mo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import com.fit2cloud.vm.constants.DeleteWithInstance;
+import com.fit2cloud.vm.constants.F2CDiskStatus;
+import com.fit2cloud.vm.constants.F2CInstanceStatus;
+import com.fit2cloud.vm.entity.F2CDisk;
+import com.fit2cloud.vm.entity.F2CHost;
+import com.fit2cloud.vm.entity.F2CVirtualMachine;
 
 import java.util.*;
 

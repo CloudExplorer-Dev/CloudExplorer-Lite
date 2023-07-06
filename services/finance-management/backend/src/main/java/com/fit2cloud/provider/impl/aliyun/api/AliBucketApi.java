@@ -2,7 +2,6 @@ package com.fit2cloud.provider.impl.aliyun.api;
 
 import com.aliyun.sdk.service.oss20190517.AsyncClient;
 import com.aliyun.sdk.service.oss20190517.models.*;
-import com.fit2cloud.common.constants.PlatformConstants;
 import com.fit2cloud.common.exception.Fit2cloudException;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.PageUtil;
@@ -132,7 +131,7 @@ public class AliBucketApi {
      */
     private static List<AliBillCsvModel> writeAndReadFile(AsyncClient ossClient, ObjectSummary objectSummary, String bucketName, String cloudAccountId) {
         // 写入数据
-        File file = CsvUtil.writeFile(BillingSettingConstants.billingPath + File.separator + PlatformConstants.fit2cloud_ali_platform.name() + File.separator + cloudAccountId, objectSummary.getKey(), objectSummary.getSize(),
+        File file = CsvUtil.writeFile(BillingSettingConstants.billingPath + File.separator + "fit2cloud_ali_platform" + File.separator + cloudAccountId, objectSummary.getKey(), objectSummary.getSize(),
                 () -> ossClient.getObject(GetObjectRequest.builder().bucket(bucketName).key(objectSummary.getKey()).build()).join().getBody());
         return CsvUtil.parse(file, AliBillCsvModel.class);
     }
