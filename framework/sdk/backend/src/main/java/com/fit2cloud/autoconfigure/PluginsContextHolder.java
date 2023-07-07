@@ -4,10 +4,10 @@ import com.fit2cloud.common.provider.IBaseCloudProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
-import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -25,6 +25,10 @@ public class PluginsContextHolder {
 
     @Value("${spring.application.name}")
     public void init(String applicationName) {
+        File file = new File(pathPrefix + "/" + applicationName);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
         System.setProperty("pf4j.pluginsDir", pathPrefix + "/" + applicationName);
         pluginManager = new DefaultPluginManager();
         pluginManager.loadPlugins();

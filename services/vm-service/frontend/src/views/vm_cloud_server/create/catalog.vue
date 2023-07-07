@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CatalogApi from "@/api/catalog";
-import PlatformIcon from "@commons/components/detail-page/PlatformIcon.vue";
+
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import { computed, onMounted, type Ref, ref } from "vue";
 import { useRouter } from "vue-router";
 import type { Good } from "@/api/catalog/type";
@@ -121,7 +122,6 @@ const showTips = (good: Good, e: Event) => {
                 <div class="platform-icon">
                   <PlatformIcon
                     :platform="good.platform"
-                    size="36px"
                     style="width: 36px; height: 36px"
                   />
                 </div>

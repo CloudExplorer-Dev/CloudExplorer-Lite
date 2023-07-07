@@ -211,7 +211,11 @@ function initOptionList(
             formItem.clazz,
             formItem.method,
             _temp,
-            _loading
+            _loading,
+            {
+              execModule: formItem.execModule,
+              pluginId: formItem.pluginId,
+            }
           )
           .then((ok) => {
             formItem.optionList = ok.data;
