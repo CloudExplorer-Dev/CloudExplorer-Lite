@@ -83,6 +83,7 @@ public class VsphereCloudProvider extends AbstractCloudProvider<VsphereCredentia
         return VsphereSyncCloudApi.powerOn(JsonUtil.parseObject(req, VsphereVmPowerRequest.class));
     }
 
+
     @Override
     public boolean shutdownInstance(String req) {
         return VsphereSyncCloudApi.shutdownInstance(JsonUtil.parseObject(req, VsphereVmPowerRequest.class));

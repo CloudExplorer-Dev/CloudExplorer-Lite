@@ -1,5 +1,7 @@
 package com.fit2cloud.base.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fit2cloud.autoconfigure.JobSettingConfig;
 import com.fit2cloud.autoconfigure.PluginsContextHolder;
@@ -423,8 +425,13 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
 
     @Override
     public List<CloudAccount> listSupportCloudAccount() {
+        return listSupportCloudAccount(new LambdaQueryWrapper<>());
+    }
+
+    @Override
+    public List<CloudAccount> listSupportCloudAccount(Wrapper<CloudAccount> queryWrapper) {
         List<IBaseCloudProvider> iBaseCloudProviders = PluginsContextHolder.getExtensions(IBaseCloudProvider.class);
-        return list()
+        return list(queryWrapper)
                 .stream()
                 .filter(cloudAccount -> iBaseCloudProviders
                         .stream()

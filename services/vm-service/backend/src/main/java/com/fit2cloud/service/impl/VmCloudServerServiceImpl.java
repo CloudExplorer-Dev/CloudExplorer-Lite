@@ -448,11 +448,11 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 vmCloudServer.setInstanceStatus(beforeStatus);
                 modifyResource.accept(vmCloudServer);
                 CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
-                ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform());
                 HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), vmCloudServer.getRegion());
                 params.put("uuid", vmCloudServer.getInstanceUuid());
 
                 try {
+                    ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform());
                     Boolean result = execMethod.apply(iCloudProvider, JsonUtil.toJSONString(params));
                     if (result) {
                         vmCloudServer.setInstanceStatus(afterStatus);
@@ -796,8 +796,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             params.put("instanceUuid", vmCloudServer.getInstanceUuid());
             params.put("newInstanceType", request.getNewInstanceType());
             params.put("instanceChargeType", vmCloudServer.getInstanceChargeType());
-            params.put("cpu", request.getCpu());
-            params.put("memory", request.getMemory());
+            params.putAll(request);
 
             // 执行
             ResourceState<VmCloudServer, F2CVirtualMachine> resourceState = ResourceState.<VmCloudServer, F2CVirtualMachine>builder()

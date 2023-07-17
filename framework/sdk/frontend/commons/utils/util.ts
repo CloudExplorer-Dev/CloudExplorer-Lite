@@ -14,6 +14,7 @@ interface Ip {
  * @param remoteIp
  */
 export const classifyIP = (ipArray: string, remoteIp: string) => {
+  ipArray = ipArray ? ipArray : "[]";
   return JSON.parse(ipArray)
     .map((item: string) => {
       return {

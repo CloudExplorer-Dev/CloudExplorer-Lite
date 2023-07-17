@@ -1,5 +1,6 @@
 package com.fit2cloud.service.impl;
 
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.JobRecord;
 import com.fit2cloud.base.service.IBaseRecycleBinService;
 import com.fit2cloud.common.constants.JobStatusConstants;
@@ -79,7 +80,8 @@ public class ResourceOperateServiceImpl implements IResourceOperateService {
                 try {
                     // 执行资源操作方法
                     LogUtil.info("Start to execute provider method.");
-                    result = CommonUtil.exec(ICloudProvider.of(execProviderMethodRequest.getPlatform()), JsonUtil.toJSONString(execProviderMethodRequest.getMethodParams()), execProviderMethodRequest.getExecMethod());
+                    ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, execProviderMethodRequest.getPlatform());
+                    result = execProviderMethodRequest.getExecMethod().apply(iCloudProvider, JsonUtil.toJSONString(execProviderMethodRequest.getMethodParams()));
                     if (result != null) {
                         // 更新资源为完成态
                         if (execProviderMethodRequest.getResultNeedTransfer() != null && execProviderMethodRequest.getResultNeedTransfer()) {

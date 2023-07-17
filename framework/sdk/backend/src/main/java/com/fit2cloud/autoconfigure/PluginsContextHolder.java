@@ -20,7 +20,7 @@ import java.util.List;
 public class PluginsContextHolder {
     public static PluginManager pluginManager;
 
-    private static final String pathPrefix = "/opt/cloudexplorer/data/plugins";
+    private static final String pathPrefix = "/opt/cloudexplorer/plugins";
 
 
     @Value("${spring.application.name}")

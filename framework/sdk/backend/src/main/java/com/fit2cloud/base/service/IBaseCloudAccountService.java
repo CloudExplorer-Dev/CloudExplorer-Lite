@@ -1,5 +1,6 @@
 package com.fit2cloud.base.service;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.dto.PlatformResponse;
@@ -89,4 +90,6 @@ public interface IBaseCloudAccountService extends IService<CloudAccount> {
      * @return 云账号列表
      */
     List<CloudAccount> listSupportCloudAccount();
+
+    List<CloudAccount> listSupportCloudAccount(Wrapper<CloudAccount> queryWrapper);
 }

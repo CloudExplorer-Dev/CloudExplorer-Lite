@@ -6,8 +6,9 @@
     :prop="formItem.field"
     :key="formItem.field"
     :rules="rules"
+    v-if="formItem.type === 'form-item'"
   >
-    <template #label>
+    <template #label v-if="formItem.label">
       <CeFormItemLabel :formItem="formItem"></CeFormItemLabel>
     </template>
     <component
@@ -15,6 +16,7 @@
       v-model="itemValue"
       :is="formItem.inputType"
       :formItem="formItem"
+      :other-params="otherParams"
       :style="componentStyle"
       :field="formItem.field"
       v-bind="{ ...JSON.parse(formItem.attrs) }"
@@ -23,6 +25,19 @@
       formItem.unit
     }}</span>
   </el-form-item>
+  <component
+    v-else
+    ref="componentFormRef"
+    :readOnly="readOnly"
+    :disabled="readOnly"
+    v-model="itemValue"
+    :is="formItem.inputType"
+    :formItem="formItem"
+    :other-params="otherParams"
+    :style="componentStyle"
+    :field="formItem.field"
+    v-bind="{ ...JSON.parse(formItem.attrs) }"
+  ></component>
 </template>
 <script setup lang="ts">
 import type { FormView } from "@commons/components/ce-form/type";
@@ -36,6 +51,8 @@ const props = defineProps<{
   formItem: FormView;
   // 是否只读
   readOnly: boolean;
+  // 调用接口所需要的其他参数
+  otherParams: any;
   // 获取Options
   listOptions: (formItem: FormView, loading: Ref<boolean>) => Promise<any>;
   // 初始化默认数据
@@ -121,5 +138,15 @@ watch(
     immediate: true,
   }
 );
+
+const componentFormRef = ref<any>();
+
+const validate = () => {
+  if (componentFormRef.value) {
+    return componentFormRef.value.validate();
+  }
+  return Promise.resolve();
+};
+defineExpose({ validate });
 </script>
 <style lang="scss" scoped></style>

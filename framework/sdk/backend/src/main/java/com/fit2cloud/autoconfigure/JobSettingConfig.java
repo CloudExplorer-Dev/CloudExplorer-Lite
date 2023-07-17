@@ -75,7 +75,7 @@ public class JobSettingConfig implements ApplicationContextAware {
      */
     public void initJob(List<JobSetting> jobSettings) {
         // 获取所有的云账号
-        List<CloudAccount> cloudAccounts = cloudAccountService.list();
+        List<CloudAccount> cloudAccounts = cloudAccountService.listSupportCloudAccount();
         // 当前模块所有已存在的定时任务
         List<QuartzJobDetail> quartzJobDetails = schedulerService.list();
         // 默认参数缓存, 因为获取默认参数的区域是调取api
