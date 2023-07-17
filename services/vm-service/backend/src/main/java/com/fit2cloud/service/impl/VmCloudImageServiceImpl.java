@@ -17,10 +17,10 @@ import com.fit2cloud.controller.request.images.VmCloudImageRequest;
 import com.fit2cloud.dao.mapper.VmCloudImageMapper;
 import com.fit2cloud.dto.VmCloudImageDTO;
 import com.fit2cloud.service.IVmCloudImageService;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 /**
@@ -31,7 +31,7 @@ import java.util.List;
  * @author fit2cloud
  * @since
  */
-@Service
+@Service("VmCloudImageServiceImpl")
 public class VmCloudImageServiceImpl extends ServiceImpl<BaseVmCloudImageMapper, VmCloudImage> implements IVmCloudImageService {
 
     @Resource

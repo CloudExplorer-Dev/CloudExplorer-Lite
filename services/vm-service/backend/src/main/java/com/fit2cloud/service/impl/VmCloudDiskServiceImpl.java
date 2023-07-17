@@ -224,6 +224,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             CloudAccount cloudAccount = cloudAccountService.getById(request.getAccountId());
             String platform = cloudAccount.getPlatform();
             HashMap<String, Object> params = CommonUtil.getParams(cloudAccount.getCredential(), request.getRegionId());
+            params.putAll(request);
             params.put("zone", request.getZone());
             params.put("diskName", request.getDiskName());
             params.put("diskType", request.getDiskType());
@@ -307,6 +308,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
                     .afterResource(afterEnlarge)
                     .updateResourceMethod(this::updateCloudDisk)
                     .build();
+
             ExecProviderMethodRequest execProviderMethod = ExecProviderMethodRequest.builder().
                     execMethod(ICloudProvider::enlargeDisk).
                     methodParams(params).
@@ -565,6 +567,8 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
      */
     private void updateCloudDisk(VmCloudDisk vmCloudDisk, F2CDisk f2CDisk) {
         vmCloudDisk.setDevice(f2CDisk.getDevice());
+        vmCloudDisk.setDiskId(f2CDisk.getDiskId());
+        vmCloudDisk.setDiskName(f2CDisk.getDiskName());
         vmCloudDisk.setDeleteWithInstance(f2CDisk.getDeleteWithInstance());
         updateCloudDisk(vmCloudDisk);
     }

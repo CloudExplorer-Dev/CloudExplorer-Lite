@@ -71,37 +71,82 @@ public enum InputType {
      * 表格单选
      */
     TableCheckbox(TableCheckboxForm.class),
+    /**
+     * 磁盘
+     */
+    DiskConfig(DiskConfigForm.class),
+    /**
+     * 用于收集 Object类型数据
+     */
+    BaseObjectContainer(BaseContainerForm.class),
+    /**
+     * 用于收集List<Object>类型数据
+     */
+    BaseArrayContainer(BaseArrayContainerForm.class),
+
+    /**
+     * 用于收集 表单随创建数量增加而增加的Tab数据
+     */
+    BaseCountTabContainer(BaseCountTabContainerForm.class),
+    /**
+     * 用于收集 表单随创建数量增加而增加的数据
+     */
+    BaseCountContainer(BaseCountContainerForm.class),
+
+    LabelTextInput(InputTextForm.class),
 
     AliyunInstanceTypeForm(com.fit2cloud.common.form.vo.aliyun.AliyunInstanceType.class),
+
     AliyunDiskConfigForm(com.fit2cloud.common.form.vo.aliyun.AliyunDiskConfig.class),
+
     AliyunNetConfigForm(com.fit2cloud.common.form.vo.aliyun.AliyunNetConfig.class),
+
     AliyunServerInfoForm(com.fit2cloud.common.form.vo.aliyun.AliyunServerInfoForm.class),
 
     TencentInstanceTypeForm(com.fit2cloud.common.form.vo.tencent.TencentInstanceType.class),
+
     TencentDiskConfigForm(com.fit2cloud.common.form.vo.tencent.TencentDiskConfig.class),
+
     TencentNetConfigForm(com.fit2cloud.common.form.vo.tencent.TencentNetConfig.class),
+
     TencentServerInfoForm(com.fit2cloud.common.form.vo.tencent.TencentServerInfoForm.class),
 
     HuaweiOsSingleSelectForm(com.fit2cloud.common.form.vo.huawei.OsConfigForm.class),
+
     HuaweiInstanceSpecForm(com.fit2cloud.common.form.vo.huawei.InstanceSpecForm.class),
+
     HuaweiDiskConfigForm(com.fit2cloud.common.form.vo.huawei.DiskConfigForm.class),
+
     HuaweiNetworkConfigForm(com.fit2cloud.common.form.vo.huawei.NetworkConfigForm.class),
+
     HuaweiNameConfigForm(com.fit2cloud.common.form.vo.huawei.NameConfigForm.class),
+
     HuaweiPasswordInfoForm(com.fit2cloud.common.form.vo.huawei.HuaweiPasswordInfoForm.class),
 
     VsphereClusterForm(com.fit2cloud.common.form.vo.vsphere.ClusterForm.class),
+
     VsphereTemplateSelectForm(com.fit2cloud.common.form.vo.vsphere.TemplateForm.class),
+
     VsphereDiskConfigForm(com.fit2cloud.common.form.vo.vsphere.DiskConfigForm.class),
+
     VsphereComputeConfigForm(com.fit2cloud.common.form.vo.vsphere.ComputeConfigForm.class),
+
     VsphereDatastoreForm(com.fit2cloud.common.form.vo.vsphere.DatastoreForm.class),
+
     VsphereNetworkAdapterForm(com.fit2cloud.common.form.vo.vsphere.NetworkAdapterForm.class),
+
     VspherePasswordInfoForm(com.fit2cloud.common.form.vo.vsphere.PasswordInfoForm.class),
+
     VsphereServerInfoForm(com.fit2cloud.common.form.vo.vsphere.ServerInfoForm.class),
 
     OpenStackFlavorForm(com.fit2cloud.common.form.vo.openstack.FlavorForm.class),
+
     OpenStackDiskConfigForm(com.fit2cloud.common.form.vo.openstack.DiskConfigForm.class),
+
     OpenStackServerInfoForm(com.fit2cloud.common.form.vo.openstack.ServerInfoForm.class),
+
     OpenStackNetworkConfigForm(com.fit2cloud.common.form.vo.openstack.NetworkConfigForm.class),
+
     OpenStackSecurityGroupConfigForm(com.fit2cloud.common.form.vo.openstack.SecurityGroupConfigForm.class);
 
     /**

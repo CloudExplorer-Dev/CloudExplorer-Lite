@@ -59,7 +59,7 @@ public class VmCloudServerCatalogController {
     public ResultHolder<List<Good>> listGoods() {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         try {
-            List<CloudAccount> accounts = cloudAccountService.list(new LambdaQueryWrapper<CloudAccount>().eq(CloudAccount::getState, true));
+            List<CloudAccount> accounts = cloudAccountService.listSupportCloudAccount(new LambdaQueryWrapper<CloudAccount>().eq(CloudAccount::getState, true));
             Map<String, Good> map = new HashMap<>();
             List<CompletableFuture<Good>> futureList = new ArrayList<>();
 

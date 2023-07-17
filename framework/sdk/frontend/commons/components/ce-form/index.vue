@@ -24,7 +24,7 @@ const props = withDefaults(
     // 收集到的数据
     modelValue: SimpleMap<any>;
     // 默认每个宽度
-    defaultItemWidth: string;
+    defaultItemWidth?: string;
   }>(),
   { readOnly: false, defaultItemWidth: "75%" }
 );
@@ -76,10 +76,10 @@ const relationChange = (formItem: FormView) => {
             ...props.otherParams,
           },
           resourceLoading,
-          filterNullValue({
+          {
             execModule: formItem.execModule,
             pluginId: formItem.pluginId,
-          })
+          }
         )
         .then((ok) => {
           relationItem.optionList = ok.data;
@@ -89,14 +89,6 @@ const relationChange = (formItem: FormView) => {
   });
 };
 
-const filterNullValue = (obj: any) => {
-  return Object.keys(obj)
-    .filter((key) => obj[key] != null && obj[key] != undefined)
-    .map((key) => ({
-      [key]: obj[key],
-    }))
-    .reduce((pre, next) => ({ ...pre, ...next }));
-};
 /**
  * 获取列表数据
  * @param formItem
@@ -119,10 +111,10 @@ const listOptions = (formItem: FormView, loading: Ref<boolean>) => {
           ...props.otherParams,
         },
         loading,
-        filterNullValue({
+        {
           execModule: formItem.execModule,
           pluginId: formItem.pluginId,
-        })
+        }
       )
       .then((ok) => {
         formItem.optionList = ok.data;
@@ -150,13 +142,15 @@ const initDefaultData = (formItem: FormView) => {
     emit("update:modelValue", cacheModelValue.value);
   }
 };
-
+const ceFormItemRef = ref<Array<InstanceType<typeof CeFormItem>>>([]);
 /**
  * 校验函数
  */
 const validate = () => {
-  if (!ruleFormRef.value) return Promise.resolve();
-  return ruleFormRef.value.validate();
+  return Promise.all([
+    ...ceFormItemRef.value.map((item) => item.validate()),
+    ruleFormRef.value ? ruleFormRef.value.validate() : Promise.resolve(),
+  ]);
 };
 
 // 暴露获取当前表单数据函数
@@ -176,8 +170,9 @@ defineExpose({
     v-loading="resourceLoading"
     v-bind="$attrs"
   >
-    <div v-for="item in formViewData" :key="item.field" style="width: 100%">
+    <template v-for="item in formViewData" :key="item.field">
       <CeFormItem
+        ref="ceFormItemRef"
         :key="item.field"
         v-if="item.relationShowValues? item.relationShows.every((i:string) => item.relationShowValues.includes(modelValue[i])):item.relationShows.every((i:string) => modelValue[i])"
         @change="change(item, $event)"
@@ -187,9 +182,10 @@ defineExpose({
         :readOnly="readOnly"
         :initDefaultData="initDefaultData"
         :defaultItemWidth="defaultItemWidth"
+        :other-params="otherParams"
       >
       </CeFormItem>
-    </div>
+    </template>
   </el-form>
 </template>
 

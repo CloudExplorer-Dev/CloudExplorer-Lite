@@ -29,6 +29,8 @@ public class Form {
      */
     private String label;
 
+    private String type;
+
     private boolean leftLabel;
 
     private boolean hideLabel;

@@ -47,7 +47,10 @@
           v-bind="column"
         >
           <template #default="scope">
-            <template v-if="column.innerHtml">
+            <template v-if="column.component">
+              <TableColumn :column="column" :row="scope.row"></TableColumn>
+            </template>
+            <template v-else-if="column.innerHtml">
               <span v-html="evalF(column.innerHtml, scope.row)"></span
             ></template>
             <template v-else>
@@ -70,7 +73,9 @@ import type { FormView } from "@commons/components/ce-form/type";
 import { computed, ref, watch } from "vue";
 import { Search } from "@element-plus/icons-vue";
 import type { ElTable } from "element-plus";
+
 import _ from "lodash";
+import TableColumn from "@commons/components/ce-form/items/TableColumn.vue";
 const filterText = ref<string>("");
 const props = defineProps<{
   modelValue?: string;

@@ -36,6 +36,8 @@ public @interface Form {
      */
     String label() default "";
 
+    String type() default "form-item";
+
     boolean leftLabel() default false;
 
     boolean hideLabel() default false;

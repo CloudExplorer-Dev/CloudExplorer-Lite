@@ -218,7 +218,13 @@ function initOptionList(
             }
           )
           .then((ok) => {
-            formItem.optionList = ok.data;
+            if (formItem.type === "form-item") {
+              formItem.optionList = ok.data;
+            } else {
+              if (!formItem.optionList) {
+                formItem.optionList = ok.data;
+              }
+            }
           });
       } else {
         //交给其他的组内去调用，可以解决loading不生效的问题
