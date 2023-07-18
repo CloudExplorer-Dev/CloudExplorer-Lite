@@ -416,6 +416,7 @@ onMounted(() => {
       align-items: center;
       flex-wrap: wrap;
       height: 100%;
+      padding-top: 0;
       .footer-form {
         min-width: 200px;
         width: 25.33%;

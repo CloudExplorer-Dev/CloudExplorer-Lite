@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * {@code @Author:张少虎}
@@ -44,4 +45,19 @@ public class PluginsContextHolder {
                 .filter(p -> StringUtils.equals(p.getCloudAccountMeta().platform, platform))
                 .findFirst().orElseThrow(() -> new RuntimeException("不支持的平台类型"));
     }
+
+    public static <T extends IBaseCloudProvider> boolean supportPlatform(Class<T> type, String platform) {
+        return pluginManager.getExtensions(type).stream()
+                .anyMatch(p -> StringUtils.equals(p.getCloudAccountMeta().platform, platform));
+    }
+
+    public static <T extends IBaseCloudProvider> List<String> getSupportPlatformList(Class<T> type) {
+        return getExtensions(type).stream()
+                .map(IBaseCloudProvider::getCloudAccountMeta)
+                .filter(Objects::nonNull)
+                .map(IBaseCloudProvider.CloudAccountMeta::getPlatform)
+                .filter(Objects::nonNull)
+                .toList();
+    }
 }
+

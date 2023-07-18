@@ -4,6 +4,8 @@ package com.fit2cloud.common.provider;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.ActionInfo;
 import com.fit2cloud.common.provider.entity.F2CBalance;
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.pf4j.ExtensionPoint;
 
@@ -58,7 +60,8 @@ public interface IBaseCloudProvider extends ExtensionPoint {
         }
     }
 
-    static class CloudAccountMeta {
+    @Getter
+    public static class CloudAccountMeta {
         /**
          * 认证对象
          */

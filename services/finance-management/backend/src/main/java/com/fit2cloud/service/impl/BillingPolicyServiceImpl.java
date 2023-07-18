@@ -104,7 +104,7 @@ public class BillingPolicyServiceImpl extends ServiceImpl<BaseBillPolicyMapper, 
         List<BillPolicy> policyList = this.list(new LambdaQueryWrapper<BillPolicy>()
                 .in(CollectionUtils.isNotEmpty(policyIdList), BillPolicy::getId, policyIdList));
 
-        return cloudAccountService.list().stream().map(cloudAccount -> {
+        return cloudAccountService.listSupportCloudAccount().stream().map(cloudAccount -> {
             CloudAccountResponse cloudAccountResponse = new CloudAccountResponse();
             BeanUtils.copyProperties(cloudAccount, cloudAccountResponse);
             cloudAccountResponse.setPublicCloud(PluginsContextHolder.getPlatformExtension(IBaseCloudProvider.class, cloudAccount.getPlatform()).getCloudAccountMeta().publicCloud);

@@ -117,6 +117,9 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
     @Override
     public CloudAccountModuleJob getCloudAccountJob(String accountId) {
         CloudAccount cloudAccount = getById(accountId);
+        if (!PluginsContextHolder.supportPlatform(IBaseCloudProvider.class, cloudAccount.getPlatform())) {
+            return null;
+        }
         // todo 当前模块的任务详情
         JobModuleInfo moduleJobInfo = JobSettingConfig.getModuleJobInfo();
         CloudAccountModuleJob moduleJob = new CloudAccountModuleJob();
@@ -134,7 +137,8 @@ public class BaseCloudAccountServiceImpl extends ServiceImpl<BaseCloudAccountMap
         }
         List<CloudAccountJobItem> jobItems = jobDetails.stream().map(job -> {
             String cloudAccountJobName = JobConstants.getCloudAccountJobName(job.getJobName(), accountId);
-            Optional<QuartzJobDetail> jobDetail = quartzJobDetails.stream().filter(j -> j.getTriggerName().equals(cloudAccountJobName)).findFirst();
+            Optional<QuartzJobDetail> jobDetail = quartzJobDetails.
+                    stream().filter(j -> j.getTriggerName().equals(cloudAccountJobName)).findFirst();
             boolean activeReadOnly = job.getActiveReadOnly().test(cloudAccount.getPlatform());
             boolean cronReadOnly = job.getCronReadOnly().test(cloudAccount.getPlatform());
             FormObject formObject = null;
