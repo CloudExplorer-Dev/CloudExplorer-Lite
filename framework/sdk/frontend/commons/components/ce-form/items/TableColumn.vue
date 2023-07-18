@@ -2,7 +2,7 @@
   <component :is="column.component" v-bind="attrs"></component>
 </template>
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import _ from "lodash";
 import DecimalFormat from "@commons/utils/decimalFormat";
 const props = defineProps<{
@@ -16,10 +16,12 @@ const props = defineProps<{
   row: any;
 }>();
 
-const evalF = (text: string, row: any, DecimalFormat: any) => {
-  console.log(text, row);
+const tempDecimalFormat = ref<any>();
+
+function evalF(text: string, row: any, DecimalFormat: any) {
+  tempDecimalFormat.value = DecimalFormat;
   return eval(text);
-};
+}
 
 const attrs = computed(() => {
   if (props.column.attrs) {

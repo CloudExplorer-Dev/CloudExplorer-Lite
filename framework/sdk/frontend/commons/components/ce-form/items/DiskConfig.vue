@@ -87,12 +87,16 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
-import { computed, watch } from "vue";
+import { computed, watch, ref } from "vue";
 import _ from "lodash";
 import type { FormView } from "@commons/components/ce-form/type";
 import LineNumber from "@commons/components/ce-form/items/LineNumber.vue";
 import CeIcon from "@commons/components/ce-icon/index.vue";
-
+const tempRow = ref<any>();
+const evalF = (text: string, row: any) => {
+  tempRow.value = row;
+  return eval(text);
+};
 /**
  * 模板默认应该有的盘
  */
@@ -104,7 +108,7 @@ const templateDisks = computed(() => {
   const row = _.find(templateFormView?.optionList, (obj) => {
     return obj.imageId === props.allData.template;
   });
-  return props.formItem ? eval(props.formItem.propsInfo.mappingEval) : [];
+  return props.formItem ? evalF(props.formItem.propsInfo.mappingEval, row) : [];
 });
 
 /**
