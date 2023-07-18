@@ -1,7 +1,7 @@
 package com.fit2cloud.controller.request;
 
 import com.fit2cloud.common.validator.group.ValidationGroup;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
