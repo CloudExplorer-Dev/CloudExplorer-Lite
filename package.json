@@ -37,7 +37,7 @@
     "decimal.js": "^10.4.3",
     "echarts": "^5.4.0",
     "echarts-liquidfill": "^3.1.0",
-    "element-plus": "^2.2.28",
+    "element-plus": "2.3.7",
     "fit2cloud-ui-plus": "1.0.6",
     "ipaddr.js": "^2.0.1",
     "jsencrypt": "^3.2.1",
