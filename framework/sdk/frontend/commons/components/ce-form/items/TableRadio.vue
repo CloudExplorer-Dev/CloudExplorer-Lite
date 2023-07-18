@@ -109,9 +109,11 @@ const tableData = computed(() => {
   if (props.formItem.optionList) {
     if (filterText.value) {
       return props.formItem.optionList.filter((item: any) =>
-        tableColumns.value.some(
-          (c: any) => item[c.property]?.indexOf(filterText.value) >= 0
-        )
+        tableColumns.value.some((c: any) => {
+          return typeof item[c.property] == "string"
+            ? item[c.property].indexOf(filterText.value) >= 0
+            : false;
+        })
       );
     } else {
       return props.formItem.optionList.filter(

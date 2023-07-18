@@ -88,12 +88,13 @@ defineExpose({
     :class="{ 'model-form': type === 'model' }"
   >
     <el-form-item
-      style="width: 100%; margin-right: 0px"
+      style="width: 100%; margin-right: 32px"
       :label="t('cloud_account.name', '云账号名称')"
       prop="name"
       :rules="rules.name"
     >
       <el-input
+        style="width: 100%; --el-form-inline-content-width: 100%"
         v-model.trim="form.name"
         autocomplete="new-password"
         :placeholder="t('cloud_account.name_placeholder', '请输入云账号名称')"

@@ -9,6 +9,7 @@
       >
         <template v-if="formItem.optionList">
           <CeForm
+            :style="formStyle"
             :read-only="confirm"
             label-position="top"
             require-asterisk-position="right"
@@ -53,6 +54,15 @@ const _data = computed({
   set(value) {
     emit("update:modelValue", value);
   },
+});
+
+/**
+ * 组件样式
+ */
+const formStyle = computed(() => {
+  return props.formItem.propsInfo.formStyle
+    ? props.formItem.propsInfo.formStyle
+    : {};
 });
 const attr = computed(() => {
   if (props.formItem.attrs) {

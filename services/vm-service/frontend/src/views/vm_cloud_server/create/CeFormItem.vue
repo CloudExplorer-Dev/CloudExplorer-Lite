@@ -27,7 +27,11 @@
           :prop="item.field"
           :rules="rules(item)"
         >
-          <span class="left-label" v-if="item.leftLabel && !item.hideLabel">
+          <span
+            class="left-label"
+            :style="getLabelStyle(item)"
+            v-if="item.leftLabel && !item.hideLabel"
+          >
             {{ getLabel(item) }}
           </span>
           <component
@@ -44,9 +48,9 @@
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
           ></component>
-          <!--          <span v-if="item.unit && props.groupId != '0'" class="unit">-->
-          <!--            {{ item.unit }}-->
-          <!--          </span>-->
+          <span v-if="item.unit && props.groupId != '0'" class="unit">
+            {{ item.unit }}
+          </span>
         </el-form-item>
       </template>
       <template v-else>
@@ -108,6 +112,9 @@ const _loading = ref<boolean>(false);
 
 const formItemRef = ref<InstanceType<any> | null>(null);
 
+function getLabelStyle(formItem: FormView): any {
+  return formItem.propsInfo.labelStyle ? formItem.propsInfo.labelStyle : {};
+}
 /**
  * 组件样式
  * @param formItem

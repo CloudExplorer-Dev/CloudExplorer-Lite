@@ -4,6 +4,7 @@
       <div class="title">主机{{ index + 1 }}</div>
       <div>
         <CeForm
+          :style="formStyle"
           :read-only="confirm"
           label-position="top"
           require-asterisk-position="right"
@@ -54,6 +55,14 @@ const _data = computed({
   },
 });
 
+/**
+ * 组件样式
+ */
+const formStyle = computed(() => {
+  return props.formItem.propsInfo.formStyle
+    ? props.formItem.propsInfo.formStyle
+    : {};
+});
 const c = computed(() => {
   if (props.allData && props.allData.count) {
     return props.allData.count;
