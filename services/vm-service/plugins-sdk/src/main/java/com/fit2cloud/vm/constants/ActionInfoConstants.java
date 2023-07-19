@@ -21,6 +21,8 @@ public enum ActionInfoConstants implements ActionInfo {
 
     SYNC_HOST("SYNC_HOST", "同步宿主机", List.of("listHost")),
 
+    SYNC_METRIC_MONITOR("SYNC_METRIC_MONITOR", "同步监控", List.of("getF2CPerfMetricMonitorData", "getF2CDiskPerfMetricMonitorData", "getF2CHostPerfMetricMonitorData", "getF2CDatastorePerfMetricMonitorData")),
+
     SYNC_DATASTORE("SYNC_DATASTORE", "同步存储器", List.of("listDataStore")),
 
     SYNC_VIRTUAL_MACHINE_METRIC_MONITOR("SYNC_VIRTUAL_MACHINE_METRIC_MONITOR", "同步虚拟机监控", List.of("getF2CPerfMetricMonitorData")),

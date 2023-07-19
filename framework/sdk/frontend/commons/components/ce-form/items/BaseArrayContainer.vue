@@ -34,9 +34,9 @@
       "
       v-if="readOnly"
     >
-      + 添加网卡
+      + {{ addLabel }}
     </div>
-    <div class="add-card" v-else @click="addAdapter()">+ 添加网卡</div>
+    <div class="add-card" v-else @click="addAdapter()">+ {{ addLabel }}</div>
   </div>
 </template>
 <script setup lang="ts">
@@ -74,6 +74,12 @@ const data = computed({
   set: ($event) => {
     emit("update:modelValue", $event);
   },
+});
+
+const addLabel = computed(() => {
+  return props.formItem.propsInfo.addLabel
+    ? props.formItem.propsInfo.addLabel
+    : "添加";
 });
 
 const addAdapter = () => {

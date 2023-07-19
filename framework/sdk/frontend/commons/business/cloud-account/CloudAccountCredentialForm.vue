@@ -81,7 +81,7 @@ defineExpose({
     :inline="true"
     status-icon
     label-width="130px"
-    label-suffix=":"
+    label-suffix=""
     :model="form"
     ref="accountFormRef"
     label-position="top"

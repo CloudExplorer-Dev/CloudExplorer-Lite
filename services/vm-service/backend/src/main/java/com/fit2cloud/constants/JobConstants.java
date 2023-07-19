@@ -13,6 +13,8 @@ import com.fit2cloud.vm.constants.ActionInfoConstants;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.quartz.DateBuilder;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -100,18 +102,18 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         // 同步云主机
         JobSetting syncVirtual = new JobSetting(CloudAccountSyncJob.SyncVirtualMachineJob.class, SYNC_VIRTUAL_MACHINE,
                 com.fit2cloud.common.constants.JobConstants.DefaultGroup.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(),
-                "同步云主机", p -> true, defaultParams);
+                "同步云主机", p -> PluginsContextHolder.getPlatformExtension(ICloudProvider.class, p).getInfo().supportActionList.contains(ActionInfoConstants.SYNC_VIRTUAL_MACHINE), defaultParams);
         // 同步磁盘
         JobSetting syncDisk = new JobSetting(CloudAccountSyncJob.SyncDiskJob.class,
                 SYNC_DISK,
                 com.fit2cloud.common.constants.JobConstants.DefaultGroup.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(),
                 "同步磁盘",
-                p -> true, defaultParams);
+                p -> PluginsContextHolder.getPlatformExtension(ICloudProvider.class, p).getInfo().supportActionList.contains(ActionInfoConstants.SYNC_DISK), defaultParams);
         // 同步镜像
         JobSetting syncImage = new JobSetting(CloudAccountSyncJob.SyncImageJob.class,
                 SYNC_IMAGE,
                 com.fit2cloud.common.constants.JobConstants.DefaultGroup.CLOUD_ACCOUNT_RESOURCE_SYNC_GROUP.name(),
-                "同步镜像", p -> true, defaultParams);
+                "同步镜像", p -> PluginsContextHolder.getPlatformExtension(ICloudProvider.class, p).getInfo().supportActionList.contains(ActionInfoConstants.SYNC_IMAGE), defaultParams);
         // 同步宿主机
         JobSetting syncHost = new JobSetting(CloudAccountSyncJob.SyncHostJob.class,
                 SYNC_HOST,
@@ -130,7 +132,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         JobSetting syncMetricMonitor = new JobSetting(CloudAccountSyncJob.SyncMetricMonitor.class,
                 SYNC_METRIC_MONITOR,
                 "CLOUD_RESOURCE_METRIC_SYNC_GROUP",
-                "同步监控数据", "0 30 * * * ? *", p -> true, p -> false, p -> false);
+                "同步监控数据", "0 30 * * * ? *", p -> PluginsContextHolder.getPlatformExtension(ICloudProvider.class, p).getInfo().supportActionList.contains(ActionInfoConstants.SYNC_METRIC_MONITOR), p -> false, p -> false);
         // 记录实例状态
         JobSetting recorderInstanceState = new JobSetting(CloudAccountSyncJob.recorderInstanceState.class,
                 "RECORDER_INSTANCE_STATE", com.fit2cloud.common.constants.JobConstants.DefaultGroup.SYSTEM_GROUP.name(),
@@ -138,7 +140,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         // 记录实例变更
         JobSetting recorderInstanceChange = new JobSetting(CloudAccountSyncJob.recorderInstanceChange.class, "RECORDER_INSTANCE_CHANGE", com.fit2cloud.common.constants.JobConstants.DefaultGroup.SYSTEM_GROUP.name(),
                 "记录实例变更",
-                1, DateBuilder.IntervalUnit.MINUTE, p -> false, p -> false, p -> false);
+                1, DateBuilder.IntervalUnit.MINUTE, p -> true, p -> false, p -> false);
 
         return List.of(syncVirtual, syncDisk, syncImage, syncHost, syncDatastore, syncMetricMonitor, recorderInstanceState, recorderInstanceChange);
     }

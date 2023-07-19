@@ -1,7 +1,7 @@
 <template v-loading="_loading">
   <div style="width: 100%">
     <div :key="index" v-for="(item, index) in _data">
-      <div class="title">主机{{ index + 1 }}</div>
+      <div class="title" :style="formHostTitleStyle">主机{{ index + 1 }}</div>
       <div>
         <CeForm
           :style="formStyle"
@@ -54,7 +54,11 @@ const _data = computed({
     emit("update:modelValue", value);
   },
 });
-
+const formHostTitleStyle = computed(() => {
+  return props.formItem.propsInfo.formHostTitleStyle
+    ? props.formItem.propsInfo.formHostTitleStyle
+    : {};
+});
 /**
  * 组件样式
  */
@@ -110,6 +114,9 @@ defineExpose({
 });
 </script>
 <style lang="scss" scoped>
+.title {
+  margin-bottom: 8px;
+}
 :deep(.el-form-item__content) {
   margin: 16px 0 16px 16px;
 }
