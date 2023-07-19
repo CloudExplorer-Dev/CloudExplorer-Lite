@@ -1,8 +1,11 @@
 <template>
   <div>
     <div v-if="viewCloudAccount" class="cloud-account-content">
-      <PlatformIcon :platform="viewCloudAccount.platform"></PlatformIcon
-      >{{ viewCloudAccount.name }}
+      <PlatformIcon
+        style="height: 32px; display: flex; margin-right: 8px"
+        :platform="viewCloudAccount.platform"
+      ></PlatformIcon>
+      <span> {{ viewCloudAccount.name }} </span>
       <el-dropdown v-if="moreCloudAccountList">
         <span class="more">
           更多
@@ -16,8 +19,11 @@
               v-for="cloudAccount in moreCloudAccountList"
               :key="cloudAccount.id"
             >
-              <PlatformIcon :platform="cloudAccount.platform"></PlatformIcon
-              >{{ cloudAccount.name }}</el-dropdown-item
+              <PlatformIcon
+                style="margin-right: 8px"
+                :platform="cloudAccount.platform"
+              ></PlatformIcon
+              ><span>{{ cloudAccount.name }}</span></el-dropdown-item
             >
           </el-dropdown-menu>
         </template>
@@ -28,7 +34,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { CloudAccount } from "@commons/api/cloud_account/type";
-import PlatformIcon from "@commons/components/detail-page/PlatformIcon.vue";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 const porps = defineProps<{
   cloudAccountList: Array<CloudAccount>;
 }>();

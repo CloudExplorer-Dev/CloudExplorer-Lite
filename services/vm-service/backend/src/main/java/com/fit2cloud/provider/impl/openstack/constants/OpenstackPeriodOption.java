@@ -11,7 +11,7 @@ public enum OpenstackPeriodOption {
     three_month("3", "3个月"),
     four_month("4", "4个月"),
     five_month("5", "5个月"),
-    six_month("6", "5个月"),
+    six_month("6", "6个月"),
     seven_month("7", "7个月"),
     eight_month("8", "8个月"),
     nine_month("9", "9个月"),

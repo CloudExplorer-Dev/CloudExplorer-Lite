@@ -78,14 +78,13 @@ public class ProxmoxCreateServerRequest extends ProxmoxBaseRequest implements IC
     @Form(inputType = InputType.SingleSelect,
             label = "时长",
             clazz = ProxmoxCloudProvider.class,
-
             method = "getPeriodOption",
             textField = "periodDisplayName",
             valueField = "period",
             defaultValue = "1",
-            defaultJsonValue = true,
-            relationShows = "billingMode",
-            relationShowValues = "prePaid",
+            relationShowValues = "PrePaid",
+            relationShows = "instanceChargeType",
+            propsInfo = "{\"style\":{\"height\":\"30px\"}}",
             confirmGroup = 1
     )
     private String periodNum;
@@ -114,7 +113,7 @@ public class ProxmoxCreateServerRequest extends ProxmoxBaseRequest implements IC
             textField = "imageName",
             valueField = "imageId",
             relationTrigger = "regionId",
-            propsInfo = "{\"style\":{\"width\":\"80%\"}}",
+            propsInfo = "{\"style\":{\"width\":\"100%\"}}",
             attrs = "{\"placeholder\":\"请选择一个模板\"}",
             group = 30,
             step = 1,
@@ -243,7 +242,7 @@ public class ProxmoxCreateServerRequest extends ProxmoxBaseRequest implements IC
             label = "配置费用",
             clazz = ProxmoxCloudProvider.class,
             method = "calculateConfigPrice",
-            relationTrigger = {"count", "periodNum", "cpuSlot", "cpu", "mem", "disks"},
+            relationTrigger = {"count", "periodNum", "instanceChargeType", "cpuSlot", "cpu", "mem", "disks"},
             attrs = "{\"style\":\"color: red; font-size: large\"}",
             confirmGroup = 1,
             footerLocation = 1,
@@ -298,11 +297,11 @@ public class ProxmoxCreateServerRequest extends ProxmoxBaseRequest implements IC
         private String type;
 
         @Form(inputType = InputType.Text, label = "登录名", relationShows = {"type"}, relationShowValues = "custom",
-                propsInfo = "{\"rules\":[{\"message\":\"用户名不能为空\",\"trigger\":\"blur\",\"required\":true},{\"message\":\"用户名只能为大小写字母\",\"trigger\":\"blur\",\"pattern\":\"^[a-zA-z]+$\"}]}")
+                propsInfo = "{\"rules\":[{\"message\":\"用户名不能为空\",\"trigger\":\"blur\",\"required\":true},{\"message\":\"用户名只能为大小写字母\",\"trigger\":\"blur\",\"pattern\":\"^[a-zA-z]+$\"}],\"style\":{\"width\":\"140px\"}}")
         private String userName;
 
         @Form(inputType = InputType.Password, label = "登录密码", relationShows = {"type"}, relationShowValues = "custom",
-                propsInfo = "{\"rules\":[{\"message\":\"密码不能为空\",\"trigger\":\"blur\",\"required\":true},{\"message\":\"密码格式必须符合: 字符个数大于等于8，包含英文大小写、数字及特殊字符 ~!@#$%^&*()_+=?.\",\"trigger\":\"blur\",\"pattern\":\"^(?![a-zA-Z]+$)(?![A-Z0-9]+$)(?![A-Z~!@#$%^&*()_+=?]+$)(?![a-z0-9]+$)(?![a-z~!@#$%^&*()_+=?]+$)(?![0-9~!@#$%^&*()_+=?]+$)(?![a-zA-z0-9]+$)(?![a-z0-9~!@#$%^&*()_+=?]+$)(?![A-Z0-9~!@#$%^&*()_+=?]+$)[a-zA-Z0-9~!@#$%^&*()_+=?]{8,30}$\"}]}")
+                propsInfo = "{\"rules\":[{\"message\":\"密码不能为空\",\"trigger\":\"blur\",\"required\":true},{\"message\":\"密码格式必须符合: 字符个数大于等于8，包含英文大小写、数字及特殊字符 ~!@#$%^&*()_+=?.\",\"trigger\":\"blur\",\"pattern\":\"^(?![a-zA-Z]+$)(?![A-Z0-9]+$)(?![A-Z~!@#$%^&*()_+=?]+$)(?![a-z0-9]+$)(?![a-z~!@#$%^&*()_+=?]+$)(?![0-9~!@#$%^&*()_+=?]+$)(?![a-zA-z0-9]+$)(?![a-z0-9~!@#$%^&*()_+=?]+$)(?![A-Z0-9~!@#$%^&*()_+=?]+$)[a-zA-Z0-9~!@#$%^&*()_+=?]{8,30}$\"}],\"style\":{\"width\":\"100%\"}}")
         private String password;
 
     }

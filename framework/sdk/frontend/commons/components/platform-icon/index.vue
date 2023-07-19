@@ -1,5 +1,5 @@
 <template>
-  <div class="platform-wapper" :innerHTML="platformIconS"></div>
+  <div class="platform-wapper" :style="style" :innerHTML="platformIconS"></div>
 </template>
 <script setup lang="ts">
 import { computed } from "vue";
@@ -23,8 +23,10 @@ const props = withDefaults(
      * 云平台
      */
     platform: string;
+
+    style?: any;
   }>(),
-  { type: "icon" }
+  { type: "icon", style: {} }
 );
 </script>
 <style lang="scss" scoped>

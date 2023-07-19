@@ -1,29 +1,30 @@
 <template>
-  <div class="adapter-container">
-    <div v-for="(adapter, i) in data" :key="i" class="card">
+  <div class="base-array-content">
+    <div v-for="(adapter, i) in data" :key="i" class="card-content">
       <template v-if="formItem.optionList">
-        <div class="title">
+        <div class="title-content">
           {{ "网卡" + (i + 1) }}
 
           <el-icon
             style="cursor: pointer"
             v-if="data.length > 1 || i > 0"
-            @click="removeAdapter(data, i)"
+            @click="removeCard(data, i)"
           >
             <CloseBold />
           </el-icon>
         </div>
-
-        <CeForm
-          :read-only="readOnly"
-          ref="ceFormRef"
-          label-position="top"
-          require-asterisk-position="right"
-          v-model="data[i]"
-          :other-params="otherParams"
-          :formViewData="formItem.optionList ? formItem.optionList : []"
-          v-bind="attr"
-        ></CeForm>
+        <div class="value-content">
+          <CeForm
+            :read-only="readOnly"
+            ref="ceFormRef"
+            label-position="top"
+            require-asterisk-position="right"
+            v-model="data[i]"
+            :other-params="otherParams"
+            :formViewData="formItem.optionList ? formItem.optionList : []"
+            v-bind="attr"
+          ></CeForm>
+        </div>
       </template>
     </div>
     <div
@@ -36,7 +37,7 @@
     >
       + {{ addLabel }}
     </div>
-    <div class="add-card" v-else @click="addAdapter()">+ {{ addLabel }}</div>
+    <div class="add-card" v-else @click="addCard()">+ {{ addLabel }}</div>
   </div>
 </template>
 <script setup lang="ts">
@@ -82,7 +83,7 @@ const addLabel = computed(() => {
     : "添加";
 });
 
-const addAdapter = () => {
+const addCard = () => {
   data.value.push({});
 };
 
@@ -92,7 +93,7 @@ const attr = computed(() => {
   }
   return {};
 });
-function removeAdapter(list: Array<SimpleMap<any>>, index: number) {
+function removeCard(list: Array<SimpleMap<any>>, index: number) {
   _.remove(list, (o, i) => index === i);
 }
 const validate = () => {
@@ -101,7 +102,7 @@ const validate = () => {
 defineExpose({ validate });
 </script>
 <style lang="scss" scoped>
-.adapter-container {
+.base-array-content {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -113,22 +114,16 @@ defineExpose({ validate });
     width: 75%;
   }
 
-  .card {
+  .card-content {
     min-height: 240px;
     width: 334px;
     margin: 10px;
-    padding: 18px;
-
-    background: linear-gradient(
-      180deg,
-      #f7f9fc 0%,
-      rgba(247, 249, 252, 0) 100%
-    );
+    background: #fff;
     border: 1px solid #ffffff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
     border-radius: 4px;
 
-    .title {
+    .title-content {
       font-size: 14px;
       font-weight: bold;
       line-height: 22px;
@@ -142,6 +137,9 @@ defineExpose({ validate });
       flex-wrap: nowrap;
       justify-content: space-between;
       align-items: center;
+    }
+    .value-content {
+      margin: 18px;
     }
   }
 

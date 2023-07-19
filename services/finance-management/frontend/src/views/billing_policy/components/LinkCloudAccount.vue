@@ -11,6 +11,7 @@
         v-loading="loading"
         :cloud-account-list="cloudAccountList"
         v-model="selectedCloudAccount"
+        :row-number="3"
       ></CloudAccountCheckbox>
       <template #footer>
         <span class="dialog-footer">

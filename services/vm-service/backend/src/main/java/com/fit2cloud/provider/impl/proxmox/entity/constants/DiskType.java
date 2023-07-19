@@ -1,4 +1,4 @@
-package com.fit2cloud.provider.impl.proxmox.entity.constents;
+package com.fit2cloud.provider.impl.proxmox.entity.constants;
 
 /**
  * {@code @Author:张少虎}

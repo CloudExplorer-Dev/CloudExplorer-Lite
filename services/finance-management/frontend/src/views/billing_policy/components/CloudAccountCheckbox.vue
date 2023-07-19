@@ -93,7 +93,7 @@
 import { computed } from "vue";
 import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import type { CloudAccountResponse } from "@/api/billing_policy/type";
-import { split } from "@commons/utils/commons";
+import { splitArray } from "@commons/utils/commons";
 import type { SimpleMap } from "@commons/api/base/type";
 import InfoIcon from "@/views/billing_policy/components/InfoIcon.vue";
 const props = withDefaults(
@@ -145,10 +145,7 @@ const rowCloudAccountList = computed(() => {
   if (!props.cloudAccountList) {
     return [];
   }
-  return split(
-    props.cloudAccountList,
-    Math.ceil(props.cloudAccountList.length / props.rowNumber)
-  );
+  return splitArray(props.cloudAccountList, props.rowNumber);
 });
 </script>
 <style lang="scss" scoped>
@@ -158,7 +155,9 @@ const rowCloudAccountList = computed(() => {
   width: 100%;
   .row {
     width: 100%;
+
     .col {
+      margin-top: 10px;
       .popover-title {
         display: flex;
         flex-wrap: nowrap;
