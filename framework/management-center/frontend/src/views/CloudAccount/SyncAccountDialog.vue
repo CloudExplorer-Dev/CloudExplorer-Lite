@@ -12,7 +12,6 @@ import { ElMessage } from "element-plus";
 import { useModuleStore } from "@commons/stores/modules/module";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import { useI18n } from "vue-i18n";
-
 const moduleStore = useModuleStore();
 const permissionStore = usePermissionStore();
 const { t } = useI18n();
@@ -29,7 +28,7 @@ const tabs = computed(() => {
       id: "resource",
     },
   ];
-  if (billSyncShow(_account.value)) {
+  if (billSyncShow.value) {
     list.push({
       name: "账单",
       id: "bill",
@@ -37,26 +36,7 @@ const tabs = computed(() => {
   }
   return list;
 });
-
-function billSyncShow(row?: CloudAccount) {
-  if (!row) {
-    return false;
-  }
-  const showPlatforms = [
-    "fit2cloud_ali_platform",
-    "fit2cloud_huawei_platform",
-    "fit2cloud_tencent_platform",
-    "fit2cloud_openstack_platform",
-    "fit2cloud_vsphere_platform",
-  ];
-  return (
-    showPlatforms.includes(row.platform) &&
-    moduleStore.runningModules?.some(
-      (m: any) => m.id === "finance-management"
-    ) &&
-    permissionStore.hasPermission("[management-center]CLOUD_ACCOUNT:SYNC_BILL")
-  );
-}
+const billSyncShow = ref<boolean>(false);
 
 const activeTab = ref<string>("resource");
 
@@ -85,34 +65,37 @@ function open(account?: CloudAccount) {
     syncBillType: "api",
     bucketSyncCycle: "current",
   };
-
+  loading.value = true;
   // 获取当前云账号区域
-  cloudAccountApi.getRegions(_id.value, loading).then((ok) => {
+  const region = cloudAccountApi.getRegions(_id.value).then((ok) => {
     regions.value = ok.data;
   });
   // 获取同步的资源
-  cloudAccountApi.getResourceSync(_id.value, loading).then((ok) => {
+  const resource = cloudAccountApi.getResourceSync(_id.value).then((ok) => {
     resources.value = ok.data;
   });
-
-  if (billSyncShow(account)) {
-    cloudAccountApi.getJobs(_id.value, loading).then((ok) => {
-      const financeManagement = ok.data.cloudAccountModuleJobs.find(
-        (m) => m.module === "finance-management"
-      );
-      if (financeManagement) {
-        if (
-          financeManagement.jobDetailsList &&
-          financeManagement.jobDetailsList.length > 0
-        ) {
-          billSyncForm.value.syncBillType =
-            financeManagement.jobDetailsList[0].params["BILL_SETTING"][
-              "syncMode"
-            ];
-        }
+  const jobs = cloudAccountApi.getJobs(_id.value).then((ok) => {
+    const financeManagement = ok.data.cloudAccountModuleJobs.find(
+      (m) => m.module === "finance-management"
+    );
+    if (financeManagement) {
+      billSyncShow.value = true;
+      if (
+        financeManagement.jobDetailsList &&
+        financeManagement.jobDetailsList.length > 0
+      ) {
+        billSyncForm.value.syncBillType =
+          financeManagement.jobDetailsList[0].params["BILL_SETTING"][
+            "syncMode"
+          ];
       }
-    });
-  }
+    } else {
+      billSyncShow.value = false;
+    }
+  });
+  Promise.all([region, resource, jobs]).finally(() => {
+    loading.value = false;
+  });
 }
 
 defineExpose({ open, close });
@@ -355,7 +338,7 @@ function syncBill() {
         </template>
       </el-tabs>
 
-      <el-main v-if="activeTab === 'resource'">
+      <el-main v-if="activeTab === 'resource'" v-loading="loading">
         <el-form ref="ruleFormRef" :rules="syncRules" :model="syncForm">
           <div>
             <el-checkbox
@@ -368,7 +351,6 @@ function syncBill() {
             <el-form-item prop="checkedResources">
               <el-checkbox-group
                 v-model="syncForm.checkedResources"
-                v-loading="loading"
                 @change="changeResource"
               >
                 <el-checkbox
@@ -402,7 +384,6 @@ function syncBill() {
             </el-checkbox>
             <el-form-item prop="checkedRegions">
               <el-checkbox-group
-                v-loading="loading"
                 @change="change"
                 v-model="syncForm.checkedRegions"
               >
@@ -429,9 +410,8 @@ function syncBill() {
           </div>
         </el-form>
       </el-main>
-      <el-main v-if="activeTab === 'bill'">
+      <el-main v-if="activeTab === 'bill'" v-loading="loading">
         <el-form
-          v-loading="loading"
           ref="ruleFormSyncBill"
           :rules="billSyncRules"
           :model="billSyncForm"

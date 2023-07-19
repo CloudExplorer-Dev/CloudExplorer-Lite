@@ -10,7 +10,6 @@ import com.fit2cloud.base.service.IBaseJobRecordService;
 import com.fit2cloud.common.constants.JobStatusConstants;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.exception.SkipPageException;
-import com.fit2cloud.common.provider.util.CommonUtil;
 import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import jakarta.annotation.Resource;
@@ -66,7 +65,7 @@ public abstract class BaseSyncService {
     protected <T, P> void proxy(String cloudAccountId,
                                 String jobDescription,
                                 List<String> months,
-                                Function<String, Class<? extends P>> getCloudProvider,
+                                Function<String, P> getCloudProvider,
                                 Function<LocalDateTime, JobRecord> initJobRecord,
                                 BiFunction<P, String, List<T>> execMethod,
                                 BiFunction<CloudAccount, String, String> getExecMethodArgs,
@@ -93,13 +92,13 @@ public abstract class BaseSyncService {
                     cloudAccountService.updateById(cloudAccount);
                     // 初始化一条定时任务记录
                     JobRecord jobRecord = initJobRecord.apply(syncTime);
-                    Class<? extends P> cloudProvider = getCloudProvider.apply(cloudAccount.getPlatform());
+                    P apply = getCloudProvider.apply(cloudAccount.getPlatform());
                     try {
                         for (String month : months) {
                             String params = getExecMethodArgs.apply(cloudAccount, month);
                             try {
                                 // 同步数据
-                                List<T> syncRecord = CommonUtil.exec(cloudProvider, params, execMethod);
+                                List<T> syncRecord = execMethod.apply(apply, params);
                                 BiSaveBatchOrUpdateParams<T> tSaveBillBatchOrUpdateParams = new BiSaveBatchOrUpdateParams<>(cloudAccount, syncTime, params, syncRecord, jobRecord);
                                 // 因为账单数据量比较大,如果在同步的过程中删除了云账号,那么直接不进行插入并且跳过同步循环
                                 CloudAccount c = cloudAccountService.getById(cloudAccountId);
@@ -164,7 +163,7 @@ public abstract class BaseSyncService {
     protected <T, P> void proxy(String cloudAccountId,
                                 String jobDescription,
                                 List<String> months,
-                                Function<String, Class<? extends P>> getCloudProvider,
+                                Function<String, P> getCloudProvider,
                                 Function<LocalDateTime, JobRecord> initJobRecord,
                                 BiFunction<P, String, List<T>> execMethod,
                                 BiFunction<CloudAccount, String, String> getExecMethodArgs,

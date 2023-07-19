@@ -56,7 +56,6 @@ public class VmServerInstanceRecordMappingHandler implements InstanceRecordMappi
                     instanceRecord.setResourceName(vmCloudServer.getInstanceName());
                     instanceRecord.setBillMode(billMode);
                     instanceRecord.setMeta(Map.of("cpu", vmCloudServer.getCpu(), "memory", vmCloudServer.getMemory()));
-                    instanceRecord.setOrganizationId(vmCloudServer.getSourceId());
                     instanceRecord.setRegion(vmCloudServer.getRegion());
                     instanceRecord.setCloudAccountId(vmCloudServer.getAccountId());
                     instanceRecord.setResourceType("ECS");

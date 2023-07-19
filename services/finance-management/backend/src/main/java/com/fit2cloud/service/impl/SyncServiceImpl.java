@@ -379,7 +379,7 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
      * @param <T>               账单
      */
     private <T> void proxy(String cloudAccountId, List<String> months, BiFunction<ICloudProvider, String, List<T>> execMethod, BiFunction<CloudAccount, String, String> getExecMethodArgs, Consumer<BiSaveBatchOrUpdateParams<T>> saveBatchOrUpdate, Consumer<BiSaveBatchOrUpdateParams<T>> writeJobRecord, Consumer<String> remote) {
-        proxy(cloudAccountId, jobDescription, months, ICloudProvider::of, syncTime -> initJobRecord(syncTime, cloudAccountId), execMethod, getExecMethodArgs, saveBatchOrUpdate, writeJobRecord, () -> auth(months, cloudAccountId), remote);
+        proxy(cloudAccountId, jobDescription, months, p -> PluginsContextHolder.getPlatformExtension(ICloudProvider.class, p), syncTime -> initJobRecord(syncTime, cloudAccountId), execMethod, getExecMethodArgs, saveBatchOrUpdate, writeJobRecord, () -> auth(months, cloudAccountId), remote);
     }
 
     /**

@@ -3,12 +3,11 @@ package com.fit2cloud.constants;
 import com.fit2cloud.autoconfigure.JobSettingConfig;
 import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.common.log.utils.LogUtil;
-import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.scheduler.util.CronUtils;
 import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.provider.ICloudProvider;
-import com.fit2cloud.provider.constants.ProviderConstants;
 import com.fit2cloud.quartz.CloudAccountSyncJob;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -54,11 +53,11 @@ public class JobConstants implements JobSettingConfig.JobConfig {
                 CLOUD_ACCOUNT_BILL_SYNC_GROUP,
                 "同步账单",
                 CronUtils.create(new Integer[]{0}, Calendar.HOUR),
-                p -> Arrays.stream(ProviderConstants.values())
-                        .filter(providerConstants -> providerConstants.name().equals(p))
-                        .map(s -> CommonUtil.exec(s.getCloudProvider(), ICloudProvider::getParamsClass))
+                p -> PluginsContextHolder.getExtensions(ICloudProvider.class).stream()
+                        .filter(cloudProvider -> StringUtils.equals(cloudProvider.getCloudAccountMeta().platform, p))
+                        .map(ICloudProvider::getParamsClass)
                         .allMatch(Objects::nonNull), (p) -> false, (p) -> false,
-                p -> CommonUtil.exec(ICloudProvider.of(p), ICloudProvider::getParamsClass)
+                p -> PluginsContextHolder.getPlatformExtension(ICloudProvider.class, p).getParamsClass()
                 , (cloudAccount) -> {
             Map<String, Object> result = new HashMap<>();
             result.put(com.fit2cloud.common.constants.JobConstants.CloudAccount.CLOUD_ACCOUNT_ID.name(), cloudAccount.getId());
