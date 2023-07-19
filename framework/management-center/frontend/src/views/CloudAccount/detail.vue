@@ -4,7 +4,6 @@ import type { FormInstance } from "element-plus";
 import { useI18n } from "vue-i18n";
 import cloudAccountApi from "@/api/cloud_account";
 import { useRouter } from "vue-router";
-import { platformIcon } from "@commons/utils/platform";
 import { ElMessage, ElMessageBox } from "element-plus";
 import _ from "lodash";
 import {
@@ -27,7 +26,10 @@ import CurrencyFormat from "@commons/utils/currencyFormat";
 import type { CloudAccount } from "@/api/cloud_account/type";
 import EditAccount from "./edit.vue";
 import SyncAccountDialog from "./SyncAccountDialog.vue";
-
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
+import { usePlatformStore } from "@commons/stores/modules/platform";
+import type { Platform } from "@commons/api/cloud_account/type";
+const platformStore = usePlatformStore();
 const props = defineProps<{
   id: string;
 }>();
@@ -520,14 +522,13 @@ onBeforeUnmount(() => {
                 "
                 v-if="accountForm?.platform"
               >
-                <component
-                  style="margin-right: 8px"
-                  :is="platformIcon[accountForm?.platform]?.component"
-                  v-bind="platformIcon[accountForm?.platform]?.icon"
-                  :color="platformIcon[accountForm?.platform]?.color"
-                  size="16px"
-                />
-                {{ platformIcon[accountForm.platform].name }}
+                <PlatformIcon :platform="accountForm?.platform"></PlatformIcon>
+
+                {{
+                  platformStore.platforms.find(
+                    (p: Platform) => p.field === accountForm?.platform
+                  ).label
+                }}
               </div>
             </DetailFormValue>
           </el-descriptions-item>
