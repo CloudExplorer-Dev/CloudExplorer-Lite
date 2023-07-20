@@ -26,6 +26,7 @@
     </div>
 
     <div
+      v-if="metricJobDetails && metricJobDetails.length > 0"
       style="
         background-color: var(--ce-main-content-bg-color, #fff);
         border-top-right-radius: var(--ce-main-content-border-radius);

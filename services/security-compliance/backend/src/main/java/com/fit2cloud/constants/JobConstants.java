@@ -1,7 +1,9 @@
 package com.fit2cloud.constants;
 
 import com.fit2cloud.autoconfigure.JobSettingConfig;
+import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.dto.job.JobSetting;
+import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.quartz.CloudAccountSyncJob;
 
 import java.util.List;
@@ -24,7 +26,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         JobSetting syncScanResource = new JobSetting(CloudAccountSyncJob.SyncScanJob.class,
                 SYNC_SCAN_RESOURCE,
                 "CLOUD_COMPLIANCE_RESOURCE_SYNC_GROUP",
-                "扫描合规资源", "0 0 3 * * ? *", p -> true, (p) -> false, (p) -> false);
+                "扫描合规资源", "0 0 3 * * ? *", p -> PluginsContextHolder.supportPlatform(ICloudProvider.class, p), (p) -> false, (p) -> false);
         return List.of(syncScanResource);
     }
 }
