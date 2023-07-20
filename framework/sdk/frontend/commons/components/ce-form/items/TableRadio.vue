@@ -82,7 +82,9 @@ const props = defineProps<{
   formItem: FormView;
   setDefaultValue?: boolean;
 }>();
+const rowTemp = ref<any>();
 const evalF = (text: string, row: any) => {
+  rowTemp.value = row;
   return eval(text);
 };
 const emit = defineEmits(["update:modelValue", "change"]);
