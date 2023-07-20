@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -110,13 +111,21 @@ public class SimpleInstanceStateRecorder implements InstanceStateRecorder {
      * @param resourceInstanceStates 实例状态
      */
     private void updateInstanceState(List<InstanceRecord> instanceRecords, LocalDateTime currentDateTime, String month, InstanceStatePolicy instanceStatePolicy, List<ResourceInstanceState> resourceInstanceStates) {
-        List<ResourceInstanceState> newResourceInstanceState = instanceRecords
+        List<ResourceInstanceState> newResourceInstanceState = new ArrayList<>(instanceRecords
                 .parallelStream()
                 .map(instanceRecord -> toResourceInstanceState(instanceRecord, resourceInstanceStates, month, currentDateTime))
-                .toList();
+                .toList());
 
+        List<ResourceInstanceState> deleteInstanceState = resourceInstanceStates
+                .stream()
+                .filter(resourceInstanceState -> instanceRecords
+                        .stream()
+                        .noneMatch(instanceRecord -> StringUtils.equals(instanceRecord.getResourceId(), resourceInstanceState.getResourceId())))
+                .toList();
+        newResourceInstanceState.addAll(deleteInstanceState);
         instanceStatePolicy.saveBatch(setting.getResourceInstanceType(), month, newResourceInstanceState);
     }
+
 
     /**
      * 转换为资源实例状态对象
