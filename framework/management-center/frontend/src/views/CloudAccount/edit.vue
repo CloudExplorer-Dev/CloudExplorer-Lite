@@ -37,16 +37,14 @@ const emit = defineEmits(["submit"]);
  * 更新云账号
  */
 const update = () => {
-  (credentialFormRef.value?.formRef as FormInstance)?.validate((valid) => {
-    if (valid) {
-      cloudAccountApi
-        .updateCloudAccount(form.value as UpdateAccount, loading)
-        .then(() => {
-          ElMessage.success(t("commons.msg.op_success", "操作成功"));
-          clear();
-          emit("submit");
-        });
-    }
+  credentialFormRef.value?.validate()?.then(() => {
+    cloudAccountApi
+      .updateCloudAccount(form.value as UpdateAccount, loading)
+      .then(() => {
+        ElMessage.success(t("commons.msg.op_success", "操作成功"));
+        clear();
+        emit("submit");
+      });
   });
 };
 
