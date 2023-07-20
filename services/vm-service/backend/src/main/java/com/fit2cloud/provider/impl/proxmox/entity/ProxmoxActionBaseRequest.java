@@ -1,21 +1,23 @@
 package com.fit2cloud.provider.impl.proxmox.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fit2cloud.common.provider.impl.proxmox.client.entity.InstanceId;
+import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.provider.impl.proxmox.entity.request.ProxmoxBaseRequest;
 import lombok.Getter;
-import lombok.Setter;
 
-/**
- * {@code @Author:张少虎}
- * {@code @Date: 2023/7/16  16:46}
- * {@code @Version 1.0}
- * {@code @注释: }
- */
+
 @Getter
-@Setter
 public class ProxmoxActionBaseRequest extends ProxmoxBaseRequest {
-    private String uuid;
+
+    @JsonProperty("uuid")
+    private InstanceId uuid;
 
     public void setInstanceUuid(String uuid) {
-        this.uuid = uuid;
+        this.uuid = JsonUtil.parseObject(uuid, InstanceId.class);
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = JsonUtil.parseObject(uuid, InstanceId.class);
     }
 }

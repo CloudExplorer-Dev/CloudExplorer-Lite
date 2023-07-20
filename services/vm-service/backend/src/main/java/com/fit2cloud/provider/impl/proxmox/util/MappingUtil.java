@@ -18,6 +18,7 @@ import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -40,14 +41,23 @@ public class MappingUtil {
         return f2CImage;
     }
 
+    public static String toVmId(Integer vmId, long ctime) {
+        return JsonUtil.toJSONString(Map.of("uuid", vmId.toString(), "ctime", ctime));
+    }
+
+    public static String toInstanceId(String uuid, long ctime) {
+        return JsonUtil.toJSONString(Map.of("uuid", uuid, "ctime", ctime));
+    }
+
     public static F2CVirtualMachine toF2CVirtualMachine(Qemu qemu,
                                                         Config config,
                                                         String cluster,
                                                         ClusterNode clusterNode,
                                                         List<NetworkInterface> networkInterfaces) {
         F2CVirtualMachine f2CVirtualMachine = new F2CVirtualMachine();
-        f2CVirtualMachine.setInstanceUUID(qemu.getVmid().toString());
-        f2CVirtualMachine.setInstanceId(qemu.getVmid().toString());
+        String instanceId = toVmId(qemu.getVmid(), Objects.isNull(config.getMeta()) ? -1 : config.getMeta().getCtime());
+        f2CVirtualMachine.setInstanceUUID(instanceId);
+        f2CVirtualMachine.setInstanceId(instanceId);
         f2CVirtualMachine.setRegion(clusterNode.getName());
         f2CVirtualMachine.setMemory((int) Math.ceil(qemu.getMaxmem() / 1024.f / 1024 / 1024));
         f2CVirtualMachine.setCpu(qemu.getCpus());
@@ -133,14 +143,16 @@ public class MappingUtil {
 
     public static F2CDisk toF2CDisk(DiskStatusInfo diskStatusInfo, Disk disk, String node) {
         F2CDisk f2CDisk = new F2CDisk();
-        f2CDisk.setDiskId(disk.getVolid());
+        String diskId = toInstanceId(disk.getVolid(), diskStatusInfo.getCtime());
+        String instanceId = toVmId(disk.getVmId(), diskStatusInfo.getCtime());
+        f2CDisk.setDiskId(diskId);
         f2CDisk.setCreateTime(disk.getCtime() * 1000);
         f2CDisk.setDiskMode(disk.getContent());
         f2CDisk.setStatus(diskStatusInfo.isUsed() ? F2CDiskStatus.IN_USE : F2CDiskStatus.AVAILABLE);
         f2CDisk.setBootable(diskStatusInfo.isBoot());
         f2CDisk.setDiskName(disk.getDiskName());
         f2CDisk.setInstanceName(diskStatusInfo.getQemu().getName());
-        f2CDisk.setInstanceUuid(diskStatusInfo.getQemu().getVmid() + "");
+        f2CDisk.setInstanceUuid(instanceId);
         f2CDisk.setSize((long) Math.ceil(disk.getSize() / (1024 * 1024 * 1024.0)));
         f2CDisk.setDatastoreName(disk.getStorage());
         f2CDisk.setDatastoreUniqueId(disk.getStorage());

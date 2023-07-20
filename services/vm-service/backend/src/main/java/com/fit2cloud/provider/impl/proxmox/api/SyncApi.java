@@ -168,9 +168,12 @@ public class SyncApi {
         if (result.getStatusCode() == 500) {
             return List.of();
         } else {
-            JSONArray jsonArray = result.getResponse().getJSONObject("data").getJSONArray("result");
-            return JsonUtil.parseArray(jsonArray.toString(), NetworkInterface.class);
-
+            try {
+                JSONArray jsonArray = result.getResponse().getJSONObject("data").getJSONArray("result");
+                return JsonUtil.parseArray(jsonArray.toString(), NetworkInterface.class);
+            } catch (Exception e) {
+                return List.of();
+            }
         }
     }
 
@@ -335,8 +338,8 @@ public class SyncApi {
             List<DiskStatusInfo> result = new ArrayList<>();
             result.addAll(qemuConfig.getDisks().stream()
                     .filter(disk -> StringUtils.isEmpty(disk.getMedia()))
-                    .map(disk -> new DiskStatusInfo(disk.getVolId(), disk.isBoot(), true, disk.getDevice(), qemu)).toList());
-            result.addAll(qemuConfig.getUnuseds().stream().map(unUsed -> new DiskStatusInfo(unUsed.getValue(), false, false, null, qemu)).toList());
+                    .map(disk -> new DiskStatusInfo(disk.getVolId(), disk.isBoot(), true, disk.getDevice(), qemu, Objects.isNull(qemuConfig.getMeta()) ? -1 : qemuConfig.getMeta().getCtime())).toList());
+            result.addAll(qemuConfig.getUnuseds().stream().map(unUsed -> new DiskStatusInfo(unUsed.getValue(), false, false, null, qemu, Objects.isNull(qemuConfig.getMeta()) ? -1 : qemuConfig.getMeta().getCtime())).toList());
             return result;
         }).flatMap(List::stream).toList();
         return mountDiskVolIdList.stream().map(diskStatusInfo -> allDisk.stream()
@@ -352,7 +355,7 @@ public class SyncApi {
         Qemu qemu = getQemuById(client, node, vmId + "");
         com.fit2cloud.common.provider.impl.proxmox.client.entity.config.Disk disk = qemuConfig.getDisks().stream().filter(d -> StringUtils.equals(configKey, d.getKey())).findFirst().orElseThrow(() -> new Fit2cloudException(404, "未找到磁盘"));
         Disk d = getDisk(client, node, disk.getVolId());
-        DiskStatusInfo diskStatusInfo = new DiskStatusInfo(disk.getVolId(), disk.isBoot(), true, disk.getDevice(), qemu);
+        DiskStatusInfo diskStatusInfo = new DiskStatusInfo(disk.getVolId(), disk.isBoot(), true, disk.getDevice(), qemu, Objects.isNull(qemuConfig.getMeta()) ? -1 : qemuConfig.getMeta().getCtime());
         return MappingUtil.toF2CDisk(diskStatusInfo, d, node);
     }
 
@@ -382,14 +385,14 @@ public class SyncApi {
     public static List<F2CDisk> getVmF2CDisks(ProxmoxActionBaseRequest request) {
         VmProxmoxCredential credential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = credential.getClient();
-        Config config = getQemuConfig(client, request.getRegionId(), request.getUuid());
-        Qemu qemu = getQemuById(client, request.getRegionId(), request.getUuid());
+        Config config = getQemuConfig(client, request.getRegionId(), request.getUuid().getUuid());
+        Qemu qemu = getQemuById(client, request.getRegionId(), request.getUuid().getUuid());
         List<Disk> disks = listDisk(client, request.getRegionId());
         List<DiskStatusInfo> result = new ArrayList<>();
         result.addAll(config.getDisks().stream()
                 .filter(disk -> StringUtils.isEmpty(disk.getMedia()))
-                .map(disk -> new DiskStatusInfo(disk.getVolId(), disk.isBoot(), true, disk.getDevice(), qemu)).toList());
-        result.addAll(config.getUnuseds().stream().map(unUsed -> new DiskStatusInfo(unUsed.getValue(), false, false, null, qemu)).toList());
+                .map(disk -> new DiskStatusInfo(disk.getVolId(), disk.isBoot(), true, disk.getDevice(), qemu, Objects.isNull(config.getMeta()) ? -1 : config.getMeta().getCtime())).toList());
+        result.addAll(config.getUnuseds().stream().map(unUsed -> new DiskStatusInfo(unUsed.getValue(), false, false, null, qemu, Objects.isNull(config.getMeta()) ? -1 : config.getMeta().getCtime())).toList());
         return result.stream().map(diskStatusInfo -> disks.stream().filter(disk -> StringUtils.equals(disk.getVolid(), diskStatusInfo.getVolId()))
                 .findFirst().map(disk -> MappingUtil.toF2CDisk(diskStatusInfo, disk, request.getRegionId()))
                 .orElse(null)).filter(Objects::nonNull).toList();

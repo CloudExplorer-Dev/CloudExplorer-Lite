@@ -7,6 +7,7 @@ import com.fit2cloud.common.provider.impl.proxmox.client.PveClient;
 import com.fit2cloud.common.provider.impl.proxmox.client.Result;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.DataStore;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.Disk;
+import com.fit2cloud.common.provider.impl.proxmox.client.entity.InstanceId;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.Qemu;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.config.Config;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.config.NetworkInterface;
@@ -159,11 +160,11 @@ public class ActionApi {
     public static boolean powerOnVm(ProxmoxActionBaseRequest powerOnRequest) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(powerOnRequest.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        Qemu qemu = SyncApi.getQemuById(client, powerOnRequest.getRegionId(), powerOnRequest.getUuid());
+        Qemu qemu = SyncApi.getQemuById(client, powerOnRequest.getRegionId(), powerOnRequest.getUuid().getUuid());
         if (StringUtil.equals(qemu.getStatus(), "stopped")) {
-            Result result = vmProxmoxCredential.getClient().getNodes().get(powerOnRequest.getRegionId()).getQemu().get(powerOnRequest.getUuid()).getStatus().getStart().vmStart();
+            Result result = vmProxmoxCredential.getClient().getNodes().get(powerOnRequest.getRegionId()).getQemu().get(powerOnRequest.getUuid().getUuid()).getStatus().getStart().vmStart();
             client.waitForTaskToFinish(result.getResponse().getString("data"), 0, Long.MAX_VALUE);
-            waitAgentStarted(client, powerOnRequest.getRegionId(), powerOnRequest.getUuid());
+            waitAgentStarted(client, powerOnRequest.getRegionId(), powerOnRequest.getUuid().getUuid());
         }
         return true;
     }
@@ -172,9 +173,9 @@ public class ActionApi {
     public static boolean powerOffVm(ProxmoxActionBaseRequest powerOffRequest) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(powerOffRequest.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        Qemu qemu = SyncApi.getQemuById(client, powerOffRequest.getRegionId(), powerOffRequest.getUuid());
+        Qemu qemu = SyncApi.getQemuById(client, powerOffRequest.getRegionId(), powerOffRequest.getUuid().getUuid());
         if (StringUtil.equals(qemu.getStatus(), "running")) {
-            Result result = client.getNodes().get(powerOffRequest.getRegionId()).getQemu().get(powerOffRequest.getUuid()).getStatus().getStop().vmStop();
+            Result result = client.getNodes().get(powerOffRequest.getRegionId()).getQemu().get(powerOffRequest.getUuid().getUuid()).getStatus().getStop().vmStop();
             // 等待 clone 完毕
             client.waitForTaskToFinish(result.getResponse().getString("data"), 0, Long.MAX_VALUE);
         }
@@ -184,9 +185,9 @@ public class ActionApi {
     public static boolean shutdownInstance(ProxmoxActionBaseRequest request) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        Qemu qemu = SyncApi.getQemuById(client, request.getRegionId(), request.getUuid());
+        Qemu qemu = SyncApi.getQemuById(client, request.getRegionId(), request.getUuid().getUuid());
         if (StringUtil.equals(qemu.getStatus(), "running")) {
-            Result result = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid()).getStatus().getShutdown().vmShutdown();
+            Result result = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid().getUuid()).getStatus().getShutdown().vmShutdown();
             client.waitForTaskToFinish(result.getResponse().getString("data"), 0, Long.MAX_VALUE);
             return true;
         }
@@ -196,16 +197,16 @@ public class ActionApi {
     public static boolean reboot(ProxmoxActionBaseRequest request) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        PveClient.PVENodes.PVENodeItem.PVEQemu.PVEVmidItem pve = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid());
-        Qemu qemu = SyncApi.getQemuById(client, request.getRegionId(), request.getUuid());
+        PveClient.PVENodes.PVENodeItem.PVEQemu.PVEVmidItem pve = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid().getUuid());
+        Qemu qemu = SyncApi.getQemuById(client, request.getRegionId(), request.getUuid().getUuid());
         Result result;
         if (StringUtil.equals(qemu.getStatus(), "running")) {
-            result = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid()).getStatus().getReboot().vmReboot();
+            result = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid().getUuid()).getStatus().getReboot().vmReboot();
         } else {
-            result = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid()).getStatus().getStart().vmStart();
+            result = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid().getUuid()).getStatus().getStart().vmStart();
         }
         client.waitForTaskToFinish(result.getResponse().getString("data"), 0, Long.MAX_VALUE);
-        waitAgentStarted(client, request.getRegionId(), request.getUuid());
+        waitAgentStarted(client, request.getRegionId(), request.getUuid().getUuid());
         return true;
     }
 
@@ -214,7 +215,7 @@ public class ActionApi {
         PveClient client = vmProxmoxCredential.getClient();
         // 关机
         shutdownInstance(request);
-        Result result = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid()).destroyVm();
+        Result result = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid().getUuid()).destroyVm();
         client.waitForTaskToFinish(result.getResponse().getString("data"), 0, Long.MAX_VALUE);
         return true;
     }
@@ -222,13 +223,13 @@ public class ActionApi {
     public static boolean deleteDisk(BaseDiskRequest request) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-
         List<Disk> disks = SyncApi.listDisk(client, request.getRegionId());
-        Optional<Disk> diskF = disks.stream().filter(disk -> StringUtils.equals(disk.getVolid(), request.getDiskId())).findFirst();
+        String diskId = JsonUtil.parseObject(request.getDiskId(), InstanceId.class).getUuid();
+        Optional<Disk> diskF = disks.stream().filter(disk -> StringUtils.equals(disk.getVolid(), diskId)).findFirst();
         if (diskF.isPresent()) {
             Disk disk = diskF.get();
             Config qemuConfig = SyncApi.getQemuConfig(client, request.getRegionId(), disk.getVmId() + "");
-            Optional<UnUsed> first = qemuConfig.getUnuseds().stream().filter(item -> StringUtils.equals(item.getValue(), request.getDiskId())).findFirst();
+            Optional<UnUsed> first = qemuConfig.getUnuseds().stream().filter(item -> StringUtils.equals(item.getValue(), diskId)).findFirst();
             if (first.isPresent()) {
                 first.ifPresent(item -> {
                     client.getNodes().get(request.getRegionId()).getQemu().get(disk.getVmId()).getConfig().updateVm(Map.of("delete", item.getKey()));
@@ -240,14 +241,16 @@ public class ActionApi {
     }
 
     public static boolean detachDisk(BaseDiskRequest request) {
+        String diskId = JsonUtil.parseObject(request.getDiskId(), InstanceId.class).getUuid();
+        String instanceUuid = JsonUtil.parseObject(request.getInstanceUuid(), InstanceId.class).getUuid();
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        Config qemuConfig = SyncApi.getQemuConfig(client, request.getRegionId(), request.getInstanceUuid());
+        Config qemuConfig = SyncApi.getQemuConfig(client, request.getRegionId(), instanceUuid);
         Optional<com.fit2cloud.common.provider.impl.proxmox.client.entity.config.Disk> first = qemuConfig.getDisks().stream()
-                .filter(disk -> StringUtils.equals(disk.getVolId(), request.getDiskId())).findFirst();
+                .filter(disk -> StringUtils.equals(disk.getVolId(), diskId)).findFirst();
         if (first.isPresent()) {
             first.ifPresent(item -> {
-                client.getNodes().get(request.getRegionId()).getQemu().get(request.getInstanceUuid()).getConfig().updateVm(Map.of("delete", item.getKey()));
+                client.getNodes().get(request.getRegionId()).getQemu().get(JsonUtil.parseObject(request.getInstanceUuid(), InstanceId.class).getUuid()).getConfig().updateVm(Map.of("delete", item.getKey()));
             });
             return true;
         }
@@ -255,10 +258,11 @@ public class ActionApi {
     }
 
     public static boolean enlargeDisk(BaseDiskResizeRequest request) {
+        String diskId = JsonUtil.parseObject(request.getDiskId(), InstanceId.class).getUuid();
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
         List<Disk> disks = SyncApi.listDisk(client, request.getRegionId());
-        Optional<Disk> diskF = disks.stream().filter(disk -> StringUtils.equals(disk.getVolid(), request.getDiskId())).findFirst();
+        Optional<Disk> diskF = disks.stream().filter(disk -> StringUtils.equals(disk.getVolid(), diskId)).findFirst();
         if (diskF.isPresent()) {
 
             Disk disk = diskF.get();
@@ -280,35 +284,41 @@ public class ActionApi {
     public static F2CVirtualMachine changeVmConfig(ProxmoxUpdateConfigRequest req) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(req.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        client.getNodes().get(req.getRegionId()).getQemu().get(req.getInstanceUuid()).getConfig().updateVm(Map.of("memory", req.getMem() * 1024, "cores", req.getCpu(), "sockets", req.getCpuSlot(), "delete", "balloon,shares,vcpus,affinity,cpuunits,cpulimit,cpu"));
+        client.getNodes().get(req.getRegionId()).getQemu().get(req.getInstanceUuid().getUuid()).getConfig().updateVm(Map.of("memory", req.getMem() * 1024, "cores", req.getCpu(), "sockets", req.getCpuSlot(), "delete", "balloon,shares,vcpus,affinity,cpuunits,cpulimit,cpu"));
         ProxmoxActionBaseRequest request = new ProxmoxActionBaseRequest();
-        request.setUuid(req.getInstanceUuid());
+        request.setUuid(JsonUtil.toJSONString(req.getInstanceUuid()));
         request.setRegionId(req.getRegionId());
         request.setCredential(req.getCredential());
-        // 关机
-        ActionApi.reboot(request);
-        return SyncApi.getF2CVirtualMachineById(client, req.getRegionId(), req.getInstanceUuid());
+        Qemu qemu = SyncApi.getQemuById(client, request.getRegionId(), request.getUuid().getUuid());
+        if (StringUtils.equals(qemu.getStatus(), "running")) {
+            // 关机
+            ActionApi.reboot(request);
+        }
+        return SyncApi.getF2CVirtualMachineById(client, req.getRegionId(), req.getInstanceUuid().getUuid());
     }
 
     public static F2CDisk attachDisk(BaseDiskRequest request) {
+        String instanceId = JsonUtil.parseObject(request.getInstanceUuid(), InstanceId.class).getUuid();
+        String diskId = JsonUtil.parseObject(request.getDiskId(), InstanceId.class).getUuid();
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        Disk disk = SyncApi.getDisk(client, request.getRegionId(), request.getDiskId());
+        Disk disk = SyncApi.getDisk(client, request.getRegionId(), diskId);
+
         if (Objects.nonNull(disk)) {
             Integer vmId = disk.getVmId();
-            Config newConfig = SyncApi.getQemuConfig(client, request.getRegionId(), request.getInstanceUuid());
+            Config newConfig = SyncApi.getQemuConfig(client, request.getRegionId(), instanceId);
             String notUsedKey = getNotUsedKey(newConfig.getDisks().stream().map(com.fit2cloud.common.provider.impl.proxmox.client.entity.config.Disk::getKey).filter(key -> key.startsWith("scsi")).toList(), "scsi");
-            if (StringUtils.equals(vmId.toString(), request.getInstanceUuid())) {
-                client.getNodes().get(request.getRegionId()).getQemu().get(request.getInstanceUuid()).getConfig().updateVm(Map.of(notUsedKey, request.getDiskId()));
-                return SyncApi.getF2CDisk(client, request.getRegionId(), request.getInstanceUuid(), notUsedKey);
+            if (StringUtils.equals(vmId.toString(), instanceId)) {
+                client.getNodes().get(request.getRegionId()).getQemu().get(instanceId).getConfig().updateVm(Map.of(notUsedKey, diskId));
+                return SyncApi.getF2CDisk(client, request.getRegionId(), instanceId, notUsedKey);
             } else {
                 Config qemuConfig = SyncApi.getQemuConfig(client, request.getRegionId(), vmId.toString());
                 UnUsed unUsed = qemuConfig.getUnuseds().stream().filter(un -> StringUtils.equals(disk.getVolid(), un.getValue())).findFirst().orElseThrow(() -> new Fit2cloudException(400, "未找到磁盘"));
                 String oldKey = unUsed.getKey();
-                Result result = client.getNodes().get(request.getRegionId()).getQemu().get(vmId).getMoveDisk().moveVmDisk(Map.of("vmid", vmId, "target-vmid", Integer.parseInt(request.getInstanceUuid()), "disk", oldKey, "target-disk", notUsedKey));
+                Result result = client.getNodes().get(request.getRegionId()).getQemu().get(vmId).getMoveDisk().moveVmDisk(Map.of("vmid", vmId, "target-vmid", Integer.parseInt(instanceId), "disk", oldKey, "target-disk", notUsedKey));
                 if (result.getStatusCode() == 200) {
                     client.waitForTaskToFinish(result.getResponse().getString("data"), 0, Long.MAX_VALUE);
-                    return SyncApi.getF2CDisk(client, request.getRegionId(), request.getInstanceUuid(), notUsedKey);
+                    return SyncApi.getF2CDisk(client, request.getRegionId(), instanceId, notUsedKey);
                 }
             }
         }
@@ -331,7 +341,7 @@ public class ActionApi {
         //local:1,format=raw
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        Config qemuConfig = SyncApi.getQemuConfig(client, request.getRegionId(), request.getInstanceUuid());
+        Config qemuConfig = SyncApi.getQemuConfig(client, request.getRegionId(), request.getInstanceUuid().getUuid());
         List<String> diskKeyList = qemuConfig.getDisks().stream()
                 .filter(disk -> StringUtils.equals(disk.getDevice(), request.getDevice()))
                 .map(com.fit2cloud.common.provider.impl.proxmox.client.entity.config.Disk::getKey).toList();
@@ -339,10 +349,10 @@ public class ActionApi {
         DataStore dataStore = SyncApi.getDataStore(client, request.getRegionId(), request.getDatastore());
 
         client.getNodes().get(request.getRegionId())
-                .getQemu().get(request.getInstanceUuid())
+                .getQemu().get(request.getInstanceUuid().getUuid())
                 .getConfig()
                 .updateVm(Map.of(notUsedKey, URLEncoder.encode(request.getDatastore() + ":" + request.getSize() + (CollectionUtils.isEmpty(dataStore.getFormats()) ? "" : ",format=" + request.getFormat()), StandardCharsets.UTF_8)));
-        return SyncApi.getF2CDisk(client, request.getRegionId(), request.getInstanceUuid(), notUsedKey);
+        return SyncApi.getF2CDisk(client, request.getRegionId(), request.getInstanceUuid().getUuid(), notUsedKey);
     }
 
     public static String calculateConfigPrice(ProxmoxCalculateConfigPriceRequest request) {

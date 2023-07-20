@@ -38,6 +38,11 @@ public class Config {
 
     private String osType;
 
+    /**
+     * 元数据
+     */
+    private MetaConfig meta;
+
     public Config(Map<String, Object> config) {
         disks = new ArrayList<>();
         unuseds = new ArrayList<>();
@@ -61,6 +66,9 @@ public class Config {
             }
             if (StringUtils.equals(key, "ostype")) {
                 this.osType = config.get(key).toString();
+            }
+            if (MetaConfig.current(key)) {
+                this.meta = new MetaConfig(key, config.get(key).toString());
             }
         }
         if (Objects.nonNull(boot)) {

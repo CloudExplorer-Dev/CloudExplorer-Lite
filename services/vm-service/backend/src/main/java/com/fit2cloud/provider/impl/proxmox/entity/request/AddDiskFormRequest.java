@@ -1,5 +1,7 @@
 package com.fit2cloud.provider.impl.proxmox.entity.request;
 
+import com.fit2cloud.common.provider.impl.proxmox.client.entity.InstanceId;
+import com.fit2cloud.common.utils.JsonUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,5 +15,9 @@ import lombok.Setter;
 @Setter
 public class AddDiskFormRequest extends AddDiskForm {
 
-    private String instanceUuid;
+    private InstanceId instanceUuid;
+
+    public void setInstanceUuid(String instanceUuid) {
+        this.instanceUuid = JsonUtil.parseObject(instanceUuid, InstanceId.class);
+    }
 }

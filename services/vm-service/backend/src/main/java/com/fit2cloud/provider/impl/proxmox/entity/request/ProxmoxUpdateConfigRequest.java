@@ -1,7 +1,8 @@
 package com.fit2cloud.provider.impl.proxmox.entity.request;
 
+import com.fit2cloud.common.provider.impl.proxmox.client.entity.InstanceId;
+import com.fit2cloud.common.utils.JsonUtil;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * {@code @Author:张少虎}
@@ -10,11 +11,31 @@ import lombok.Setter;
  * {@code @注释: }
  */
 @Getter
-@Setter
 public class ProxmoxUpdateConfigRequest extends ProxmoxBaseRequest {
-    private String instanceUuid;
+    private InstanceId instanceUuid;
     private String annotation;
     private int cpu;
     private int mem;
     private int cpuSlot;
+
+    public void setInstanceUuid(String instanceUuid) {
+        this.instanceUuid = JsonUtil.parseObject(instanceUuid, InstanceId.class);
+    }
+
+    public void setAnnotation(String annotation) {
+        this.annotation = annotation;
+    }
+
+
+    public void setMem(int mem) {
+        this.mem = mem;
+    }
+
+    public void setCpu(int cpu) {
+        this.cpu = cpu;
+    }
+
+    public void setCpuSlot(int cpuSlot) {
+        this.cpuSlot = cpuSlot;
+    }
 }
