@@ -22,7 +22,6 @@ import java.util.List;
 public class ProxmoxNetworkForm {
     @Form(inputType = InputType.BaseArrayContainer,
             type = "component",
-            
             clazz = ProxmoxCloudProvider.class,
             defaultValue = "[{}]",
             defaultJsonValue = true,
@@ -33,21 +32,21 @@ public class ProxmoxNetworkForm {
     @Form(inputType = InputType.Text, label = "dns域", required = false, propsInfo = "{\"elFormItemStyle\":{\"width\":\"50%\",\"float\":\"left\"},\"style\":{\"width\":\"90%\"}}")
     private String dnsDomain;
 
-    @Form(inputType = InputType.Text, label = "dns服务器", required = false, propsInfo = "{\"rules\":[{\"message\":\"DNS服务器格式不正确\",\"trigger\":\"blur\",\"pattern\":\"^((25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d)))\\\\.){3}(25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d)))$\",\"required\":false}],\"elFormItemStyle\":{\"width\":\"50%\",\"float\":\"left\"},\"style\":{\"width\":\"90%\"}}")
+    @Form(inputType = InputType.Text, label = "dns服务器", required = false, propsInfo = "{\"rules\":[{\"message\":\"DNS服务器格式不正确\",\"trigger\":\"blur\",\"pattern\":\"^((25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d)))\\\\.){3}(25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d)))$\",\"required\":false}],\"elFormItemStyle\":{\"width\":\"50%\",\"float\":\"left\",\"margin-bottom\":\"18px\"},\"style\":{\"width\":\"90%\"}}")
     private String dnsServers;
 
 
     @Getter
     @Setter
     public static class NetworkAdapter {
-        @Form(inputType = InputType.SingleSelect, label = "网络", 
+        @Form(inputType = InputType.SingleSelect, label = "网络",
                 textField = "iface", valueField = "iface",
                 clazz = ProxmoxCloudProvider.class,
                 method = "getNetworkList",
                 propsInfo = "{\"elFormItemStyle\":{\"margin-bottom\":\"18px\"},\"rules\":[{\"message\":\"网络不能为空\",\"trigger\":\"change\",\"required\":true}]}")
         private String network;
 
-        @Form(inputType = InputType.SingleSelect, label = "网络模型", 
+        @Form(inputType = InputType.SingleSelect, label = "网络模型",
                 clazz = ProxmoxCloudProvider.class,
                 textField = "key", valueField = "value",
                 method = "getModelList",
@@ -62,18 +61,17 @@ public class ProxmoxNetworkForm {
         private boolean firewall;
 
         @Form(inputType = InputType.Radio, label = "IP分配类型", defaultValue = "dhcp",
-                textField = "key", valueField = "value", method = "getDhcpType", 
+                textField = "key", valueField = "value", method = "getDhcpType",
                 clazz = ProxmoxCloudProvider.class, attrs = "{\"style\":\"width:100%\"}",
                 propsInfo = "{\"elFormItemStyle\":{\"margin-bottom\":\"18px\"}}"
         )
         private String ipv4dhcp;
-
         @Form(inputType = InputType.Text, label = "IPv4/CIDR", relationShows = {"ipv4dhcp"}, relationShowValues = "static"
-                , propsInfo = "{\"elFormItemStyle\":{\"margin-bottom\":\"18px\"}},\"rules\":[{\"message\":\"IPv4/CIDR不能为空\",\"trigger\":\"blur\",\"required\":true},{\"message\":\"IPv4/CIDR格式不正确\",\"trigger\":\"blur\",\"pattern\":\"^(((25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d)))\\\\.){3}(25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d))))\\\\/(3[0-6]|[1-2]\\\\d|\\\\d)$\"}]}")
+                , propsInfo = "{\"elFormItemStyle\":{\"margin-bottom\":\"18px\"},\"rules\":[{\"message\":\"IPv4/CIDR不能为空\",\"trigger\":\"blur\",\"required\":true},{\"message\":\"IPv4/CIDR格式不正确\",\"trigger\":\"blur\",\"pattern\":\"^(((25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d)))\\\\.){3}(25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d))))\\\\/(3[0-6]|[1-2]\\\\d|\\\\d)$\"}]}")
         private String ipv4cidr;
 
         @Form(inputType = InputType.Text, label = "网关", relationShows = {"ipv4dhcp"}, relationShowValues = "static",
-                propsInfo = "{\"elFormItemStyle\":{\"margin-bottom\":\"18px\"}},\"rules\":[{\"message\":\"网关不能为空\",\"trigger\":\"blur\",\"required\":true},{\"message\":\"网关格式不正确\",\"trigger\":\"blur\",\"pattern\":\"^((25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d)))\\\\.){3}(25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d)))$\"}]}")
+                propsInfo = "{\"elFormItemStyle\":{\"margin-bottom\":\"18px\"},\"rules\":[{\"message\":\"网关不能为空\",\"trigger\":\"blur\",\"required\":true},{\"message\":\"网关格式不正确\",\"trigger\":\"blur\",\"pattern\":\"^((25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d)))\\\\.){3}(25[0-5]|2[0-4]\\\\d|((1\\\\d{2})|([1-9]?\\\\d)))$\"}]}")
         private String ipv4gateway;
 
 

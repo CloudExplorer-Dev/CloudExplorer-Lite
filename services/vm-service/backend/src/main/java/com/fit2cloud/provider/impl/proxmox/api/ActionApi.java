@@ -284,15 +284,18 @@ public class ActionApi {
         String instanceUuid = req.getInstanceUuid().getUuid();
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(req.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        PveClient.PVENodes.PVENodeItem.PVEQemu.PVEVmidItem.PVEConfig config = client.getNodes().get(req.getRegionId()).getQemu().get(instanceUuid).getConfig();
-
+        PveClient.PVENodes.PVENodeItem.PVEQemu.PVEVmidItem.PVEConfig config = client.getNodes()
+                .get(req.getRegionId())
+                .getQemu()
+                .get(instanceUuid).getConfig();
         Result memory = config.updateVm(Map.of("memory", req.getMem() * 1024, "delete", URLEncoder.encode("balloon,shares", StandardCharsets.UTF_8)));
         if (!memory.isSuccessStatusCode()) {
             throw new Fit2cloudException(500, "变更内存失败");
         }
-        Result cpu = config.updateVm(Map.of("cores", req.getCpu(), "sockets", req.getCpuSlot(), "delete", URLEncoder.encode("vcpus,affinity,cpuunits,cpulimit,cpu", StandardCharsets.UTF_8)));
+        Map<String, Object> params = Map.of("sockets", req.getCpuSlot(), "cores", req.getCpu(), "numa", 0, "delete", URLEncoder.encode("vcpus,cpuunits,cpulimit,cpu", StandardCharsets.UTF_8));
+        Result cpu = config.updateVm(params);
         if (!cpu.isSuccessStatusCode()) {
-            throw new Fit2cloudException(500, "CPU配置变更失败");
+            throw new Fit2cloudException(500, "CPU配置变更失败" + JsonUtil.toJSONString(params));
         }
         ProxmoxActionBaseRequest request = new ProxmoxActionBaseRequest();
         request.setUuid(JsonUtil.toJSONString(req.getInstanceUuid()));

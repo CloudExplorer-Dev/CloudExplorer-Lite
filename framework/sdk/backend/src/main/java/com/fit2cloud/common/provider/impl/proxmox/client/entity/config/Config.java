@@ -45,6 +45,8 @@ public class Config {
 
     private String vmGenId;
 
+    private String digest;
+
     public Config(Map<String, Object> config) {
         disks = new ArrayList<>();
         unuseds = new ArrayList<>();
@@ -74,6 +76,9 @@ public class Config {
             }
             if (StringUtils.equals(key, "vmgenid")) {
                 this.vmGenId = config.get(key).toString();
+            }
+            if (StringUtils.equals(key, "digest")) {
+                this.digest = config.get(key).toString();
             }
         }
         if (Objects.nonNull(boot)) {

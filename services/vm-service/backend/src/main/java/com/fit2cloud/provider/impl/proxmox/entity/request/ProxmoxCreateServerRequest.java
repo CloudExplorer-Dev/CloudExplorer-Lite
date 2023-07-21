@@ -194,7 +194,6 @@ public class ProxmoxCreateServerRequest extends ProxmoxBaseRequest implements IC
     private String datastore;
 
     @Form(inputType = InputType.BaseCountTabContainer, label = "网络",
-
             type = "component",
             clazz = ProxmoxCloudProvider.class,
             defaultValue = "[{}]",
@@ -230,7 +229,7 @@ public class ProxmoxCreateServerRequest extends ProxmoxBaseRequest implements IC
             defaultJsonValue = true,
             method = "getHostObjForm",
             attrs = "{\"label-width\":0}",
-            propsInfo = "{\"formHostTitleStyle\":{\"margin-bottom\":\"8px\"},\"formStyle\":{\"width\":\"100%\",\"background\":\"#f7f9fc\",\"border-radius\":\"4px\",\"display\":\"flex\",\"align-items\":\"center\",\"height\":\"46px\",\"padding-left\":\"12px\",\"padding-right\":\"12px\",\"margin-bottom\":\"6px\",\"justify-content\":\"center\"}}",
+            propsInfo = "{\"formHostTitleStyle\":{\"margin-bottom\":\"8px\"},\"formStyle\":{\"width\":\"100%\",\"background\":\"#f7f9fc\",\"border-radius\":\"4px\",\"display\":\"flex\",\"align-items\":\"center\",\"height\":\"48px\",\"padding-left\":\"12px\",\"padding-right\":\"12px\",\"margin-bottom\":\"6px\",\"justify-content\":\"center\"}}",
             step = 3,
             group = 90,
             confirmGroup = 3,

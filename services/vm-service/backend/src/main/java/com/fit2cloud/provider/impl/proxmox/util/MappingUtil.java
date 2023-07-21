@@ -42,12 +42,12 @@ public class MappingUtil {
 
     public static String toVmId(String vmId, String vmGenId) {
         String temp = "{\"uuid\":\"%s\",\"vmGenId\":\"%s\"}";
-        return temp.formatted(vmGenId, vmGenId);
+        return temp.formatted(vmId, vmGenId);
     }
 
     public static String toInstanceId(String uuid, String vmGenId) {
         String temp = "{\"uuid\":\"%s\",\"vmGenId\":\"%s\"}";
-        return temp.formatted(vmGenId, vmGenId);
+        return temp.formatted(uuid, vmGenId);
     }
 
     public static F2CVirtualMachine toF2CVirtualMachine(Qemu qemu,
