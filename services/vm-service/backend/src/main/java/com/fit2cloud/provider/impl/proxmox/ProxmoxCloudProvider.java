@@ -62,6 +62,11 @@ public class ProxmoxCloudProvider extends AbstractCloudProvider<VmProxmoxCredent
     }
 
     @Override
+    public List<Map<String, String>> getDiskTypes(String req) {
+        return getFormatList(req).stream().map(kv -> Map.of(kv.getKey(), kv.getValue())).toList();
+    }
+
+    @Override
     public F2CVirtualMachine getSimpleServerByCreateRequest(String req) {
         ProxmoxCreateServerRequest request = JsonUtil.parseObject(req, ProxmoxCreateServerRequest.class);
         F2CVirtualMachine virtualMachine = new F2CVirtualMachine();

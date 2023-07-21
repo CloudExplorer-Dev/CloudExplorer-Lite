@@ -68,6 +68,7 @@ public class MappingUtil {
         f2CVirtualMachine.setMemoryUsed((int) Math.ceil(qemu.getMem() / 1024.0 / 1024 / 1024));
         f2CVirtualMachine.setInstanceStatus(getF2CInstanceStatus(qemu.getStatus()).name());
         f2CVirtualMachine.setDescription(Objects.isNull(config.getDescription()) ? "" : config.getDescription().getDescription());
+        f2CVirtualMachine.setRemark(Objects.isNull(config.getDescription()) ? "" : config.getDescription().getDescription());
         f2CVirtualMachine.setName(qemu.getName());
         f2CVirtualMachine.setInstanceType(getInstanceType(f2CVirtualMachine.getCpu(), f2CVirtualMachine.getMemory()));
         f2CVirtualMachine.setInstanceTypeDescription(getInstanceType(f2CVirtualMachine.getCpu(), f2CVirtualMachine.getMemory()));

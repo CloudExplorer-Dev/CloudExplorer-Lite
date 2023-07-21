@@ -268,12 +268,15 @@ public class ActionApi {
             Config qemuConfig = SyncApi.getQemuConfig(client, request.getRegionId(), diskF.get().getVmId() + "");
             String diskKey = getDiskKey(qemuConfig, diskId);
             if (StringUtils.isNotEmpty(diskKey)) {
-                client.getNodes().get(request.getRegionId()).getQemu().get(disk.getVmId()).getResize().resizeVm(diskKey, request.getNewDiskSize() + "G");
+                Result result = client.getNodes().get(request.getRegionId()).getQemu().get(disk.getVmId()).getResize().resizeVm(diskKey, request.getNewDiskSize() + "G");
+                if (!result.isSuccessStatusCode()) {
+                    throw new Fit2cloudException(500, "磁盘扩容失败");
+                }
                 return true;
             }
 
         }
-        return false;
+        throw new Fit2cloudException(404, "找不到id{" + diskId + "}的磁盘");
     }
 
     private static String getDiskKey(Config config, String diskId) {
