@@ -1,11 +1,11 @@
-import { get, post, del, put } from "@commons/request";
-import type { Ref } from "vue";
+import {get, post} from "@commons/request";
+import type {Ref} from "vue";
 import type Result from "@commons/request/Result";
 
-import type { CloudAccount, CreateAccount, Platform } from "./type";
+import type {CloudAccount, CreateAccount, Platform} from "./type";
 
 function listAll(loading?: Ref<boolean>): Promise<Result<Array<CloudAccount>>> {
-  return get("api/base/cloud_account/list", null, loading);
+    return get("api/base/cloud_account/list", null, loading);
 }
 
 /**
@@ -15,10 +15,10 @@ function listAll(loading?: Ref<boolean>): Promise<Result<Array<CloudAccount>>> {
  * @returns 云账号对象
  */
 function getCloudAccount(
-  cloudAccountId: string,
-  loading?: Ref<boolean>
+    cloudAccountId: string,
+    loading?: Ref<boolean>
 ): Promise<Result<CloudAccount>> {
-  return get(`/api/base/cloud_account/${cloudAccountId}`, null, loading);
+    return get(`/api/base/cloud_account/${cloudAccountId}`, null, loading);
 }
 
 /**
@@ -27,14 +27,14 @@ function getCloudAccount(
  * @param loading
  */
 function getAccountBalance(
-  cloudAccountId: string,
-  loading?: Ref<boolean>
+    cloudAccountId: string,
+    loading?: Ref<boolean>
 ): Promise<Result<number | string>> {
-  return get(
-    `/api/base/cloud_account/balance/${cloudAccountId}`,
-    null,
-    loading
-  );
+    return get(
+        `/api/base/cloud_account/balance/${cloudAccountId}`,
+        null,
+        loading
+    );
 }
 
 /**
@@ -43,9 +43,16 @@ function getAccountBalance(
  * @returns         云账号供应商
  */
 const getPlatformAll: (
-  loading?: Ref<boolean>
+    loading?: Ref<boolean>
 ) => Promise<Result<Array<Platform>>> = (loading) => {
-  return get("/api/base/cloud_account/platform", null, loading);
+
+    return get(
+        (import.meta.env.VITE_APP_NAME === "base"
+            ? "/management-center/"
+            : "/") + "api/base/cloud_account/platform",
+        null,
+        loading
+    );
 };
 
 /**
@@ -55,25 +62,25 @@ const getPlatformAll: (
  * @returns             保存成功后的云账号对象
  */
 const save: (
-  createAccount: CreateAccount,
-  loading?: Ref<boolean>
+    createAccount: CreateAccount,
+    loading?: Ref<boolean>
 ) => Promise<Result<CloudAccount>> = (createAccount, loading) => {
-  return post(
-    (import.meta.env.VITE_APP_NAME === "management-center"
-      ? ""
-      : "/management-center/") + "api/cloud_account",
-    null,
-    createAccount,
-    loading
-  );
+    return post(
+        (import.meta.env.VITE_APP_NAME === "management-center"
+            ? ""
+            : "/management-center/") + "api/cloud_account",
+        null,
+        createAccount,
+        loading
+    );
 };
 
 const BaseCloudAccountApi = {
-  getCloudAccount,
-  listAll,
-  getAccountBalance,
-  getPlatformAll,
-  save,
+    getCloudAccount,
+    listAll,
+    getAccountBalance,
+    getPlatformAll,
+    save,
 };
 
 export default BaseCloudAccountApi;
