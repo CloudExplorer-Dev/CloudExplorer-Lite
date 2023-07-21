@@ -31,9 +31,14 @@ public class BaseCloudAccountController {
     @Resource
     private IBaseCloudAccountService cloudAccountService;
 
+    @GetMapping("/list_support")
+    public ResultHolder<List<CloudAccount>> listSupport() {
+        return ResultHolder.success(cloudAccountService.listSupportCloudAccount());
+    }
+
     @GetMapping("/list")
     public ResultHolder<List<CloudAccount>> list() {
-        return ResultHolder.success(cloudAccountService.listSupportCloudAccount());
+        return ResultHolder.success(cloudAccountService.list());
     }
 
     @GetMapping("/{id}")

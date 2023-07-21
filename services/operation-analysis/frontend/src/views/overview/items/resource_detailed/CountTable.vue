@@ -2,7 +2,7 @@
 import CommonApi from "@/api/common/index";
 import type { CloudAccountDTO } from "@/api/common/type";
 import { ref, watch } from "vue";
-import { platformIcon } from "@commons/utils/platform";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import {
   PaginationConfig,
   TableOperations,
@@ -98,14 +98,10 @@ watch(
       >
         <template #default="scope">
           <div style="display: flex">
-            <component
+            <PlatformIcon
               style="margin-top: 3px; width: 16px; height: 16px"
-              :is="platformIcon[scope.row.platform]?.component"
-              v-bind="platformIcon[scope.row.platform]?.icon"
-              :color="platformIcon[scope.row.platform]?.color"
-              size="16px"
-              v-if="scope.row.platform"
-            ></component>
+              :platform="scope.row.platform"
+            ></PlatformIcon>
             <span style="margin-left: 10px">{{ scope.row.name }}</span>
           </div>
         </template>

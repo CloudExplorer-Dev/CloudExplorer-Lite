@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { platformIcon } from "@commons/utils/platform";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import { onMounted, ref } from "vue";
 import VmCloudHostApi from "@/api/vm_cloud_host";
 import type { VmCloudHostVO } from "@/api/vm_cloud_host/type";
@@ -107,14 +107,10 @@ onMounted(() => {
       >
         <template #default="scope">
           <div style="display: flex">
-            <component
+            <PlatformIcon
               style="margin-top: 3px; width: 16px; height: 16px"
-              :is="platformIcon[scope.row.platform]?.component"
-              v-bind="platformIcon[scope.row.platform]?.icon"
-              :color="platformIcon[scope.row.platform]?.color"
-              size="16px"
-              v-if="scope.row.platform"
-            ></component>
+              :platform="scope.row.platform"
+            ></PlatformIcon>
             <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
           </div>
         </template>

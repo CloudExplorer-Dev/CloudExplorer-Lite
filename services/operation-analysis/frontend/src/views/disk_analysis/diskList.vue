@@ -10,7 +10,7 @@ import {
 } from "@commons/components/ce-table/type";
 import { useI18n } from "vue-i18n";
 import type { SimpleMap } from "@commons/api/base/type";
-import { platformIcon } from "@commons/utils/platform";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 import BaseCloudAccountApi from "@commons/api/cloud_account";
 import _ from "lodash";
 import DecimalFormat from "@commons/utils/decimalFormat";
@@ -153,14 +153,10 @@ const tableConfig = ref<TableConfig>({
       >
         <template #default="scope">
           <div style="display: flex">
-            <component
+            <PlatformIcon
               style="margin-top: 3px; width: 16px; height: 16px"
-              :is="platformIcon[scope.row.platform]?.component"
-              v-bind="platformIcon[scope.row.platform]?.icon"
-              :color="platformIcon[scope.row.platform]?.color"
-              size="16px"
-              v-if="scope.row.platform"
-            ></component>
+              :platform="scope.row.platform"
+            ></PlatformIcon>
             <span style="margin-left: 10px">{{ scope.row.accountName }}</span>
           </div>
         </template>
