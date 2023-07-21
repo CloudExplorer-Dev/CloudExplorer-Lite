@@ -18,7 +18,6 @@ import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -41,12 +40,14 @@ public class MappingUtil {
         return f2CImage;
     }
 
-    public static String toVmId(Integer vmId, String vmGenId) {
-        return JsonUtil.toJSONString(Map.of("uuid", vmId.toString(), "vmGenId", vmGenId));
+    public static String toVmId(String vmId, String vmGenId) {
+        String temp = "{\"uuid\":\"%s\",\"vmGenId\":\"%s\"}";
+        return temp.formatted(vmGenId, vmGenId);
     }
 
     public static String toInstanceId(String uuid, String vmGenId) {
-        return JsonUtil.toJSONString(Map.of("uuid", uuid, "vmGenId", vmGenId));
+        String temp = "{\"uuid\":\"%s\",\"vmGenId\":\"%s\"}";
+        return temp.formatted(vmGenId, vmGenId);
     }
 
     public static F2CVirtualMachine toF2CVirtualMachine(Qemu qemu,
@@ -55,7 +56,7 @@ public class MappingUtil {
                                                         ClusterNode clusterNode,
                                                         List<NetworkInterface> networkInterfaces) {
         F2CVirtualMachine f2CVirtualMachine = new F2CVirtualMachine();
-        String instanceId = toVmId(qemu.getVmid(), StringUtil.isEmpty(config.getVmGenId()) ? "" : config.getVmGenId());
+        String instanceId = toVmId(qemu.getVmid().toString(), StringUtil.isEmpty(config.getVmGenId()) ? "" : config.getVmGenId());
         f2CVirtualMachine.setInstanceUUID(instanceId);
         f2CVirtualMachine.setInstanceId(instanceId);
         f2CVirtualMachine.setRegion(clusterNode.getName());
@@ -144,7 +145,7 @@ public class MappingUtil {
     public static F2CDisk toF2CDisk(DiskStatusInfo diskStatusInfo, Disk disk, String node) {
         F2CDisk f2CDisk = new F2CDisk();
         String diskId = toInstanceId(disk.getVolid(), diskStatusInfo.getVmGenId());
-        String instanceId = toVmId(disk.getVmId(), diskStatusInfo.getVmGenId());
+        String instanceId = toVmId(disk.getVmId().toString(), diskStatusInfo.getVmGenId());
         f2CDisk.setDiskId(diskId);
         f2CDisk.setCreateTime(disk.getCtime() * 1000);
         f2CDisk.setDiskMode(disk.getContent());

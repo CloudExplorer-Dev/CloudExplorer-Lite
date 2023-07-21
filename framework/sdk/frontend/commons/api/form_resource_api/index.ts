@@ -17,7 +17,14 @@ const getResourceMyMethod = (
   params?: any
 ) => {
   params = params ? filterNullValue(params) : {};
-  return post(`/api/base/provider/${clazz}/${method}`, params, data, loading);
+  const prefix: string =
+    import.meta.env.VITE_APP_NAME === "base" ? "/management-center/" : "/";
+  return post(
+    `${prefix}api/base/provider/${clazz}/${method}`,
+    params,
+    data,
+    loading
+  );
 };
 
 const getResourceMyServiceMethod = (
@@ -27,8 +34,15 @@ const getResourceMyServiceMethod = (
   loading?: Ref<boolean>,
   params?: any
 ) => {
+  const prefix: string =
+    import.meta.env.VITE_APP_NAME === "base" ? "/management-center/" : "/";
   params = params ? filterNullValue(params) : {};
-  return post(`/api/base/service/${clazz}/${method}`, params, data, loading);
+  return post(
+    `${prefix}/api/base/service/${clazz}/${method}`,
+    params,
+    data,
+    loading
+  );
 };
 
 function getResourceMethod(

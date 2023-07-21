@@ -284,10 +284,15 @@ public class ActionApi {
         String instanceUuid = req.getInstanceUuid().getUuid();
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(req.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        Result result = client.getNodes().get(req.getRegionId()).getQemu().get(instanceUuid).getConfig()
-                .updateVm(Map.of("memory", req.getMem() * 1024, "cores", req.getCpu(), "sockets", req.getCpuSlot(), "delete", URLEncoder.encode("balloon,shares,vcpus,affinity,cpuunits,cpulimit,cpu", StandardCharsets.UTF_8)));
-        if (!result.isSuccessStatusCode()) {
-            throw new Fit2cloudException(500, "配置变更失败");
+        PveClient.PVENodes.PVENodeItem.PVEQemu.PVEVmidItem.PVEConfig config = client.getNodes().get(req.getRegionId()).getQemu().get(instanceUuid).getConfig();
+
+        Result memory = config.updateVm(Map.of("memory", req.getMem() * 1024, "delete", URLEncoder.encode("balloon,shares", StandardCharsets.UTF_8)));
+        if (!memory.isSuccessStatusCode()) {
+            throw new Fit2cloudException(500, "变更内存失败");
+        }
+        Result cpu = config.updateVm(Map.of("cores", req.getCpu(), "sockets", req.getCpuSlot(), "delete", URLEncoder.encode("vcpus,affinity,cpuunits,cpulimit,cpu", StandardCharsets.UTF_8)));
+        if (!cpu.isSuccessStatusCode()) {
+            throw new Fit2cloudException(500, "CPU配置变更失败");
         }
         ProxmoxActionBaseRequest request = new ProxmoxActionBaseRequest();
         request.setUuid(JsonUtil.toJSONString(req.getInstanceUuid()));
