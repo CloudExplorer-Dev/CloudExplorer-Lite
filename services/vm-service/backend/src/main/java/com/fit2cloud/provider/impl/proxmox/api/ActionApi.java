@@ -197,7 +197,6 @@ public class ActionApi {
     public static boolean reboot(ProxmoxActionBaseRequest request) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        PveClient.PVENodes.PVENodeItem.PVEQemu.PVEVmidItem pve = client.getNodes().get(request.getRegionId()).getQemu().get(request.getUuid().getUuid());
         Qemu qemu = SyncApi.getQemuById(client, request.getRegionId(), request.getUuid().getUuid());
         Result result;
         if (StringUtil.equals(qemu.getStatus(), "running")) {
@@ -267,7 +266,7 @@ public class ActionApi {
 
             Disk disk = diskF.get();
             Config qemuConfig = SyncApi.getQemuConfig(client, request.getRegionId(), diskF.get().getVmId() + "");
-            String diskKey = getDiskKey(qemuConfig, request.getDiskId());
+            String diskKey = getDiskKey(qemuConfig, diskId);
             if (StringUtils.isNotEmpty(diskKey)) {
                 client.getNodes().get(request.getRegionId()).getQemu().get(disk.getVmId()).getResize().resizeVm(diskKey, request.getNewDiskSize() + "G");
                 return true;
@@ -282,19 +281,24 @@ public class ActionApi {
     }
 
     public static F2CVirtualMachine changeVmConfig(ProxmoxUpdateConfigRequest req) {
+        String instanceUuid = req.getInstanceUuid().getUuid();
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(req.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
-        client.getNodes().get(req.getRegionId()).getQemu().get(req.getInstanceUuid().getUuid()).getConfig().updateVm(Map.of("memory", req.getMem() * 1024, "cores", req.getCpu(), "sockets", req.getCpuSlot(), "delete", "balloon,shares,vcpus,affinity,cpuunits,cpulimit,cpu"));
+        Result result = client.getNodes().get(req.getRegionId()).getQemu().get(instanceUuid).getConfig()
+                .updateVm(Map.of("memory", req.getMem() * 1024, "cores", req.getCpu(), "sockets", req.getCpuSlot(), "delete", "balloon,shares,vcpus,affinity,cpuunits,cpulimit,cpu"));
+        if (!result.isSuccessStatusCode()) {
+            throw new Fit2cloudException(500, "配置变更失败");
+        }
         ProxmoxActionBaseRequest request = new ProxmoxActionBaseRequest();
         request.setUuid(JsonUtil.toJSONString(req.getInstanceUuid()));
         request.setRegionId(req.getRegionId());
         request.setCredential(req.getCredential());
-        Qemu qemu = SyncApi.getQemuById(client, request.getRegionId(), request.getUuid().getUuid());
+        Qemu qemu = SyncApi.getQemuById(client, request.getRegionId(), instanceUuid);
         if (StringUtils.equals(qemu.getStatus(), "running")) {
             // 关机
             ActionApi.reboot(request);
         }
-        return SyncApi.getF2CVirtualMachineById(client, req.getRegionId(), req.getInstanceUuid().getUuid());
+        return SyncApi.getF2CVirtualMachineById(client, req.getRegionId(), instanceUuid);
     }
 
     public static F2CDisk attachDisk(BaseDiskRequest request) {
