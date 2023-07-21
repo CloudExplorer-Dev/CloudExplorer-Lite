@@ -41,12 +41,12 @@ public class MappingUtil {
         return f2CImage;
     }
 
-    public static String toVmId(Integer vmId, long ctime) {
-        return JsonUtil.toJSONString(Map.of("uuid", vmId.toString(), "ctime", ctime));
+    public static String toVmId(Integer vmId, String vmGenId) {
+        return JsonUtil.toJSONString(Map.of("uuid", vmId.toString(), "vmGenId", vmGenId));
     }
 
-    public static String toInstanceId(String uuid, long ctime) {
-        return JsonUtil.toJSONString(Map.of("uuid", uuid, "ctime", ctime));
+    public static String toInstanceId(String uuid, String vmGenId) {
+        return JsonUtil.toJSONString(Map.of("uuid", uuid, "vmGenId", vmGenId));
     }
 
     public static F2CVirtualMachine toF2CVirtualMachine(Qemu qemu,
@@ -55,7 +55,7 @@ public class MappingUtil {
                                                         ClusterNode clusterNode,
                                                         List<NetworkInterface> networkInterfaces) {
         F2CVirtualMachine f2CVirtualMachine = new F2CVirtualMachine();
-        String instanceId = toVmId(qemu.getVmid(), Objects.isNull(config.getMeta()) ? -1 : config.getMeta().getCtime());
+        String instanceId = toVmId(qemu.getVmid(), StringUtil.isEmpty(config.getVmGenId()) ? "" : config.getVmGenId());
         f2CVirtualMachine.setInstanceUUID(instanceId);
         f2CVirtualMachine.setInstanceId(instanceId);
         f2CVirtualMachine.setRegion(clusterNode.getName());
@@ -143,8 +143,8 @@ public class MappingUtil {
 
     public static F2CDisk toF2CDisk(DiskStatusInfo diskStatusInfo, Disk disk, String node) {
         F2CDisk f2CDisk = new F2CDisk();
-        String diskId = toInstanceId(disk.getVolid(), diskStatusInfo.getCtime());
-        String instanceId = toVmId(disk.getVmId(), diskStatusInfo.getCtime());
+        String diskId = toInstanceId(disk.getVolid(), diskStatusInfo.getVmGenId());
+        String instanceId = toVmId(disk.getVmId(), diskStatusInfo.getVmGenId());
         f2CDisk.setDiskId(diskId);
         f2CDisk.setCreateTime(disk.getCtime() * 1000);
         f2CDisk.setDiskMode(disk.getContent());

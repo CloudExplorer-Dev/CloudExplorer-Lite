@@ -15,5 +15,5 @@ public class InstanceId {
 
     private String uuid;
 
-    private Long ctime;
+    private String vmGenId;
 }

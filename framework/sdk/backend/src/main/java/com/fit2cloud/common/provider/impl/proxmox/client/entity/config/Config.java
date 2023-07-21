@@ -43,6 +43,8 @@ public class Config {
      */
     private MetaConfig meta;
 
+    private String vmGenId;
+
     public Config(Map<String, Object> config) {
         disks = new ArrayList<>();
         unuseds = new ArrayList<>();
@@ -69,6 +71,9 @@ public class Config {
             }
             if (MetaConfig.current(key)) {
                 this.meta = new MetaConfig(key, config.get(key).toString());
+            }
+            if (StringUtils.equals(key, "vmgenid")) {
+                this.vmGenId = config.get(key).toString();
             }
         }
         if (Objects.nonNull(boot)) {

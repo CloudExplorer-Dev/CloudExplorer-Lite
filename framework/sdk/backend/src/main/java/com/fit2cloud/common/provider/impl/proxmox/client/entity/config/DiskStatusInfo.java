@@ -23,14 +23,14 @@ public class DiskStatusInfo {
 
     private String device;
 
-    private long ctime;
+    private String vmGenId;
 
-    public DiskStatusInfo(String volId, boolean boot, boolean used, String device, Qemu qemu, long ctime) {
+    public DiskStatusInfo(String volId, boolean boot, boolean used, String device, Qemu qemu, String vmGenId) {
         this.volId = volId;
         this.boot = boot;
         this.used = used;
         this.qemu = qemu;
         this.device = device;
-        this.ctime = ctime;
+        this.vmGenId = vmGenId;
     }
 }
