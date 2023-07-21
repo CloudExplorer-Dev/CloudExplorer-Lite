@@ -285,7 +285,7 @@ public class ActionApi {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(req.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
         Result result = client.getNodes().get(req.getRegionId()).getQemu().get(instanceUuid).getConfig()
-                .updateVm(Map.of("memory", req.getMem() * 1024, "cores", req.getCpu(), "sockets", req.getCpuSlot(), "delete", "balloon,shares,vcpus,affinity,cpuunits,cpulimit,cpu"));
+                .updateVm(Map.of("memory", req.getMem() * 1024, "cores", req.getCpu(), "sockets", req.getCpuSlot(), "delete", URLEncoder.encode("balloon,shares,vcpus,affinity,cpuunits,cpulimit,cpu", StandardCharsets.UTF_8)));
         if (!result.isSuccessStatusCode()) {
             throw new Fit2cloudException(500, "配置变更失败");
         }
