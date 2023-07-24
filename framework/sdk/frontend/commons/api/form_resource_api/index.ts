@@ -38,7 +38,7 @@ const getResourceMyServiceMethod = (
     import.meta.env.VITE_APP_NAME === "base" ? "/management-center/" : "/";
   params = params ? filterNullValue(params) : {};
   return post(
-    `${prefix}/api/base/service/${clazz}/${method}`,
+    `${prefix}api/base/service/${clazz}/${method}`,
     params,
     data,
     loading
