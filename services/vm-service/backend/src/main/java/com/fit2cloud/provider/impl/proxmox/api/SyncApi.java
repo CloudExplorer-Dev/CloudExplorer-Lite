@@ -87,10 +87,13 @@ public class SyncApi {
         Cluster cluster = getCluster(client);
         ClusterNode clusterNode = getClusterNode(credential, request.getRegionId());
         return qemuList.stream().map(qemu -> {
-            Config qemuConfig = getQemuConfig(client, request.getRegionId(), qemu.getVmid() + "");
-            List<NetworkInterface> network = getNetwork(client, request.getRegionId(), qemu.getVmid() + "");
-            return MappingUtil.toF2CVirtualMachine(qemu, qemuConfig, cluster.getName(), clusterNode, network);
-        }).toList();
+            Config qemuConfig = MappingUtil.ofError(() -> getQemuConfig(client, request.getRegionId(), qemu.getVmid() + ""), "获取虚拟机配置失败:{" + qemu.getVmid() + "},跳过当前虚拟机同步");
+            if (Objects.isNull(qemuConfig)) {
+                return null;
+            }
+            List<NetworkInterface> network = MappingUtil.ofError(() -> getNetwork(client, request.getRegionId(), qemu.getVmid() + ""), "获取网卡失败:{" + qemu.getVmid() + "},跳过当前虚拟机同步");
+            return MappingUtil.ofError(() -> MappingUtil.toF2CVirtualMachine(qemu, qemuConfig, Objects.isNull(cluster) ? null : cluster.getName(), clusterNode, network), "转换虚拟机对象是失败:{" + qemu.getVmid() + "},跳过当前虚拟机同步");
+        }).filter(Objects::nonNull).toList();
     }
 
     /**
@@ -201,7 +204,7 @@ public class SyncApi {
                 }
             }
         }
-        throw new Fit2cloudException(1, "集群不存在");
+        return null;
     }
 
     public static List<ClusterNode> getClusterNodeList(VmProxmoxCredential credential) {
@@ -345,7 +348,7 @@ public class SyncApi {
         return mountDiskVolIdList.stream().map(diskStatusInfo -> allDisk.stream()
                         .filter(disk -> StringUtil.equals(diskStatusInfo.getVolId(), disk.getVolid()))
                         .findFirst()
-                        .map(disk -> MappingUtil.toF2CDisk(diskStatusInfo, disk, request.getRegionId()))
+                        .map(disk -> MappingUtil.ofError(() -> MappingUtil.toF2CDisk(diskStatusInfo, disk, request.getRegionId()), null))
                         .orElse(null))
                 .filter(Objects::nonNull).toList();
     }
@@ -392,9 +395,16 @@ public class SyncApi {
         result.addAll(config.getDisks().stream()
                 .filter(disk -> StringUtils.isEmpty(disk.getMedia()))
                 .map(disk -> new DiskStatusInfo(disk.getVolId(), disk.isBoot(), true, disk.getDevice(), qemu, Objects.isNull(config.getMeta()) ? "" : config.getVmGenId())).toList());
-        result.addAll(config.getUnuseds().stream().map(unUsed -> new DiskStatusInfo(unUsed.getValue(), false, false, null, qemu, Objects.isNull(config.getMeta()) ? "" : config.getVmGenId())).toList());
-        return result.stream().map(diskStatusInfo -> disks.stream().filter(disk -> StringUtils.equals(disk.getVolid(), diskStatusInfo.getVolId()))
-                .findFirst().map(disk -> MappingUtil.toF2CDisk(diskStatusInfo, disk, request.getRegionId()))
-                .orElse(null)).filter(Objects::nonNull).toList();
+        result.addAll(config
+                .getUnuseds()
+                .stream()
+                .map(unUsed -> new DiskStatusInfo(unUsed.getValue(), false, false, null, qemu, Objects.isNull(config.getMeta()) ? "" : config.getVmGenId()))
+                .toList());
+        return result.stream()
+                .map(diskStatusInfo -> disks.stream().filter(disk -> StringUtils.equals(disk.getVolid(), diskStatusInfo.getVolId()))
+                        .findFirst()
+                        .map(disk -> MappingUtil.toF2CDisk(diskStatusInfo, disk, request.getRegionId()))
+                        .orElse(null)
+                ).filter(Objects::nonNull).toList();
     }
 }
