@@ -14,7 +14,7 @@ CloudExplorer Lite 脱胎于飞致云创始软件产品 CloudExplorer 多云管�
 
 - **多云对接**
   
-CloudExplorer Lite 支持对接纳管市场上主流的公有云和私有云基础设施，包括阿里云、腾讯云、华为云、VMware、OpenStack等。
+CloudExplorer Lite 支持对接纳管市场上主流的公有云和私有云基础设施，包括阿里云、腾讯云、华为云、VMware、OpenStack、Proxmox VE 等。
 
 - **开箱即用**
 

@@ -1,5 +1,6 @@
 package com.fit2cloud.provider.impl.proxmox.util;
 
+import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.*;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.config.Config;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.config.DiskStatusInfo;
@@ -19,6 +20,7 @@ import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * {@code @Author:张少虎}
@@ -88,8 +90,9 @@ public class MappingUtil {
             f2CVirtualMachine.setIpArray(List.of());
             f2CVirtualMachine.setAgentRunning(false);
         }
-
         return f2CVirtualMachine;
+
+
     }
 
     private static F2CInstanceStatus getF2CInstanceStatus(String status) {
@@ -148,7 +151,7 @@ public class MappingUtil {
         String diskId = toInstanceId(disk.getVolid(), diskStatusInfo.getVmGenId());
         String instanceId = toVmId(disk.getVmId().toString(), diskStatusInfo.getVmGenId());
         f2CDisk.setDiskId(diskId);
-        f2CDisk.setCreateTime(disk.getCtime() * 1000);
+        f2CDisk.setCreateTime(Objects.isNull(disk.getCtime()) ? System.currentTimeMillis() : disk.getCtime() * 1000);
         f2CDisk.setDiskMode(disk.getContent());
         f2CDisk.setStatus(diskStatusInfo.isUsed() ? F2CDiskStatus.IN_USE : F2CDiskStatus.AVAILABLE);
         f2CDisk.setBootable(diskStatusInfo.isBoot());
@@ -164,5 +167,14 @@ public class MappingUtil {
         f2CDisk.setDevice(diskStatusInfo.getDevice());
         f2CDisk.setZone(node);
         return f2CDisk;
+    }
+
+    public static <T> T ofError(Supplier<T> supplier, String errorMessage) {
+        try {
+            return supplier.get();
+        } catch (Exception e) {
+            LogUtil.error(StringUtil.isEmpty(errorMessage) ? e.getMessage() : errorMessage + "[" + e.getMessage() + "]");
+            return null;
+        }
     }
 }
