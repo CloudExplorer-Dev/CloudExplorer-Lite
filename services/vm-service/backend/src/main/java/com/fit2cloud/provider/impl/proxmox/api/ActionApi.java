@@ -57,7 +57,7 @@ public class ActionApi {
         VmProxmoxCredential credential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = credential.getClient();
         DefaultKeyValue<Integer, Result> kv = cloneVm(client, request);
-        if (kv.getValue().getStatusCode() != 200) {
+        if (kv.getValue().getStatusCode() != 200 && kv.getValue().getResponse().isNull("data")) {
             throw new Fit2cloudException(500, "克隆虚拟机失败");
         }
 
