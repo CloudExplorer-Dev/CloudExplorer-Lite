@@ -1,6 +1,7 @@
 package com.fit2cloud.common.provider.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -9,8 +10,9 @@ import java.math.BigDecimal;
  *
  * @author jianneng
  **/
-@Data
-public class F2CPerfMetricMonitorData {
+@Getter
+@Setter
+public class F2CPerfMetricMonitorData extends F2CBasePerfMetricMonitorData {
     /**
      * 监控对象类型
      * F2CEntityType

@@ -314,6 +314,12 @@ const initEchartsData = () => {
   if (isHuawei()) {
     echarts.delete(PerfMetricConst.DISK_USED_UTILIZATION.metricName);
   }
+  if (isProxmox()) {
+    echarts.delete(PerfMetricConst.DISK_READ_IOPS.metricName);
+    echarts.delete(PerfMetricConst.DISK_USED_UTILIZATION.metricName);
+    echarts.delete(PerfMetricConst.INTERNET_OUT_RATE.metricName);
+    echarts.delete(PerfMetricConst.INTERNET_IN_RATE.metricName);
+  }
 
   Object.keys(PerfMetricConst).forEach(function (perfMetric) {
     const metricName = PerfMetricConst[perfMetric].metricName;
@@ -321,6 +327,9 @@ const initEchartsData = () => {
       return;
     }
     if (huaweiFilter(perfMetric)) {
+      return;
+    }
+    if (proxmoxFilter(perfMetric)) {
       return;
     }
     const series = {
@@ -390,6 +399,21 @@ const vSphereFilter = (perfMetric: any) => {
   }
   return false;
 };
+
+const proxmoxFilter = (perfMetric: any) => {
+  const metricName = PerfMetricConst[perfMetric].metricName;
+  return (
+    isProxmox() &&
+    ![
+      PerfMetricConst.INTRANET_IN_RATE.metricName,
+      PerfMetricConst.INTRANET_OUT_RATE.metricName,
+      PerfMetricConst.DISK_READ_BPS.metricName,
+      PerfMetricConst.DISK_WRITE_BPS.metricName,
+      PerfMetricConst.CPU_USED_UTILIZATION.metricName,
+      PerfMetricConst.MEMORY_USED_UTILIZATION.metricName,
+    ].includes(metricName)
+  );
+};
 const huaweiFilter = (perfMetric: any) => {
   const metricName = PerfMetricConst[perfMetric].metricName;
   if (
@@ -405,6 +429,9 @@ const isVsphere = () => {
 };
 const isHuawei = () => {
   return request.value.platform === "fit2cloud_huawei_platform";
+};
+const isProxmox = () => {
+  return request.value.platform === "fit2cloud_proxmox_platform";
 };
 </script>
 <style lang="scss">
