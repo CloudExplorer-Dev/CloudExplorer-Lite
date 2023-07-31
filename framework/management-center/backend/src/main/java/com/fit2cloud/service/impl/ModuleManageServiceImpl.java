@@ -27,10 +27,15 @@ public class ModuleManageServiceImpl implements IModuleManageService {
 
     @Override
     public ExtraModules list() {
-        Yaml yaml = new Yaml();
-
         File versionFile = new File("/opt/cloudexplorer/VERSION");
         String version = StringUtils.trim(FileUtils.txt2String(versionFile));
+
+        return list(version);
+    }
+
+    @Override
+    public ExtraModules list(String version) {
+        Yaml yaml = new Yaml();
 
         File installedModulesFile = new File("/opt/cloudexplorer/apps/extra/modules");
 
@@ -63,8 +68,6 @@ public class ModuleManageServiceImpl implements IModuleManageService {
         ExtraModules modules = new ExtraModules();
         try {
 
-//            String[] vList = StringUtils.split(version, ".");
-//            String repositoryUrl = repositoryPath + "modules_" + vList[0] + "." + vList[1] + ".x.yml";
             String repositoryUrl = repositoryPath + "modules_" + version + ".yml";
 
             modules = JsonUtil.parseObject(JsonUtil.toJSONString(yaml.load(downloadTxt2String(repositoryUrl))), ExtraModules.class);
@@ -138,7 +141,20 @@ public class ModuleManageServiceImpl implements IModuleManageService {
     }
 
     @Override
-    public void install(String url) {
+    public void install(String name, String version) {
+        ExtraModules modules = list(version);
+        Optional<ExtraModule> o = modules.getModules().stream().filter(m -> StringUtils.equals(m.getName(), name)).findFirst();
+        ExtraModule m = o.orElse(null);
+        if (m == null) {
+            throw new RuntimeException("找不到版本为[" + version + "]的[" + name + "]模块");
+        }
+        if (StringUtils.isBlank(m.getDownloadUrl())) {
+            throw new RuntimeException("无法获取版本为[" + version + "]的[" + name + "]模块下载地址");
+        }
+        install(m.getDownloadUrl());
+    }
+
+    private void install(String url) {
         execRunCore("updateModule", url);
     }
 

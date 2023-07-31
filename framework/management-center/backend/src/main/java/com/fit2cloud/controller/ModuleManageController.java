@@ -32,7 +32,7 @@ public class ModuleManageController {
     @Operation(summary = "安装/升级模块", description = "安装/升级模块")
     @PreAuthorize("@cepc.hasAnyCePermission('MODULE_MANAGE:EDIT')")
     public ResultHolder<Object> install(@RequestBody ExtraModule module) {
-        iModuleManageService.install(module.getDownloadUrl());
+        iModuleManageService.install(module.getName(), module.getVersion());
         return ResultHolder.success(null);
     }
 
