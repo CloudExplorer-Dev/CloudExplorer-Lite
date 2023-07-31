@@ -160,6 +160,7 @@ public class BaseUserRoleServiceImpl extends ServiceImpl<BaseUserRoleMapper, Use
                 .eq(UserRole::getUserId, userId)
                 .eq(UserRole::getRoleId, roleId)
                 .eq(StringUtils.isNotEmpty(sourceId), UserRole::getSource, sourceId)
+                .last("limit 1")
         );
     }
 

@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
+
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -501,7 +502,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         userRoleService.saveOrUpdate(userRole, new LambdaQueryWrapper<UserRole>()
                 .eq(UserRole::getRoleId, userRole.getRoleId())
                 .eq(UserRole::getUserId, userRole.getUserId())
-                .eq(UserRole::getSource, userRole.getSource())
+                .eq(sourceId != null, UserRole::getSource, userRole.getSource())
+                .isNull(sourceId == null, UserRole::getSource)
         );
     }
 
