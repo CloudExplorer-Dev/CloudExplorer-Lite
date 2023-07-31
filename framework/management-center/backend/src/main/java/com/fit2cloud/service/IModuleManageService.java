@@ -7,7 +7,9 @@ public interface IModuleManageService {
 
     ExtraModules list();
 
-    void install(String url);
+    ExtraModules list(String version);
+
+    void install(String name, String version);
 
     void uninstall(String module);
 

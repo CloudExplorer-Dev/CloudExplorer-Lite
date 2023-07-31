@@ -6,11 +6,15 @@ function list(loading?: Ref<boolean>): Promise<Result<any>> {
   return get("/api/module_manage/list", undefined, loading);
 }
 
-function install(url: string, loading?: Ref<boolean>): Promise<Result<any>> {
+function install(
+  name: string,
+  version: string,
+  loading?: Ref<boolean>
+): Promise<Result<any>> {
   return post(
     "/api/module_manage/install",
     undefined,
-    { download_url: url },
+    { name: name, version: version },
     loading
   );
 }

@@ -283,7 +283,7 @@ function install(m: any) {
     cancelButtonText: "取消",
     type: "warning",
   }).then((ok) => {
-    ModuleManageApi.install(m.download_url, loading)
+    ModuleManageApi.install(m.name, m.version, loading)
       .then((res) => {
         getList();
       })
