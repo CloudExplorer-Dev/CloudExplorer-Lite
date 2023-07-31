@@ -2,6 +2,9 @@ package com.fit2cloud.provider.impl.proxmox.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.provider.entity.F2CBasePerfMetricMonitorData;
+import com.fit2cloud.common.provider.entity.F2CEntityType;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.impl.proxmox.client.PveClient;
 import com.fit2cloud.common.provider.impl.proxmox.client.Result;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.*;
@@ -9,6 +12,7 @@ import com.fit2cloud.common.provider.impl.proxmox.client.entity.config.Config;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.config.DiskStatusInfo;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.config.NetworkInterface;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.provider.impl.proxmox.constants.ProxmoxPerfMetricConstants;
 import com.fit2cloud.provider.impl.proxmox.entity.ProxmoxActionBaseRequest;
 import com.fit2cloud.provider.impl.proxmox.entity.credential.VmProxmoxCredential;
 import com.fit2cloud.provider.impl.proxmox.entity.request.ProxmoxBaseRequest;
@@ -17,12 +21,16 @@ import com.fit2cloud.vm.entity.F2CDisk;
 import com.fit2cloud.vm.entity.F2CHost;
 import com.fit2cloud.vm.entity.F2CImage;
 import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.fit2cloud.vm.entity.request.GetMetricsRequest;
 import jodd.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.BeanUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * {@code @Author:张少虎}
@@ -406,5 +414,61 @@ public class SyncApi {
                         .map(disk -> MappingUtil.toF2CDisk(diskStatusInfo, disk, request.getRegionId()))
                         .orElse(null)
                 ).filter(Objects::nonNull).toList();
+    }
+
+
+    /**
+     * 获取云主机监控数据
+     *
+     * @param parseObject 获取监控请求对象
+     * @return 返回值
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(GetMetricsRequest parseObject) {
+        VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(parseObject.getCredential(), VmProxmoxCredential.class);
+        PveClient client = vmProxmoxCredential.getClient();
+        return listQemu(client, parseObject.getRegionId())
+                .stream()
+                .filter(qemu -> Objects.isNull(qemu.getTemplate()) || (Objects.nonNull(qemu.getTemplate()) && !qemu.getTemplate().equals(1)))
+                .map(qemu -> getF2CPerfMetricMonitorData(client, parseObject.getRegionId(), qemu.getVmid().toString()))
+                .flatMap(List::stream).toList();
+    }
+
+    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(PveClient pveClient, String node, String vmId) {
+        Config qemuConfig = getQemuConfig(pveClient, node, vmId);
+        Result rrdData = pveClient.getNodes().get(node)
+                .getQemu().get(vmId)
+                .getRrddata().rrddata("hour", "AVERAGE");
+        List<F2CPerfMetricMonitorData> f2CPerfMetricMonitorData = getF2CPerfMetricMonitorData(rrdData, F2CEntityType.VIRTUAL_MACHINE, qemuConfig, node, vmId);
+        Map<String, List<F2CPerfMetricMonitorData>> collect = f2CPerfMetricMonitorData.stream().collect(Collectors.groupingBy(F2CPerfMetricMonitorData::getMetricName));
+        return f2CPerfMetricMonitorData;
+    }
+
+
+    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(Result rrdData, F2CEntityType entityTypes, Config config, String node, String vmId) {
+        if (rrdData.isSuccessStatusCode()) {
+            return Arrays.stream(ProxmoxPerfMetricConstants.CloudServerPerfMetricEnum.values())
+                    .flatMap(item -> {
+                        JSONArray data = rrdData.getResponse().getJSONArray("data");
+                        return IntStream.range(0, data.length()).boxed().map(data::getJSONObject)
+                                .filter(Objects::nonNull)
+                                .map(jsonObject -> {
+                                    if (jsonObject.isNull("time")) {
+                                        return null;
+                                    }
+                                    F2CBasePerfMetricMonitorData f2CBasePerfMetricMonitorData = item.getF2CBasePerfMetricMonitorData().apply(jsonObject);
+                                    F2CPerfMetricMonitorData f2CPerfMetricMonitorData = new F2CPerfMetricMonitorData();
+                                    BeanUtils.copyProperties(f2CBasePerfMetricMonitorData, f2CPerfMetricMonitorData);
+                                    f2CPerfMetricMonitorData.setMetricName(item.name());
+                                    f2CPerfMetricMonitorData.setUnit(item.getUnit());
+                                    f2CPerfMetricMonitorData.setEntityType(entityTypes.name());
+                                    f2CPerfMetricMonitorData.setInstanceId(MappingUtil.toInstanceId(vmId, config.getVmGenId()));
+                                    f2CPerfMetricMonitorData.setPeriod(60);
+                                    f2CPerfMetricMonitorData.setTimestamp(jsonObject.getLong("time") * 1000);
+                                    f2CPerfMetricMonitorData.setHostId(node);
+                                    return f2CPerfMetricMonitorData;
+                                }).filter(Objects::nonNull);
+                    }).toList();
+        }
+        return List.of();
     }
 }

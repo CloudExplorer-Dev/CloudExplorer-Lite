@@ -5,6 +5,7 @@ import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.Form;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.provider.entity.F2CBalance;
+import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.impl.proxmox.ProxmoxBaseCloudProvider;
 import com.fit2cloud.common.provider.impl.proxmox.client.PveClient;
 import com.fit2cloud.common.provider.impl.proxmox.client.entity.DataStore;
@@ -29,6 +30,7 @@ import com.fit2cloud.vm.entity.F2CImage;
 import com.fit2cloud.vm.entity.F2CVirtualMachine;
 import com.fit2cloud.vm.entity.request.BaseDiskRequest;
 import com.fit2cloud.vm.entity.request.BaseDiskResizeRequest;
+import com.fit2cloud.vm.entity.request.GetMetricsRequest;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
@@ -52,7 +54,9 @@ public class ProxmoxCloudProvider extends AbstractCloudProvider<VmProxmoxCredent
     public static final Info info = new Info("vm-service", List.of(
             ActionInfoConstants.SYNC_IMAGE,
             ActionInfoConstants.SYNC_DISK,
-            ActionInfoConstants.SYNC_VIRTUAL_MACHINE), Map.of());
+            ActionInfoConstants.SYNC_VIRTUAL_MACHINE,
+            ActionInfoConstants.SYNC_METRIC_MONITOR,
+            ActionInfoConstants.SYNC_VIRTUAL_MACHINE_METRIC_MONITOR), Map.of());
 
 
     @Override
@@ -200,6 +204,11 @@ public class ProxmoxCloudProvider extends AbstractCloudProvider<VmProxmoxCredent
         ProxmoxCalculateConfigPriceRequest proxmoxCalculateConfigPriceRequest =
                 JsonUtil.parseObject(req, ProxmoxCalculateConfigPriceRequest.class);
         return ActionApi.calculateConfigPrice(proxmoxCalculateConfigPriceRequest);
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(String req) {
+        return SyncApi.getF2CPerfMetricMonitorData(JsonUtil.parseObject(req, GetMetricsRequest.class));
     }
 
     @Override
