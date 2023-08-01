@@ -17,19 +17,17 @@ import com.fit2cloud.provider.impl.proxmox.entity.ProxmoxActionBaseRequest;
 import com.fit2cloud.provider.impl.proxmox.entity.credential.VmProxmoxCredential;
 import com.fit2cloud.provider.impl.proxmox.entity.request.ProxmoxBaseRequest;
 import com.fit2cloud.provider.impl.proxmox.util.MappingUtil;
-import com.fit2cloud.vm.entity.F2CDisk;
-import com.fit2cloud.vm.entity.F2CHost;
-import com.fit2cloud.vm.entity.F2CImage;
-import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.fit2cloud.vm.entity.*;
 import com.fit2cloud.vm.entity.request.GetMetricsRequest;
 import jodd.util.StringUtil;
+import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 /**
@@ -57,17 +55,26 @@ public class SyncApi {
         }).toList();
     }
 
-
-    public static Config getQemuConfig(ProxmoxBaseRequest request, Qemu qemu) {
-        VmProxmoxCredential credential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
-        return getQemuConfig(credential, request.getRegionId(), qemu.getVmid().toString());
-    }
-
-
+    /**
+     * 获取虚拟机 配置
+     *
+     * @param credential 认证信息
+     * @param node       节点
+     * @param vmId       虚拟机 id
+     * @return 虚拟机配置
+     */
     public static Config getQemuConfig(VmProxmoxCredential credential, String node, String vmId) {
         return getQemuConfig(credential.getClient(), node, vmId);
     }
 
+    /**
+     * 获取虚拟机 配置
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @param vmId   虚拟机id
+     * @return 虚拟机配置
+     */
     public static Config getQemuConfig(PveClient client, String node, String vmId) {
         JSONObject response = client.getNodes().get(node).getQemu().get(vmId).getConfig().vmConfig().getResponse();
         if (!response.isNull("data")) {
@@ -88,10 +95,7 @@ public class SyncApi {
     public static List<F2CVirtualMachine> listVirtualMachine(ProxmoxBaseRequest request) {
         VmProxmoxCredential credential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = credential.getClient();
-        List<Qemu> qemuList = listQemu(client, request.getRegionId())
-                .stream()
-                .filter(qemu -> Objects.isNull(qemu.getTemplate()) || (Objects.nonNull(qemu.getTemplate()) && !qemu.getTemplate().equals(1)))
-                .toList();
+        List<Qemu> qemuList = listVmQemu(client, request.getRegionId());
         Cluster cluster = getCluster(client);
         ClusterNode clusterNode = getClusterNode(credential, request.getRegionId());
         return qemuList.stream().map(qemu -> {
@@ -133,6 +137,20 @@ public class SyncApi {
     }
 
     /**
+     * 获取虚拟机信息列表
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @return 虚拟机信息列表
+     */
+    public static List<Qemu> listVmQemu(PveClient client, String node) {
+        return listQemu(client, node)
+                .stream()
+                .filter(qemu -> Objects.isNull(qemu.getTemplate()) || (Objects.nonNull(qemu.getTemplate()) && !qemu.getTemplate().equals(1)))
+                .toList();
+    }
+
+    /**
      * 获取虚拟机 根据虚拟机id
      *
      * @param credential 认证对象
@@ -144,6 +162,14 @@ public class SyncApi {
         return getQemuById(credential.getClient(), node, vmId);
     }
 
+    /**
+     * 根据虚拟机id 获取虚拟机信息
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @param vmId   虚拟机id
+     * @return 虚拟机信息
+     */
     public static Qemu getQemuById(PveClient client, String node, String vmId) {
         Result result = client.getNodes().get(node).getQemu().get(vmId).getStatus().getCurrent().vmStatus();
         if (result.getResponse().isNull("data")) {
@@ -154,11 +180,27 @@ public class SyncApi {
         }
     }
 
+    /**
+     * 根据虚拟机id 获取虚拟机详情
+     *
+     * @param credential 认证信息
+     * @param node       节点
+     * @param vmId       虚拟机id
+     * @return 虚拟机详情
+     */
     public static F2CVirtualMachine getF2CVirtualMachineById(VmProxmoxCredential credential, String node, String vmId) {
         PveClient client = credential.getClient();
         return getF2CVirtualMachineById(client, node, vmId);
     }
 
+    /**
+     * 根据虚拟机id 获取虚拟机详情
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @param vmId   虚拟机id
+     * @return 虚拟机详情
+     */
     public static F2CVirtualMachine getF2CVirtualMachineById(PveClient client, String node, String vmId) {
         Qemu qemu = getQemuById(client, node, vmId);
         Config qemuConfig = getQemuConfig(client, node, vmId);
@@ -169,11 +211,27 @@ public class SyncApi {
 
     }
 
+    /**
+     * 获取网络信息
+     *
+     * @param credential 认证信息
+     * @param node       节点
+     * @param vmId       虚拟机id
+     * @return 网络信息
+     */
     public static List<NetworkInterface> getNetwork(VmProxmoxCredential credential, String node, String vmId) {
         return getNetwork(credential.getClient(), node, vmId);
 
     }
 
+    /**
+     * 获取网络信息
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @param vmId   虚拟机id
+     * @return 网络信息
+     */
     public static List<NetworkInterface> getNetwork(PveClient client, String node, String vmId) {
         Result result = client.getNodes().get(node).getQemu().get(vmId).getAgent().getNetworkGetInterfaces().networkGetInterfaces();
         if (result.getStatusCode() == 500) {
@@ -188,18 +246,35 @@ public class SyncApi {
         }
     }
 
+    /**
+     * agent是否运行
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @param vmId   机器id
+     * @return 是否运行
+     */
     public static boolean agentIsRun(PveClient client, String node, String vmId) {
         Result result = client.getNodes().get(node).getQemu().get(vmId).getAgent().getNetworkGetInterfaces().networkGetInterfaces();
-        if (result.getStatusCode() == 500) {
-            return false;
-        }
-        return true;
+        return result.getStatusCode() != 500;
     }
 
+    /**
+     * 获取集群信息
+     *
+     * @param credential 认证对象
+     * @return 集群信息
+     */
     public static Cluster getCluster(VmProxmoxCredential credential) {
         return getCluster(credential.getClient());
     }
 
+    /**
+     * 获取集群信息
+     *
+     * @param client 客户端
+     * @return 集群信息
+     */
     private static Cluster getCluster(PveClient client) {
         Result status = client.getCluster().getStatus().getStatus();
         JSONObject response = status.getResponse();
@@ -215,10 +290,22 @@ public class SyncApi {
         return null;
     }
 
+    /**
+     * 获取节点列表
+     *
+     * @param credential 认证信息
+     * @return 节点列表
+     */
     public static List<ClusterNode> getClusterNodeList(VmProxmoxCredential credential) {
         return getClusterNodeList(credential.getClient());
     }
 
+    /**
+     * 获取节点列表
+     *
+     * @param client 客户端
+     * @return 节点列表
+     */
     public static List<ClusterNode> getClusterNodeList(PveClient client) {
         List<ClusterNode> clusterNodes = new ArrayList<>();
         Result status = client.getCluster().getStatus().getStatus();
@@ -236,10 +323,24 @@ public class SyncApi {
         return clusterNodes;
     }
 
+    /**
+     * 获取集群节点详情
+     *
+     * @param credential 认证信息
+     * @param node       节点
+     * @return 节点详情
+     */
     public static ClusterNode getClusterNode(VmProxmoxCredential credential, String node) {
         return getClusterNode(credential.getClient(), node);
     }
 
+    /**
+     * 获取集群节点详情
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @return 节点详情
+     */
     private static ClusterNode getClusterNode(PveClient client, String node) {
         List<ClusterNode> clusterNodeList = getClusterNodeList(client);
         return clusterNodeList.stream().filter(clusterNode -> clusterNode.getName().equals(node)).findFirst().orElseThrow(() -> new Fit2cloudException(404, "节点不存在"));
@@ -257,6 +358,12 @@ public class SyncApi {
         return getNodeList(vmProxmoxCredential.getClient());
     }
 
+    /**
+     * 获取pve节点
+     *
+     * @param client pve客户端
+     * @return 节点
+     */
     private static List<Node> getNodeList(PveClient client) {
         PveClient.PVENodes nodes = client.getNodes();
         String data = nodes.index().getResponse().getJSONArray("data").toString();
@@ -289,10 +396,24 @@ public class SyncApi {
 
     }
 
+    /**
+     * 获取节点详情信息
+     *
+     * @param credential 认证信息
+     * @param node       节点id
+     * @return 节点详情信息
+     */
     public static NodeStatus getNodeStatus(VmProxmoxCredential credential, String node) {
         return getNodeStatus(credential.getClient(), node);
     }
 
+    /**
+     * 获取节点详情信息
+     *
+     * @param client 客户端
+     * @param node   节点id
+     * @return 节点详情信息
+     */
     private static NodeStatus getNodeStatus(PveClient client, String node) {
         try {
             Result status = client.getNodes().get(node).getStatus().status();
@@ -302,13 +423,25 @@ public class SyncApi {
         }
     }
 
+    /**
+     * 获取 宿主机详情列表
+     *
+     * @param proxmoxBaseRequest 请求对象
+     * @return 宿主机详情列表
+     */
     public static List<F2CHost> listF2CHost(ProxmoxBaseRequest proxmoxBaseRequest) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(proxmoxBaseRequest.getCredential(), VmProxmoxCredential.class);
         List<Host> hostList = getHostList(vmProxmoxCredential).stream().filter(host -> StringUtil.equals(host.getNode().getNode(), proxmoxBaseRequest.getRegionId())).toList();
-        List<Qemu> qemuList = listQemu(proxmoxBaseRequest);
+        List<Qemu> qemuList = listVmQemu(vmProxmoxCredential.getClient(), proxmoxBaseRequest.getRegionId());
         return hostList.stream().map(host -> MappingUtil.toF2CHost(host, qemuList)).toList();
     }
 
+    /**
+     * 获取磁盘列表
+     *
+     * @param request 请求对象
+     * @return 磁盘列表
+     */
     public static List<Disk> listDisk(ProxmoxBaseRequest request) {
         VmProxmoxCredential credential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = credential.getClient();
@@ -317,11 +450,26 @@ public class SyncApi {
                 .map(dataStore -> listDisk(client, request.getRegionId(), dataStore.getStorage())).flatMap(List::stream).toList();
     }
 
+    /**
+     * 获取磁盘列表
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @return 磁盘
+     */
     public static List<Disk> listDisk(PveClient client, String node) {
         return listDataStore(client, node).stream()
                 .flatMap(dataStore -> listDisk(client, node, dataStore.getStorage()).stream().peek(disk -> disk.setType(dataStore.getType()))).toList();
     }
 
+    /**
+     * 获取磁盘信息
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @param volId  volId
+     * @return 磁盘信息
+     */
     public static Disk getDisk(PveClient client, String node, String volId) {
         List<Disk> disks = SyncApi.listDisk(client, node);
         Optional<Disk> diskF = disks.stream().filter(disk -> StringUtils.equals(disk.getVolid(), volId))
@@ -329,6 +477,14 @@ public class SyncApi {
         return diskF.orElse(null);
     }
 
+    /**
+     * 获取磁盘 列表
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @param store  存储
+     * @return 磁盘列表
+     */
     public static List<Disk> listDisk(PveClient client, String node, String store) {
         Result index = client.getNodes().get(node).getStorage().get(store).getContent().index();
         if (index.getStatusCode() == 200) {
@@ -339,6 +495,12 @@ public class SyncApi {
     }
 
 
+    /**
+     * 获取 磁盘详情列表
+     *
+     * @param request 请求对象
+     * @return 磁盘详情列表
+     */
     public static List<F2CDisk> listF2CDisk(ProxmoxBaseRequest request) {
         VmProxmoxCredential credential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = credential.getClient();
@@ -361,6 +523,15 @@ public class SyncApi {
                 .filter(Objects::nonNull).toList();
     }
 
+    /**
+     * 获取磁盘详情
+     *
+     * @param client    客户端
+     * @param node      节点
+     * @param vmId      虚拟机
+     * @param configKey 配置key
+     * @return 磁盘详情
+     */
     public static F2CDisk getF2CDisk(PveClient client, String node, String vmId, String configKey) {
         Config qemuConfig = getQemuConfig(client, node, vmId);
         Qemu qemu = getQemuById(client, node, vmId + "");
@@ -371,11 +542,24 @@ public class SyncApi {
     }
 
 
+    /**
+     * 获取存储器列表
+     *
+     * @param request 请求对象
+     * @return 存储器列表
+     */
     public static List<DataStore> listDataStore(ProxmoxBaseRequest request) {
         VmProxmoxCredential credential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         return listDataStore(credential.getClient(), request.getRegionId());
     }
 
+    /**
+     * 获取存储器列表
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @return 存储器列表
+     */
     public static List<DataStore> listDataStore(PveClient client, String node) {
         Result index = client.getNodes().get(node).getStorage().index(Map.of("format", 1, "content", "images"));
         if (index.getStatusCode() == 200) {
@@ -384,15 +568,37 @@ public class SyncApi {
         return List.of();
     }
 
+    /**
+     * 获取存储器
+     *
+     * @param vmProxmoxCredential 认证对象
+     * @param regionId            节点
+     * @param datastore           存储器
+     * @return 存储器信息
+     */
     public static DataStore getDataStore(VmProxmoxCredential vmProxmoxCredential, String regionId, String datastore) {
         return getDataStore(vmProxmoxCredential.getClient(), regionId, datastore);
     }
 
+    /**
+     * 获取存储器
+     *
+     * @param client    客户端
+     * @param regionId  区域id
+     * @param datastore 存储器
+     * @return 存储器信息
+     */
     public static DataStore getDataStore(PveClient client, String regionId, String datastore) {
         return listDataStore(client, regionId).stream().filter(dataStore -> StringUtils.equals(dataStore.getStorage(), datastore))
                 .findFirst().orElseThrow(() -> new Fit2cloudException(404, "获取存储器失败"));
     }
 
+    /**
+     * 获取虚拟机磁盘列表
+     *
+     * @param request 请求对象
+     * @return 磁盘列表
+     */
     public static List<F2CDisk> getVmF2CDisks(ProxmoxActionBaseRequest request) {
         VmProxmoxCredential credential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = credential.getClient();
@@ -433,20 +639,108 @@ public class SyncApi {
                 .flatMap(List::stream).toList();
     }
 
+    /**
+     * 获取云主机监控数据
+     *
+     * @param pveClient 客户端
+     * @param node      节点
+     * @param vmId      虚拟机id
+     * @return 云主机监控数据
+     */
     public static List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(PveClient pveClient, String node, String vmId) {
         Config qemuConfig = getQemuConfig(pveClient, node, vmId);
         Result rrdData = pveClient.getNodes().get(node)
                 .getQemu().get(vmId)
                 .getRrddata().rrddata("hour", "AVERAGE");
-        List<F2CPerfMetricMonitorData> f2CPerfMetricMonitorData = getF2CPerfMetricMonitorData(rrdData, F2CEntityType.VIRTUAL_MACHINE, qemuConfig, node, vmId);
-        Map<String, List<F2CPerfMetricMonitorData>> collect = f2CPerfMetricMonitorData.stream().collect(Collectors.groupingBy(F2CPerfMetricMonitorData::getMetricName));
-        return f2CPerfMetricMonitorData;
+        return getF2CPerfMetricMonitorData(rrdData, F2CEntityType.VIRTUAL_MACHINE, qemuConfig, node, vmId);
     }
 
 
-    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(Result rrdData, F2CEntityType entityTypes, Config config, String node, String vmId) {
+    /**
+     * 获取 云主机监控数据
+     *
+     * @param rrdData     监控数据
+     * @param entityTypes 类型也就是云主机
+     * @param config      云主机配置
+     * @param node        节点
+     * @param vmId        虚拟机id
+     * @return 云主机监控数据
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(Result rrdData,
+                                                                             F2CEntityType entityTypes,
+                                                                             Config config,
+                                                                             String node,
+                                                                             String vmId) {
+        return getF2CPerfMetricMonitorData(rrdData, Arrays.stream(ProxmoxPerfMetricConstants.CloudServerPerfMetricEnum.values()).toList(), f2CPerfMetricMonitorData -> {
+            f2CPerfMetricMonitorData.setEntityType(entityTypes.name());
+            f2CPerfMetricMonitorData.setInstanceId(MappingUtil.toInstanceId(vmId, config.getVmGenId()));
+            f2CPerfMetricMonitorData.setHostId(node);
+        });
+    }
+
+    /**
+     * 获取宿主机监控数据
+     *
+     * @param parseObject 请求对象
+     * @return 宿主机监控数据
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(GetMetricsRequest parseObject) {
+        VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(parseObject.getCredential(), VmProxmoxCredential.class);
+        PveClient client = vmProxmoxCredential.getClient();
+        Cluster cluster = getCluster(client);
+        return getClusterNodeList(client).stream()
+                .map(node -> getF2CHostPerfMetricMonitorData(client, node, cluster))
+                .flatMap(List::stream)
+                .toList();
+    }
+
+    /**
+     * 获取宿主机监控数据
+     *
+     * @param pveClient 客户端
+     * @param node      节点
+     * @param cluster   集群
+     * @return 宿主机监控数据
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(PveClient pveClient, ClusterNode node, Cluster cluster) {
+        Result rrdData = pveClient.getNodes().get(node.getName())
+                .getRrddata().rrddata("hour", "AVERAGE");
+        return getF2CHostPerfMetricMonitorData(rrdData, F2CEntityType.HOST, node, cluster);
+
+    }
+
+    /**
+     * 获取宿主机监控数据
+     *
+     * @param rrdData     监控数据
+     * @param entityTypes 类型也就是宿主机类型
+     * @param clusterNode 集群节点对象
+     * @param cluster     集群
+     * @return 宿主机监控数据
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(Result rrdData,
+                                                                                 F2CEntityType entityTypes,
+                                                                                 ClusterNode clusterNode, Cluster cluster) {
+        return getF2CPerfMetricMonitorData(rrdData, Arrays.stream(ProxmoxPerfMetricConstants.CloudHostPerfMetricEnum.values()).toList(), f2CPerfMetricMonitorData -> {
+            f2CPerfMetricMonitorData.setEntityType(entityTypes.name());
+            f2CPerfMetricMonitorData.setInstanceId(clusterNode.getName());
+            f2CPerfMetricMonitorData.setClusterName(Objects.nonNull(cluster) ? cluster.getName() : null);
+            f2CPerfMetricMonitorData.setHostId(clusterNode.getName());
+        });
+    }
+
+    /**
+     * 获取监控数据
+     *
+     * @param rrdData                    监控数据
+     * @param perfMetricConstantsParents 需要获取的指标
+     * @param consumer                   后处理数据
+     * @return 监控数据
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CPerfMetricMonitorData(Result rrdData,
+                                                                             List<? extends ProxmoxPerfMetricConstants.PerfMetricConstantsParent> perfMetricConstantsParents, Consumer<F2CPerfMetricMonitorData> consumer) {
         if (rrdData.isSuccessStatusCode()) {
-            return Arrays.stream(ProxmoxPerfMetricConstants.CloudServerPerfMetricEnum.values())
+            return perfMetricConstantsParents.stream()
                     .flatMap(item -> {
                         JSONArray data = rrdData.getResponse().getJSONArray("data");
                         return IntStream.range(0, data.length()).boxed().map(data::getJSONObject)
@@ -460,15 +754,95 @@ public class SyncApi {
                                     BeanUtils.copyProperties(f2CBasePerfMetricMonitorData, f2CPerfMetricMonitorData);
                                     f2CPerfMetricMonitorData.setMetricName(item.name());
                                     f2CPerfMetricMonitorData.setUnit(item.getUnit());
-                                    f2CPerfMetricMonitorData.setEntityType(entityTypes.name());
-                                    f2CPerfMetricMonitorData.setInstanceId(MappingUtil.toInstanceId(vmId, config.getVmGenId()));
                                     f2CPerfMetricMonitorData.setPeriod(60);
                                     f2CPerfMetricMonitorData.setTimestamp(jsonObject.getLong("time") * 1000);
-                                    f2CPerfMetricMonitorData.setHostId(node);
+                                    consumer.accept(f2CPerfMetricMonitorData);
                                     return f2CPerfMetricMonitorData;
                                 }).filter(Objects::nonNull);
                     }).toList();
         }
         return List.of();
+    }
+
+    /**
+     * 获取存储器监控数据
+     *
+     * @param parseObject 请求对象
+     * @return 存储就监控数据
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(GetMetricsRequest parseObject) {
+        VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(parseObject.getCredential(), VmProxmoxCredential.class);
+        PveClient client = vmProxmoxCredential.getClient();
+        return getClusterNodeList(client)
+                .stream().flatMap(clusterNode -> listDataStore(client, clusterNode.getName()).stream().map(dataStore -> new DefaultKeyValue<>(clusterNode, dataStore)))
+                .map(kv -> getF2CDatastorePerfMetricMonitorData(client, kv.getKey(), kv.getValue()))
+                .flatMap(List::stream)
+                .toList();
+
+
+    }
+
+    /**
+     * 获取存储器监控数据
+     *
+     * @param client      存储器
+     * @param clusterNode 集群节点
+     * @param dataStore   存储器
+     * @return 存储器监控数据
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(PveClient client, ClusterNode clusterNode, DataStore dataStore) {
+        Result rrdData = client.getNodes().get(clusterNode.getName())
+                .getStorage()
+                .get(dataStore.getStorage())
+                .getRrddata().rrddata("hour", "AVERAGE");
+        return getF2CDatastorePerfMetricMonitorData(rrdData, clusterNode, dataStore);
+
+    }
+
+    /**
+     * 获取存储器监控数据
+     *
+     * @param rrdData     存储器监控数据
+     * @param clusterNode 存储器节点
+     * @param dataStore   存储器
+     * @return 存储器监控数据
+     */
+    public static List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(Result rrdData, ClusterNode clusterNode, DataStore dataStore) {
+        return getF2CPerfMetricMonitorData(rrdData, Arrays.stream(ProxmoxPerfMetricConstants.CloudDatastorePerfMetricEnum.values()).toList(), f2CPerfMetricMonitorData -> {
+            f2CPerfMetricMonitorData.setEntityType(F2CEntityType.DATASTORE.name());
+            f2CPerfMetricMonitorData.setInstanceId(dataStore.getStorage());
+            f2CPerfMetricMonitorData.setClusterName(clusterNode.getName());
+            f2CPerfMetricMonitorData.setHostId(clusterNode.getId());
+        });
+    }
+
+    /**
+     * 获取存储器列表
+     *
+     * @param proxmoxBaseRequest 请求对象
+     * @return 存储器列表
+     */
+    public static List<F2CDatastore> listF2CDatastore(ProxmoxBaseRequest proxmoxBaseRequest) {
+        VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(proxmoxBaseRequest.getCredential(), VmProxmoxCredential.class);
+        PveClient client = vmProxmoxCredential.getClient();
+        List<DataStore> dataStores = listDataStore(proxmoxBaseRequest);
+        Cluster cluster = getCluster(client);
+        return dataStores.stream().map(dataStore -> {
+                    List<Disk> disks = listDisk(client, proxmoxBaseRequest.getRegionId(), dataStore.getStorage());
+                    F2CDatastore f2CDatastore = new F2CDatastore();
+                    f2CDatastore.setType(dataStore.getType());
+                    f2CDatastore.setClusterName(Objects.nonNull(cluster) ? cluster.getName() : null);
+                    f2CDatastore.setClusterId(Objects.nonNull(cluster) ? cluster.getName() : null);
+                    f2CDatastore.setCapacity(dataStore.getTotal() / 1024 / 1024 / 1024);
+                    f2CDatastore.setFreeSpace(dataStore.getAvail() / 1024 / 1024 / 1024);
+                    f2CDatastore.setRegion(proxmoxBaseRequest.getRegionId());
+                    f2CDatastore.setAllocatedSpace(disks.stream().map(Disk::getSize).mapToLong(Long::longValue).sum() / 1024 / 1024 / 1024);
+                    f2CDatastore.setZone(proxmoxBaseRequest.getRegionId());
+                    f2CDatastore.setDataStoreId(dataStore.getStorage());
+                    f2CDatastore.setDataStoreName(dataStore.getStorage());
+                    return f2CDatastore;
+                })
+                .toList();
+
     }
 }

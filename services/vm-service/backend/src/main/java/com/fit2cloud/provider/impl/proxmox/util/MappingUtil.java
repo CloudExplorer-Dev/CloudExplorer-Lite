@@ -65,7 +65,8 @@ public class MappingUtil {
         f2CVirtualMachine.setMemory((int) Math.ceil(qemu.getMaxmem() / 1024.f / 1024 / 1024));
         f2CVirtualMachine.setCpu(qemu.getCpus());
         f2CVirtualMachine.setCluster(cluster);
-        f2CVirtualMachine.setHost(cluster);
+        f2CVirtualMachine.setHostId(clusterNode.getName());
+        f2CVirtualMachine.setHost(clusterNode.getName());
         f2CVirtualMachine.setHostname(qemu.getName());
         f2CVirtualMachine.setMemoryUsed((int) Math.ceil(qemu.getMem() / 1024.0 / 1024 / 1024));
         f2CVirtualMachine.setInstanceStatus(getF2CInstanceStatus(qemu.getStatus()).name());
@@ -111,11 +112,11 @@ public class MappingUtil {
 
     public static F2CHost toF2CHost(Host host, List<Qemu> qemuList) {
         F2CHost f2CHost = new F2CHost();
-        f2CHost.setHostId(host.getClusterNode().getId());
+        f2CHost.setHostId(host.getClusterNode().getName());
         f2CHost.setHostIp(host.getClusterNode().getIp());
         f2CHost.setHostName(host.getClusterNode().getName());
-        f2CHost.setClusterName(host.getCluster().getName());
-        f2CHost.setClusterId(host.getCluster().getName());
+        f2CHost.setClusterName(Objects.isNull(host.getCluster()) ? null : host.getCluster().getName());
+        f2CHost.setClusterId(Objects.isNull(host.getCluster()) ? null : host.getCluster().getName());
         DefaultKeyValue<Integer, String> cpuMHzPerOneCore = getCpuMHzPerOneCore(host.getNodeStatus());
         f2CHost.setCpuMHzPerOneCore(cpuMHzPerOneCore.getKey());
         f2CHost.setCpuModel(cpuMHzPerOneCore.getValue());
@@ -134,6 +135,10 @@ public class MappingUtil {
         f2CHost.setNumCpuCores(host.getNode().getMaxcpu());
         int sum = qemuList.stream().mapToInt(Qemu::getCpus).sum();
         f2CHost.setVmCpuCores(sum);
+        f2CHost.setVmRunning(qemuList.stream().filter(qemu -> StringUtil.equals(qemu.getStatus(), "running")).count());
+        f2CHost.setVmStopped(qemuList.stream().filter(qemu -> StringUtil.equals(qemu.getStatus(), "stopped")).count());
+        f2CHost.setVmTotal(qemuList.size());
+        f2CHost.setZone(Objects.nonNull(host.getCluster()) ? host.getCluster().getName() : null);
         return f2CHost;
     }
 

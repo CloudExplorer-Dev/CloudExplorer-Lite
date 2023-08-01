@@ -24,10 +24,7 @@ import com.fit2cloud.vm.AbstractCloudProvider;
 import com.fit2cloud.vm.ICloudProvider;
 import com.fit2cloud.vm.ICreateServerRequest;
 import com.fit2cloud.vm.constants.ActionInfoConstants;
-import com.fit2cloud.vm.entity.F2CDisk;
-import com.fit2cloud.vm.entity.F2CHost;
-import com.fit2cloud.vm.entity.F2CImage;
-import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.fit2cloud.vm.entity.*;
 import com.fit2cloud.vm.entity.request.BaseDiskRequest;
 import com.fit2cloud.vm.entity.request.BaseDiskResizeRequest;
 import com.fit2cloud.vm.entity.request.GetMetricsRequest;
@@ -54,9 +51,12 @@ public class ProxmoxCloudProvider extends AbstractCloudProvider<VmProxmoxCredent
     public static final Info info = new Info("vm-service", List.of(
             ActionInfoConstants.SYNC_IMAGE,
             ActionInfoConstants.SYNC_DISK,
+            ActionInfoConstants.SYNC_HOST,
             ActionInfoConstants.SYNC_VIRTUAL_MACHINE,
             ActionInfoConstants.SYNC_METRIC_MONITOR,
-            ActionInfoConstants.SYNC_VIRTUAL_MACHINE_METRIC_MONITOR), Map.of());
+            ActionInfoConstants.SYNC_VIRTUAL_MACHINE_METRIC_MONITOR,
+            ActionInfoConstants.SYNC_HOST_MACHINE_METRIC_MONITOR,
+            ActionInfoConstants.SYNC_DATASTORE), Map.of());
 
 
     @Override
@@ -212,6 +212,16 @@ public class ProxmoxCloudProvider extends AbstractCloudProvider<VmProxmoxCredent
     }
 
     @Override
+    public List<F2CPerfMetricMonitorData> getF2CHostPerfMetricMonitorData(String req) {
+        return SyncApi.getF2CHostPerfMetricMonitorData(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
+    public List<F2CPerfMetricMonitorData> getF2CDatastorePerfMetricMonitorData(String req) {
+        return SyncApi.getF2CDatastorePerfMetricMonitorData(JsonUtil.parseObject(req, GetMetricsRequest.class));
+    }
+
+    @Override
     public String calculateConfigUpdatePrice(String req) {
         CalculateConfigUpdatePriceRequest calculateConfigUpdatePriceRequest =
                 JsonUtil.parseObject(req, CalculateConfigUpdatePriceRequest.class);
@@ -299,6 +309,12 @@ public class ProxmoxCloudProvider extends AbstractCloudProvider<VmProxmoxCredent
     public List<F2CHost> listHost(String req) {
         ProxmoxBaseRequest proxmoxBaseRequest = JsonUtil.parseObject(req, ProxmoxBaseRequest.class);
         return SyncApi.listF2CHost(proxmoxBaseRequest);
+    }
+
+    @Override
+    public List<F2CDatastore> listDataStore(String req) {
+        ProxmoxBaseRequest proxmoxBaseRequest = JsonUtil.parseObject(req, ProxmoxBaseRequest.class);
+        return SyncApi.listF2CDatastore(proxmoxBaseRequest);
     }
 
     public List<DataStore> getDataStoreList(String req) {

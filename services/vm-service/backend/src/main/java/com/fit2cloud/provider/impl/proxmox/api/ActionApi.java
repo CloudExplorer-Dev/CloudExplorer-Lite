@@ -42,7 +42,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
 /**
  * {@code @Author:张少虎}
@@ -51,8 +50,13 @@ import java.util.regex.Pattern;
  * {@code @注释: }
  */
 public class ActionApi {
-    private static final Pattern ipv4Pattern = Pattern.compile("^((25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d)))\\.){3}(25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d)))$");
 
+    /**
+     * 创建虚拟机
+     *
+     * @param request 创建虚拟机请求对象
+     * @return 虚拟机详情
+     */
     public static F2CVirtualMachine createVirtualMachine(ProxmoxCreateServerRequest request) {
         VmProxmoxCredential credential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = credential.getClient();
@@ -115,6 +119,14 @@ public class ActionApi {
     }
 
 
+    /**
+     * 等待agent 启动
+     *
+     * @param client 客户端
+     * @param node   节点
+     * @param vmId   虚拟机id
+     * @return 是否启动
+     */
     public static boolean waitAgentStarted(PveClient client, String node, String vmId) {
         return waitForTaskToFinish(() -> {
             List<NetworkInterface> network = SyncApi.getNetwork(client, node, vmId);
@@ -123,6 +135,15 @@ public class ActionApi {
         }, 1000 * 20, 1000 * 60 * 30);
     }
 
+    /**
+     * 等待任务结束
+     *
+     * @param taskIsRunning 是否在运行
+     * @param wait          等待时间
+     * @param timeOut       超时时间
+     * @return 是否结束
+     * @throws JSONException json解析异常
+     */
     public static boolean waitForTaskToFinish(Supplier<Boolean> taskIsRunning, long wait, long timeOut) throws JSONException {
         boolean isRunning = false;
         long timeStart = System.currentTimeMillis();
@@ -157,6 +178,12 @@ public class ActionApi {
     }
 
 
+    /**
+     * 打开电源
+     *
+     * @param powerOnRequest 请求对象
+     * @return 是否执行成功
+     */
     public static boolean powerOnVm(ProxmoxActionBaseRequest powerOnRequest) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(powerOnRequest.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
@@ -170,6 +197,12 @@ public class ActionApi {
     }
 
 
+    /**
+     * 关闭电源
+     *
+     * @param powerOffRequest 请求对象
+     * @return 是否执行成功
+     */
     public static boolean powerOffVm(ProxmoxActionBaseRequest powerOffRequest) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(powerOffRequest.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
@@ -182,6 +215,12 @@ public class ActionApi {
         return true;
     }
 
+    /**
+     * 关机
+     *
+     * @param request 请求对象
+     * @return 是否执行成功
+     */
     public static boolean shutdownInstance(ProxmoxActionBaseRequest request) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
@@ -194,6 +233,12 @@ public class ActionApi {
         return true;
     }
 
+    /**
+     * 重启
+     *
+     * @param request 请求对象
+     * @return 是否执行成功
+     */
     public static boolean reboot(ProxmoxActionBaseRequest request) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
@@ -209,6 +254,12 @@ public class ActionApi {
         return true;
     }
 
+    /**
+     * 删除虚拟机
+     *
+     * @param request 请求对象
+     * @return 是否执行成功
+     */
     public static boolean delete(ProxmoxActionBaseRequest request) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
@@ -219,6 +270,13 @@ public class ActionApi {
         return true;
     }
 
+
+    /**
+     * 删除磁盘
+     *
+     * @param request 请求对象
+     * @return 是否执行成功
+     */
     public static boolean deleteDisk(BaseDiskRequest request) {
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = vmProxmoxCredential.getClient();
@@ -239,6 +297,12 @@ public class ActionApi {
         return false;
     }
 
+    /**
+     * 卸载磁盘
+     *
+     * @param request 请求对象
+     * @return 是否执行成功
+     */
     public static boolean detachDisk(BaseDiskRequest request) {
         String diskId = JsonUtil.parseObject(request.getDiskId(), InstanceId.class).getUuid();
         String instanceUuid = JsonUtil.parseObject(request.getInstanceUuid(), InstanceId.class).getUuid();
@@ -256,6 +320,12 @@ public class ActionApi {
         return false;
     }
 
+    /**
+     * 扩容磁盘
+     *
+     * @param request 请求对象
+     * @return 是否执行成功
+     */
     public static boolean enlargeDisk(BaseDiskResizeRequest request) {
         String diskId = JsonUtil.parseObject(request.getDiskId(), InstanceId.class).getUuid();
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
@@ -279,10 +349,23 @@ public class ActionApi {
         throw new Fit2cloudException(404, "找不到id{" + diskId + "}的磁盘");
     }
 
+    /**
+     * 获取磁盘 key
+     *
+     * @param config 虚拟机配置对象
+     * @param diskId 磁盘id
+     * @return 磁盘key
+     */
     private static String getDiskKey(Config config, String diskId) {
         return config.getDisks().stream().filter(disk -> StringUtils.equals(disk.getVolId(), diskId)).findFirst().map(com.fit2cloud.common.provider.impl.proxmox.client.entity.config.Disk::getKey).orElseGet(() -> config.getUnuseds().stream().filter(unUsed -> StringUtils.equals(unUsed.getValue(), diskId)).findFirst().map(UnUsed::getValue).orElse(null));
     }
 
+    /**
+     * 配置变更
+     *
+     * @param req 请求对象
+     * @return 变更后虚拟机
+     */
     public static F2CVirtualMachine changeVmConfig(ProxmoxUpdateConfigRequest req) {
         String instanceUuid = req.getInstanceUuid().getUuid();
         VmProxmoxCredential vmProxmoxCredential = JsonUtil.parseObject(req.getCredential(), VmProxmoxCredential.class);
@@ -312,6 +395,12 @@ public class ActionApi {
         return SyncApi.getF2CVirtualMachineById(client, req.getRegionId(), instanceUuid);
     }
 
+    /**
+     * 挂载磁盘
+     *
+     * @param request 请求对象
+     * @return 磁盘信息
+     */
     public static F2CDisk attachDisk(BaseDiskRequest request) {
         String instanceId = JsonUtil.parseObject(request.getInstanceUuid(), InstanceId.class).getUuid();
         String diskId = JsonUtil.parseObject(request.getDiskId(), InstanceId.class).getUuid();
@@ -341,6 +430,13 @@ public class ActionApi {
         throw new Fit2cloudException(500, "挂载失败");
     }
 
+    /**
+     * 获取未挂载的 磁盘key
+     *
+     * @param keys   磁盘key
+     * @param device 挂载点
+     * @return 磁盘key
+     */
     public static String getNotUsedKey(List<String> keys, String device) {
         keys = keys.stream().sorted(Comparator.comparingInt(pre -> Integer.parseInt(pre.replace(device, "")))).toList();
         for (int i = 0; i < keys.size(); i++) {
@@ -351,6 +447,12 @@ public class ActionApi {
         return device + keys.size();
     }
 
+    /**
+     * 创建磁盘
+     *
+     * @param request 请求对象
+     * @return 磁盘信息
+     */
     public static F2CDisk createDisk(AddDiskFormRequest request) {
         //scsi4: local:1,format=raw
         //local:1,format=raw
@@ -370,6 +472,12 @@ public class ActionApi {
         return SyncApi.getF2CDisk(client, request.getRegionId(), request.getInstanceUuid().getUuid(), notUsedKey);
     }
 
+    /**
+     * 创建云主机询价
+     *
+     * @param request 请求对象
+     * @return 价钱
+     */
     public static String calculateConfigPrice(ProxmoxCalculateConfigPriceRequest request) {
         RestTemplate restTemplate = SpringUtil.getBean(RestTemplate.class);
         Set<String> servicesExcludeGateway = ServiceUtil.getServicesExcludeGateway();
