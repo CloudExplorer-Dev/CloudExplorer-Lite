@@ -65,7 +65,8 @@ public class MappingUtil {
         f2CVirtualMachine.setMemory((int) Math.ceil(qemu.getMaxmem() / 1024.f / 1024 / 1024));
         f2CVirtualMachine.setCpu(qemu.getCpus());
         f2CVirtualMachine.setCluster(cluster);
-        f2CVirtualMachine.setHost(cluster);
+        f2CVirtualMachine.setHost(clusterNode.getName());
+        f2CVirtualMachine.setZone(clusterNode.getName());
         f2CVirtualMachine.setHostname(qemu.getName());
         f2CVirtualMachine.setMemoryUsed((int) Math.ceil(qemu.getMem() / 1024.0 / 1024 / 1024));
         f2CVirtualMachine.setInstanceStatus(getF2CInstanceStatus(qemu.getStatus()).name());
@@ -74,7 +75,6 @@ public class MappingUtil {
         f2CVirtualMachine.setName(qemu.getName());
         f2CVirtualMachine.setInstanceType(getInstanceType(f2CVirtualMachine.getCpu(), f2CVirtualMachine.getMemory()));
         f2CVirtualMachine.setInstanceTypeDescription(getInstanceType(f2CVirtualMachine.getCpu(), f2CVirtualMachine.getMemory()));
-        f2CVirtualMachine.setZone(clusterNode.getName());
         f2CVirtualMachine.setOsInfo(StringUtil.isEmpty(config.getOsType()) ? "Other" : OsType.osType.getOrDefault(config.getOsType(), "Other"));
         if (CollectionUtils.isNotEmpty(networkInterfaces)) {
             List<String> ipArray = networkInterfaces
