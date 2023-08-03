@@ -109,4 +109,12 @@ public class F2CHost {
      * 可用区
      */
     private String zone;
+    /**
+     * CPU 已使用 （单位:MHZ)
+     */
+    private long cpuMHzUsed;
+    /**
+     * 内存已使用 (单位:MB)
+     */
+    private long memoryUsed;
 }

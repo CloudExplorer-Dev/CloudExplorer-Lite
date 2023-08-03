@@ -37,9 +37,9 @@
         width="150"
         :column-key="'platform'"
         :filters="
-          Object.keys(platformIcon).map((key) => ({
-            text: platformIcon[key].name,
-            value: key,
+          platformStore.platforms.map((platform:Platform) => ({
+            text: platform.label,
+            value: platform.field,
           }))
         "
         :filter-multiple="false"
@@ -48,7 +48,9 @@
           <div style="display: flex; align-items: center">
             <PlatformIcon :platform="scope.row.platform" />
             <span style="margin-left: 8px; width: calc(100% - 30px)">{{
-              platformIcon[scope.row.platform].name
+              platformStore.platforms.find(
+                (platform: Platform) => platform.field === scope.row.platform
+              ).label
             }}</span>
           </div>
         </template>
@@ -181,14 +183,15 @@ import type { ComplianceRule } from "@/api/rule/type";
 import complianceRuleApi from "@/api/rule";
 import complianceRuleGroupApi from "@/api/rule_group";
 import type { ComplianceRuleGroup } from "@/api/rule_group/type";
-import { platformIcon } from "@commons/utils/platform";
 import { ElMessage, ElMessageBox } from "element-plus";
 import ComplianceRuleView from "@/views/rule/components/compliance_rule_view/index.vue";
 import CreateComplianceRule from "@/views/rule/components/CreateComplianceRule.vue";
 import UpdateComplianceRule from "@/views/rule/components/UpdateComplianceRule.vue";
 import ComplianceRuleSwitch from "@/views/rule/components/ComplianceRuleSwitch.vue";
 import { usePermissionStore } from "@commons/stores/modules/permission";
-
+import { usePlatformStore } from "@commons/stores/modules/platform";
+import type { Platform } from "@commons/api/cloud_account/type";
+const platformStore = usePlatformStore();
 const permissionStore = usePermissionStore();
 /**
  * 表格数据

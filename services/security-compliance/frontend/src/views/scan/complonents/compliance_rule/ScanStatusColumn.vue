@@ -25,13 +25,15 @@
               "
             />
             <span>{{
-              platformIcon[
-                orElse(
-                  cloudAccountSourceList.find(
-                    (c) => c.id === scope.row.resourceId
-                  )?.platform
-                )
-              ].name
+              platformStore.platforms.find(
+                (platform: Platform) =>
+                  platform.field ===
+                  orElse(
+                    cloudAccountSourceList.find(
+                      (c) => c.id === scope.row.resourceId
+                    )?.platform
+                  )
+              ).label
             }}</span>
           </div>
         </template>
@@ -70,9 +72,11 @@ import type {
   AccountJobRecord,
   CloudAccount,
 } from "@commons/api/cloud_account/type";
-import { platformIcon } from "@commons/utils/platform";
 import ScanJobStatusIcon from "@/views/scan/complonents/compliance_rule/ScanJobStatusIcon.vue";
 import PlatformIcon from "@commons/components/platform-icon/index.vue";
+import { usePlatformStore } from "@commons/stores/modules/platform";
+import type { Platform } from "@commons/api/cloud_account/type";
+const platformStore = usePlatformStore();
 const props = defineProps<{
   /**
    * 扫描结果
