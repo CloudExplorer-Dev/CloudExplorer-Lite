@@ -68,17 +68,25 @@
         width="120"
         :column-key="'platform'"
         :filters="
-          Object.keys(platformIcon).map((key) => ({
-            text: platformIcon[key].name,
-            value: key,
+          platformStore.platforms.map((platform:Platform) => ({
+            text: platform.label,
+            value: platform.field,
           }))
         "
         :filter-multiple="false"
       >
         <template #default="scope">
           <div style="display: flex">
-            <PIcon :platform="scope.row.platform" style="margin-right: 8px" />
-            <span>{{ platformIcon[scope.row.platform].name }}</span>
+            <PlatformIcon
+              :platform="scope.row.platform"
+              style="margin-right: 8px"
+            />
+
+            <span>{{
+              platformStore.platforms.find(
+                (platform: Platform) => platform.field === scope.row.platform
+              ).label
+            }}</span>
           </div>
         </template>
       </el-table-column>
@@ -200,8 +208,6 @@ import type { ComplianceScanResultResponse } from "@/api/compliance_scan_result/
 import complianceScanResultApi from "@/api/compliance_scan_result";
 import { onMounted, ref, watch, onBeforeUnmount } from "vue";
 import complianceScanApi from "@/api/compliance_scan";
-import { platformIcon } from "@commons/utils/platform";
-import PIcon from "@commons/components/platform-icon/index.vue";
 import _ from "lodash";
 import complianceRuleGroupApi from "@/api/rule_group";
 import type { ComplianceRuleGroup } from "@/api/rule_group/type";
@@ -219,6 +225,9 @@ import type { ComplianceRuleGroupCountResponse } from "@/api/compliance_scan_res
 import bus from "@commons/bus";
 import UpdateComplianceRule from "@/views/rule/components/UpdateComplianceRule.vue";
 import { useRoute } from "vue-router";
+import { usePlatformStore } from "@commons/stores/modules/platform";
+import type { Platform } from "@commons/api/cloud_account/type";
+const platformStore = usePlatformStore();
 const route = useRoute();
 let jobInterval: number;
 // 路由对象

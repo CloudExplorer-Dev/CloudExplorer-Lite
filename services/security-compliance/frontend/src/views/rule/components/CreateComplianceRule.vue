@@ -185,12 +185,15 @@ import type {
 } from "@/api/rule/type";
 import complianceRuleApi from "@/api/rule";
 import type { ComplianceRuleGroup } from "@/api/rule_group/type";
-import { platformIcon } from "@commons/utils/platform";
 import type { KeyValue } from "@commons/api/base/type";
 import { ElMessage } from "element-plus";
 import complianceInsuranceStatuteApi from "@/api/compliance_insurance_statute";
 import type { ComplianceInsuranceStatute } from "@/api/compliance_insurance_statute/type";
+import { usePlatformStore } from "@commons/stores/modules/platform";
+import type { Platform } from "@commons/api/cloud_account/type";
 import _ from "lodash";
+
+const platformStore = usePlatformStore();
 const props = defineProps<{
   /**
    * 资源类型
@@ -333,9 +336,9 @@ const supportPlatformList = computed(() => {
   return [
     ...new Set(supportPlatformResourceList.value.map((s) => s.platform)),
   ].map((platform) => ({
-    key: platformIcon[platform].name,
+    key: platformStore.platforms.find((p: Platform) => p.field === platform)
+      .label,
     value: platform,
-    icon: platformIcon[platform].icon,
   }));
 });
 /**
