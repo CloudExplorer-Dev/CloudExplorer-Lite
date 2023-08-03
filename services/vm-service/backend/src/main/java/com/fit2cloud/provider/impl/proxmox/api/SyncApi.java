@@ -207,7 +207,7 @@ public class SyncApi {
         Cluster cluster = getCluster(client);
         ClusterNode clusterNode = getClusterNode(client, node);
         List<NetworkInterface> network = getNetwork(client, node, vmId);
-        return MappingUtil.toF2CVirtualMachine(qemu, qemuConfig, cluster.getName(), clusterNode, network);
+        return MappingUtil.toF2CVirtualMachine(qemu, qemuConfig, Objects.nonNull(cluster) ? cluster.getName() : null, clusterNode, network);
 
     }
 
