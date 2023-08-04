@@ -7,12 +7,11 @@ import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.request.user.EditUserRequest;
 import com.fit2cloud.request.user.ResetPwdRequest;
+import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.annotation.Resource;
 
 @RestController
 @RequestMapping("/api")
@@ -25,6 +24,7 @@ public class BaseUserController {
         UserDto userDto = (UserDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userService.getById(userDto.getId());
         BeanUtils.copyProperties(user, userDto);
+        userDto.setPassword(null);
         return ResultHolder.success(userDto);
     }
 
