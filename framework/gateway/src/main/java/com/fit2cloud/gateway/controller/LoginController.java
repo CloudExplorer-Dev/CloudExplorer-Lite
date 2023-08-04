@@ -136,6 +136,7 @@ public class LoginController {
         UserDto userDto = (UserDto) exchange.getAttributes().get("user");
         User user = userService.getById(userDto.getId());
         BeanUtils.copyProperties(user, userDto);
+        userDto.setPassword(null);
         return Mono.just(ResultHolder.success(userDto));
     }
 

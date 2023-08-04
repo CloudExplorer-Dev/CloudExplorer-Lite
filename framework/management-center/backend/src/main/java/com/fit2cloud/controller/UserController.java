@@ -18,12 +18,12 @@ import com.fit2cloud.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -42,14 +42,22 @@ public class UserController {
     @PreAuthorize("@cepc.hasAnyCePermission('USER:READ')")
     @GetMapping("/page")
     public ResultHolder<IPage<UserDto>> listUser(PageUserRequest pageUserRequest) {
-        return ResultHolder.success(userService.pageUser(pageUserRequest));
+        IPage<UserDto> page = userService.pageUser(pageUserRequest);
+        page.getRecords().forEach(userDto -> {
+            userDto.setPassword(null);
+        });
+        return ResultHolder.success(page);
     }
 
     @Operation(summary = "管理员/组织管理员获取可管理的用户列表")
     @PreAuthorize("@cepc.hasAnyCePermission('USER:READ')")
     @GetMapping("/manage/list")
     public ResultHolder<List<User>> listUser() {
-        return ResultHolder.success(userService.getManageUserSimpleList(null));
+        List<User> users = userService.getManageUserSimpleList(null);
+        users.forEach(user -> {
+            user.setPassword(null);
+        });
+        return ResultHolder.success(users);
     }
 
     @Operation(summary = "查询用户总数")
@@ -97,7 +105,9 @@ public class UserController {
                                          @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                          @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                          @PathVariable("id") String id) {
-        return ResultHolder.success(userService.getUser(id));
+        UserDto userDto = userService.getUser(id);
+        userDto.setPassword(null);
+        return ResultHolder.success(userDto);
     }
 
     @Operation(summary = "删除用户")
@@ -121,7 +131,9 @@ public class UserController {
                                                  @NotNull(message = "{i18n.user.id.cannot.be.null}")
                                                  @CustomValidated(mapper = BaseUserMapper.class, handler = ExistHandler.class, message = "{i18n.primary.key.not.exist}", exist = false)
                                                  @PathVariable("id") String id) {
-        return ResultHolder.success(userService.userRoleInfo(id));
+        UserOperateDto userOperateDto = userService.userRoleInfo(id);
+        userOperateDto.setPassword(null);
+        return ResultHolder.success(userOperateDto);
     }
 
     @Operation(summary = "启停用户")
