@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { computed, onMounted, type Ref, ref } from "vue";
+import { computed, onMounted, watch, type Ref, ref } from "vue";
 import CurrencyFormat from "@commons/utils/currencyFormat";
 import { useModuleStore } from "@commons/stores/modules/module";
 import _ from "lodash";
 import { usePermissionStore } from "@commons/stores/modules/permission";
 import BillViewAPI from "@commons/api/bil_view/index";
-
+import type { HistoryTrendRequest, Currency } from "@commons/api/bil_view/type";
 import { useUserStore } from "@commons/stores/modules/user";
 import type { ECharts } from "echarts";
 import type { Result } from "@commons/request/Result";
@@ -18,9 +18,12 @@ const props = withDefaults(
     needRoles?: Array<"ADMIN" | "ORGADMIN" | "USER">;
     permission?: any;
     module?: string;
+    requestParams?: HistoryTrendRequest;
+    currency?: Currency;
     getHistoryTrend?: (
       type: "MONTH" | "YEAR",
       historyNum: number,
+      req: HistoryTrendRequest,
       loading?: Ref<boolean>
     ) => Promise<Result<Array<any>>>;
     headPosition?: "left" | "center";
@@ -32,6 +35,14 @@ const props = withDefaults(
     headPosition: "center",
     permission: "[finance-management]BILL_ViEW:READ",
     module: "finance-management",
+    requestParams: () => ({}),
+    currency: () => ({
+      code: "CNY",
+      message: "人民币",
+      symbol: "¥",
+      unit: "元",
+      exchangeRate: 1,
+    }),
     chartHeight: 200,
   }
 );
@@ -115,19 +126,22 @@ const getTrendViewOption = (
   return option;
 };
 
-const activeTreedYear = ref<string>("MONTH");
 const historyTreed = ref<Array<TrendData>>([]);
 let historyTrendChart: ECharts | undefined = undefined;
 const chartWrapper = ref<any>(null);
 
-const historyTrend = async (historyNum: number, active: string) => {
+const historyTrend = async (historyNum: number) => {
   if (!show.value) {
     return;
   }
-  activeTreedYear.value = active;
   // 获取历史趋势
   await props
-    .getHistoryTrend("MONTH", historyNum, historyTrendLoading)
+    .getHistoryTrend(
+      "MONTH",
+      historyNum,
+      props.requestParams,
+      historyTrendLoading
+    )
     .then((ok) => {
       historyTreed.value = ok.data;
       if (!historyTrendChart) {
@@ -161,7 +175,8 @@ const historyTrend = async (historyNum: number, active: string) => {
         trigger: "item",
         formatter: (p: any) => {
           return `<div>月份:${p.name}</div><div>金额:${CurrencyFormat.format(
-            p.value
+            p.value,
+            props.currency.code
           )}</div>`;
         },
       };
@@ -182,10 +197,18 @@ const show = computed<boolean>(
     permissionStore.hasPermission(props.permission) &&
     _.includes(props.needRoles, userStore.currentRole)
 );
-
+const activeNum = ref<number>(12);
 onMounted(() => {
-  historyTrend(12, "YEAR");
+  refresh();
 });
+
+const refresh = () => {
+  historyTrend(activeNum.value);
+};
+watch(activeNum, () => {
+  refresh();
+});
+defineExpose({ refresh });
 </script>
 <template>
   <div class="info-card" v-resize="reSize" v-if="show">
@@ -198,23 +221,25 @@ onMounted(() => {
     >
       <div class="top">
         <div class="title title_font">
-          费用趋势<span class="sub_title_font">（单位：元）</span>
+          费用趋势<span class="sub_title_font"
+            >（单位：{{ currency.unit }}）</span
+          >
         </div>
         <div style="flex: auto"></div>
         <div class="operation_wrapper">
           <div class="operation">
             <div
               class="left"
-              :class="[activeTreedYear === 'MONTH' ? 'active' : '']"
-              @click="historyTrend(6, 'MONTH')"
+              :class="[activeNum === 6 ? 'active' : '']"
+              @click="activeNum = 6"
             >
               近6月
             </div>
             <div class="line"></div>
             <div
               class="right"
-              :class="[activeTreedYear === 'YEAR' ? 'active' : '']"
-              @click="historyTrend(12, 'YEAR')"
+              :class="[activeNum === 12 ? 'active' : '']"
+              @click="activeNum = 12"
             >
               近1年
             </div>
@@ -227,7 +252,9 @@ onMounted(() => {
           {{ _.maxBy(historyTreed, "label")?.label + "：" }}
         </span>
         <span class="money">
-          {{ CurrencyFormat.format(_.sumBy(historyTreed, "value")) }}
+          {{
+            CurrencyFormat.format(_.sumBy(historyTreed, "value"), currency.code)
+          }}
         </span>
       </div>
     </div>

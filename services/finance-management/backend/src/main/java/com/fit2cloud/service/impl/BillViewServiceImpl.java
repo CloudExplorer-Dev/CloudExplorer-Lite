@@ -1,10 +1,13 @@
 package com.fit2cloud.service.impl;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.util.ObjectBuilder;
 import com.fit2cloud.base.service.IBaseOrganizationService;
@@ -18,33 +21,31 @@ import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.constants.CalendarConstants;
 import com.fit2cloud.controller.request.BillExpensesRequest;
+import com.fit2cloud.controller.request.BillViewRequest;
+import com.fit2cloud.controller.request.CurrencyRequest;
 import com.fit2cloud.controller.request.HistoryTrendRequest;
 import com.fit2cloud.controller.response.BillView;
+import com.fit2cloud.controller.response.CurrencyResponse;
 import com.fit2cloud.controller.response.ExpensesResponse;
 import com.fit2cloud.controller.response.Trend;
+import com.fit2cloud.dao.entity.BillCurrency;
 import com.fit2cloud.dao.entity.BillRule;
 import com.fit2cloud.dao.jentity.Group;
 import com.fit2cloud.es.entity.CloudBill;
+import com.fit2cloud.provider.constants.CurrencyConstants;
 import com.fit2cloud.service.BillSearchService;
 import com.fit2cloud.service.BillViewService;
+import com.fit2cloud.service.IBillCurrencyService;
 import com.fit2cloud.service.IBillRuleService;
+import jakarta.annotation.Resource;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
-import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
-import org.springframework.data.elasticsearch.client.elc.NativeQuery;
-import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
-import org.springframework.data.elasticsearch.core.AggregationsContainer;
-import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -58,13 +59,15 @@ import java.util.stream.Collectors;
 @Service
 public class BillViewServiceImpl implements BillViewService {
     @Resource
-    private ElasticsearchTemplate elasticsearchTemplate;
-    @Resource
     private IBillRuleService billRuleService;
     @Resource
     private IBaseOrganizationService organizationService;
     @Resource
     private BillSearchService billSearchService;
+    @Resource
+    private ElasticsearchClient elasticsearchClient;
+    @Resource
+    private IBillCurrencyService currencyService;
 
 
     @Override
@@ -79,10 +82,10 @@ public class BillViewServiceImpl implements BillViewService {
     }
 
     @Override
-    public Map<String, List<BillView>> billViewByRuleId(String ruleId, String month) {
+    public Map<String, List<BillView>> billViewByRuleId(String ruleId, String month, BillViewRequest request) {
         BillRule billRule = billRuleService.getById(ruleId);
         try {
-            return searchBillView(billRule, month, 6, "realTotalCost");
+            return searchBillView(billRule, month, 6, "realTotalCost", request);
         } catch (DataAccessResourceFailureException dataAccessResourceFailureException) {
             if (Objects.nonNull(dataAccessResourceFailureException.getMessage()) && dataAccessResourceFailureException.getMessage().contains("search.max_buckets")) {
                 throw new Fit2cloudException(10000, "ElasticSearch[search.max_buckets]不能支持业务,请修改search.max_buckets【PUT /_cluster/settings\n" +
@@ -95,7 +98,33 @@ public class BillViewServiceImpl implements BillViewService {
     @Override
     public Map<String, List<BillView>> currentMonthBillViewByCloudAccount() {
         BillRule cloudAccountBillRule = getCloudAccountBillRule();
-        return searchBillView(cloudAccountBillRule, null, 1, "realTotalCost");
+        return searchBillView(cloudAccountBillRule, null, 1, "realTotalCost", new BillViewRequest());
+    }
+
+    @Override
+    public List<CurrencyResponse> listCurrency() {
+        return currencyService.listCurrency();
+    }
+
+    @Override
+    public Boolean batchUpdateCurrency(List<CurrencyRequest> currencyRequests) {
+        List<BillCurrency> billCurrencies = Arrays.stream(CurrencyConstants.values())
+                .map(currencyConstants -> currencyRequests.stream()
+                        .filter(diskCurrency -> StringUtils.equals(diskCurrency.getCode(), currencyConstants.code()))
+                        .findFirst()
+                        .map(currencyRequest -> {
+                            BillCurrency billCurrency = new BillCurrency();
+                            billCurrency.setCode(currencyConstants.code());
+                            billCurrency.setUnit(currencyConstants.unit());
+                            billCurrency.setMessage(currencyConstants.getMessage());
+                            billCurrency.setExchangeRate(currencyRequest.getExchangeRate());
+                            billCurrency.setSymbol(currencyConstants.symbol());
+                            return billCurrency;
+                        })
+                        .orElse(null))
+                .filter(Objects::nonNull)
+                .toList();
+        return currencyService.saveOrUpdateBatch(billCurrencies);
     }
 
     /**
@@ -121,11 +150,10 @@ public class BillViewServiceImpl implements BillViewService {
      * @param getSumAggregate 获取Sum聚合
      * @return 解析后的聚合结果
      */
-    public Map<String, List<BillView>> analysisBillView(AggregationsContainer<?> aggregations, NativeQuery query, Function<Map<String, Aggregate>, SumAggregate> getSumAggregate) {
+    public Map<String, List<BillView>> analysisBillView(Map<String, Aggregate> aggregations, SearchRequest query, Function<Map<String, Aggregate>, SumAggregate> getSumAggregate) {
         OrganizationCache.updateCache();
         WorkSpaceCache.updateCache();
-        ElasticsearchAggregations aggr = (ElasticsearchAggregations) aggregations;
-        DateHistogramAggregate dateHistogramAggregate = aggr.aggregations().get(0).aggregation().getAggregate().dateHistogram();
+        DateHistogramAggregate dateHistogramAggregate = aggregations.get("billView").dateHistogram();
         return dateHistogramAggregate.buckets().array().stream().map(dateHistogramBucket -> {
             Aggregate group = dateHistogramBucket.aggregations().get("group");
             Aggregation groupQuery = getGroupQuery(query);
@@ -134,8 +162,8 @@ public class BillViewServiceImpl implements BillViewService {
         }).collect(Collectors.toMap(DefaultKeyValue::getKey, DefaultKeyValue::getValue));
     }
 
-    private Aggregation getGroupQuery(NativeQuery query) {
-        return query.getAggregations().get("billView").aggregations().get("group");
+    private Aggregation getGroupQuery(SearchRequest query) {
+        return query.aggregations().get("billView").aggregations().get("group");
     }
 
 
@@ -145,13 +173,15 @@ public class BillViewServiceImpl implements BillViewService {
      * @param realTotalCostKey 聚合Key 一般使用realTotalCost
      * @return 聚合后对象
      */
-    public Map<String, List<BillView>> searchBillView(BillRule billRule, String month, Integer historyNum, String realTotalCostKey) {
+    @SneakyThrows
+    public Map<String, List<BillView>> searchBillView(BillRule billRule, String month, Integer historyNum, String realTotalCostKey, BillViewRequest request) {
         // todo 获取查询参数根据账单规则
-        NativeQuery query = getSearchBillViewQueryByRule(billRule, month, historyNum, realTotalCostKey);
+        SearchRequest query = getSearchBillViewQueryByRule(billRule, month, historyNum, realTotalCostKey, request);
         // todo 查询
-        SearchHits<CloudBill> search = elasticsearchTemplate.search(query, CloudBill.class);
+        SearchResponse<CloudBill> search = elasticsearchClient.search(query, CloudBill.class);
         // todo 解析查询结果
-        return analysisBillView(search.getAggregations(), query, a -> a.containsKey(realTotalCostKey) ? a.get(realTotalCostKey).sum() : null);
+        Map<String, Aggregate> aggregations = search.aggregations();
+        return analysisBillView(aggregations, query, a -> a.containsKey(realTotalCostKey) ? a.get(realTotalCostKey).sum() : null);
     }
 
     /**
@@ -162,7 +192,7 @@ public class BillViewServiceImpl implements BillViewService {
      * @param realTotalCostKey 聚合sum key
      * @return es查询条件
      */
-    private NativeQuery getSearchBillViewQueryByRule(BillRule billRule, String monthValue, Integer historyNum, String realTotalCostKey) {
+    private SearchRequest getSearchBillViewQueryByRule(BillRule billRule, String monthValue, Integer historyNum, String realTotalCostKey, BillViewRequest request) {
         // todo 根据趋势月份构建查询条件
         // 构建区域查询
         String startTime = MonthUtil.getStartTime(CalendarConstants.MONTH, historyNum - 1, monthValue);
@@ -172,15 +202,18 @@ public class BillViewServiceImpl implements BillViewService {
                 .field("billingCycle")
                 .format("yyyy-MM").build()._toQuery();
         Query authQuery = AuthUtil.getAuthQuery(org -> organizationService.getOrgLevel(org));
+        List<Query> queries = new ArrayList<>(request.toQuery());
+        queries.add(q);
         if (Objects.nonNull(authQuery)) {
-            q = new Query.Builder().bool(new BoolQuery.Builder().must(q, authQuery).build()).build();
+            queries.add(authQuery);
         }
+        q = new Query.Builder().bool(new BoolQuery.Builder().must(queries).build()).build();
         // todo 获取聚合对象
         Aggregation aggregationByGroups = getAggregationByGroups(null, billRule.getGroups(), 0, a -> a.aggregations(realTotalCostKey, new Aggregation.Builder().sum(new SumAggregation.Builder().field(realTotalCostKey).build()).build()));
         DateHistogramAggregation dateHistogramAggregation = new DateHistogramAggregation.Builder().field("billingCycle").format("yyyy-MM").calendarInterval(CalendarInterval.Month).build();
         Aggregation.Builder.ContainerBuilder group = new Aggregation.Builder().dateHistogram(dateHistogramAggregation).aggregations("group", aggregationByGroups);
         // todo 构建es查询加聚合对象
-        return new NativeQueryBuilder().withQuery(q).withAggregation("billView", group.build()).build();
+        return new SearchRequest.Builder().query(q).aggregations(Map.of("billView", group.build())).runtimeMappings(request.toRuntimeMappings(listCurrency())).build();
     }
 
     /**

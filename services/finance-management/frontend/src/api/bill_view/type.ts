@@ -12,4 +12,16 @@ interface KeyValue {
   key: string;
   value: string;
 }
-export type { BillView };
+
+interface CurrencyRequest {
+  /**
+   * 币种 code
+   */
+  code: string;
+  /**
+   * 汇率
+   */
+  exchangeRate: number;
+}
+
+export type { BillView, CurrencyRequest };

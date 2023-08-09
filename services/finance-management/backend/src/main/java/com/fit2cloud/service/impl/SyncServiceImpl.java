@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.json.JsonData;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.JobRecord;
@@ -42,6 +43,7 @@ import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -115,7 +117,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
         CloudAccount cloudAccount = cloudAccountService.getById(cloudAccountId);
         Map<String, Object> billSetting = null;
         if (params.containsKey(JobConstants.CloudAccount.BILL_SETTING.name())) {
-            billSetting = JsonUtil.parseObject(JsonUtil.toJSONString(params.get(JobConstants.CloudAccount.BILL_SETTING.name())), Map.class);
+            billSetting = JsonUtil.parseObject(JsonUtil.toJSONString(params.get(JobConstants.CloudAccount.BILL_SETTING.name())), new TypeReference<>() {
+            });
         }
         // 获取默认同步月份
         List<String> months = MonthUtil.getMonths(billDay);
@@ -317,7 +320,8 @@ public class SyncServiceImpl extends BaseSyncService implements SyncService {
     private void writeJobRecord(BiSaveBatchOrUpdateParams<CloudBill> saveBatchOrUpdateParams) {
         JobRecord jobRecord = saveBatchOrUpdateParams.getJobRecord();
         List<CloudBill> syncRecord = saveBatchOrUpdateParams.getSyncRecord();
-        DoubleSummaryStatistics summaryStatistics = syncRecord.stream().collect(Collectors.summarizingDouble(b -> b.getRealTotalCost().doubleValue()));
+        DoubleSummaryStatistics summaryStatistics = syncRecord.stream()
+                .collect(Collectors.summarizingDouble(b -> b.getCost().getOrDefault("payableAmount", BigDecimal.ZERO).doubleValue()));
         HashMap<String, Object> params = new HashMap<>();
         params.put("month", JsonUtil.parseObject(saveBatchOrUpdateParams.getRequestParams()).get("month").toString());
         params.put("size", summaryStatistics.getCount());

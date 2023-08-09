@@ -2,8 +2,11 @@ package com.fit2cloud.service;
 
 import com.fit2cloud.constants.CalendarConstants;
 import com.fit2cloud.controller.request.BillExpensesRequest;
+import com.fit2cloud.controller.request.BillViewRequest;
+import com.fit2cloud.controller.request.CurrencyRequest;
 import com.fit2cloud.controller.request.HistoryTrendRequest;
 import com.fit2cloud.controller.response.BillView;
+import com.fit2cloud.controller.response.CurrencyResponse;
 import com.fit2cloud.controller.response.ExpensesResponse;
 import com.fit2cloud.controller.response.Trend;
 
@@ -39,11 +42,22 @@ public interface BillViewService {
     /**
      * 获取账单分账信息
      *
-     * @param ruleId 账单谷子饿id
-     * @param month  月份
+     * @param ruleId  账单谷子饿id
+     * @param month   月份
+     * @param request 请求过滤参数
      * @return 账单xx
      */
-    Map<String, List<BillView>> billViewByRuleId(String ruleId, String month);
+    Map<String, List<BillView>> billViewByRuleId(String ruleId, String month, BillViewRequest request);
 
     Map<String, List<BillView>> currentMonthBillViewByCloudAccount();
+
+    List<CurrencyResponse> listCurrency();
+
+    /**
+     * 批量修改币种汇率
+     *
+     * @param currencyRequests 币种汇率列表
+     * @return 是否成功
+     */
+    Boolean batchUpdateCurrency(List<CurrencyRequest> currencyRequests);
 }

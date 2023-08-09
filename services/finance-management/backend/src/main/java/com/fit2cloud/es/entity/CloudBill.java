@@ -5,12 +5,14 @@ import com.fit2cloud.common.annotaion.BillField;
 import com.fit2cloud.common.child_key.impl.OrgTreeChildKey;
 import com.fit2cloud.common.child_key.impl.TagChildKey;
 import com.fit2cloud.common.conver.impl.*;
+import com.fit2cloud.provider.constants.CurrencyConstants;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -109,7 +111,6 @@ public class CloudBill {
     @MultiField(mainField = @Field(type = FieldType.Text),
             otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword))
     private String regionName;
-
     @BillField(label = "可用区")
     @Field(type = FieldType.Keyword)
     private String zone;
@@ -122,13 +123,13 @@ public class CloudBill {
     @Field(type = FieldType.Object)
     private Map<String, Object> tags;
 
-    @BillField(label = "原价")
-    @Field(type = FieldType.Double)
-    private BigDecimal totalCost;
+    @BillField(label = "价格")
+    @Field(type = FieldType.Object)
+    private Cost cost;
 
-    @BillField(label = "优惠后总价")
-    @Field(type = FieldType.Double)
-    private BigDecimal realTotalCost;
+    @BillField(label = "币种")
+    @Field(type = FieldType.Keyword)
+    private CurrencyConstants currency;
 
     /**
      * 使用runtime_mappings聚合查询太慢, 将聚合数据冗余起来
@@ -144,4 +145,40 @@ public class CloudBill {
     @BillField(label = "元数据")
     @Field(type = FieldType.Object)
     private Map<String, Object> meta;
+
+
+    public static class Cost extends HashMap<String, BigDecimal> {
+        /**
+         * 现金支付
+         *
+         * @param cashAmount 现金支付
+         */
+        public void setCashAmount(BigDecimal cashAmount) {
+            put("cashAmount", cashAmount);
+        }
+
+        /**
+         * @param couponAmount 代金券支付
+         */
+        public void setCouponAmount(BigDecimal couponAmount) {
+            put("couponAmount", couponAmount);
+        }
+
+        /**
+         * @param officialAmount 官网价钱
+         */
+        public void setOfficialAmount(BigDecimal officialAmount) {
+            put("officialAmount", officialAmount);
+        }
+
+        /**
+         * @param payableAmount 应付金额
+         */
+        public void setPayableAmount(BigDecimal payableAmount) {
+            put("payableAmount", payableAmount);
+        }
+
+    }
+
+
 }

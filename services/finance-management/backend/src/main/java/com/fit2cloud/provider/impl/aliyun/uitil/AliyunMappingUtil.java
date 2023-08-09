@@ -5,6 +5,7 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.constants.BillModeConstants;
+import com.fit2cloud.provider.constants.CurrencyConstants;
 import com.fit2cloud.provider.impl.aliyun.entity.csv.AliBillCsvModel;
 import com.fit2cloud.provider.impl.aliyun.entity.request.SyncBillRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -45,9 +46,9 @@ public class AliyunMappingUtil {
         cloudBill.setResourceId(aliBillCsvModel.getInstanceId());
         cloudBill.setResourceName(aliBillCsvModel.getRegionName());
         cloudBill.setTags(toTagsMap(aliBillCsvModel.getInstanceTag()));
-        cloudBill.setTotalCost(BigDecimal.valueOf(aliBillCsvModel.getOfficialWebsitePrice()));
-        cloudBill.setRealTotalCost(BigDecimal.valueOf(aliBillCsvModel.getAmountPayable()));
+        cloudBill.setCurrency(getCurrency(aliBillCsvModel.getCurrency()));
         cloudBill.setProvider("fit2cloud_ali_platform");
+        cloudBill.setCost(toCost(aliBillCsvModel));
         LocalDateTime deductionDate = CommonUtil.getLocalDateTime(aliBillCsvModel.getBillingCycle());
         if (Objects.nonNull(aliBillCsvModel.getDate())) {
             deductionDate = CommonUtil.getLocalDateTime(aliBillCsvModel.getDate());
@@ -85,7 +86,9 @@ public class AliyunMappingUtil {
         cloudBill.setProductId(item.getProductCode());
         cloudBill.setProductDetail(item.getProductDetail());
         cloudBill.setResourceName(item.getNickName());
+        cloudBill.setCurrency(getCurrency(item.getCurrency()));
         cloudBill.setProvider("fit2cloud_ali_platform");
+        cloudBill.setCost(toCost(item));
         if (StringUtils.isNotEmpty(item.getBillingDate())) {
             cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(item.getBillingDate(), "yyyy-MM-dd"));
             cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(item.getBillingDate(), "yyyy-MM-dd"));
@@ -98,8 +101,6 @@ public class AliyunMappingUtil {
             cloudBill.setDeductionDate(CommonUtil.getLocalDateTime(syncBillRequest.getBillingDate(), "yyyy-MM-dd"));
         }
         cloudBill.setPayAccountId(item.getBillAccountID());
-        cloudBill.setTotalCost(BigDecimal.valueOf(item.getPretaxGrossAmount()));
-        cloudBill.setRealTotalCost(BigDecimal.valueOf(item.getCashAmount()));
         return cloudBill;
     }
 
@@ -111,6 +112,30 @@ public class AliyunMappingUtil {
         } else {
             return BillModeConstants.OTHER.name();
         }
+    }
+
+    private static CurrencyConstants getCurrency(String currency) {
+        return Arrays.stream(CurrencyConstants.values())
+                .filter(currencyConstants -> StringUtils.equals(currencyConstants.name(), currency))
+                .findFirst().orElse(CurrencyConstants.CNY);
+    }
+
+    private static CloudBill.Cost toCost(DescribeInstanceBillResponseBody.DescribeInstanceBillResponseBodyDataItems item) {
+        CloudBill.Cost cost = new CloudBill.Cost();
+        cost.setCashAmount(Objects.nonNull(item.getCashAmount()) ? BigDecimal.valueOf(item.getCashAmount()) : BigDecimal.ZERO);
+        cost.setOfficialAmount(Objects.nonNull(item.getPretaxGrossAmount()) ? BigDecimal.valueOf(item.getPretaxGrossAmount()) : BigDecimal.ZERO);
+        cost.setCouponAmount(Objects.nonNull(item.getDeductedByCoupons()) ? BigDecimal.valueOf(item.getDeductedByCoupons()) : BigDecimal.ZERO);
+        cost.setPayableAmount(Objects.nonNull(item.getPretaxAmount()) ? BigDecimal.valueOf(item.getPretaxAmount()) : BigDecimal.ZERO);
+        return cost;
+    }
+
+    private static CloudBill.Cost toCost(AliBillCsvModel item) {
+        CloudBill.Cost cost = new CloudBill.Cost();
+        cost.setCashAmount(Objects.nonNull(item.getCashPayment()) ? BigDecimal.valueOf(item.getCashPayment()) : BigDecimal.ZERO);
+        cost.setOfficialAmount(Objects.nonNull(item.getOfficialWebsitePrice()) ? BigDecimal.valueOf(item.getOfficialWebsitePrice()) : BigDecimal.ZERO);
+        cost.setCouponAmount(Objects.nonNull(item.getVoucherDeduction()) ? BigDecimal.valueOf(item.getVoucherDeduction()) : BigDecimal.ZERO);
+        cost.setPayableAmount(Objects.nonNull(item.getAmountPayable()) ? BigDecimal.valueOf(item.getAmountPayable()) : BigDecimal.ZERO);
+        return cost;
     }
 
     /**

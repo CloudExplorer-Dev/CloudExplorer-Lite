@@ -18,7 +18,7 @@
     </el-table-column>
     <el-table-column
       fixed="right"
-      label="总费用(元)"
+      :label="`总费用(${currency.unit})`"
       min-width="120"
       prop="value"
       sortable
@@ -30,13 +30,19 @@
     <el-table-column fixed="right" min-width="80" label="占比">
       <template #default="scope">{{
         PercentFormat.format(
-          scope.row.value / viewData.map((b) => b.value).reduce((p, n) => p + n)
+          viewData.map((b) => b.value).reduce((p, n) => p + n) === 0
+            ? 0
+            : scope.row.value /
+                viewData.map((b) => b.value).reduce((p, n) => p + n)
         )
       }}</template></el-table-column
     >
     <el-table-column width="200" fixed="right" label="趋势">
       <template #default="scope"
-        ><ViewTrend :billSummary="scope.row"></ViewTrend></template
+        ><ViewTrend
+          :currency="currency"
+          :billSummary="scope.row"
+        ></ViewTrend></template
     ></el-table-column>
   </el-table>
   <div class="pagination">
@@ -59,7 +65,7 @@ import type { BillRule } from "@/api/bill_rule/type";
 import ViewTrend from "@/views/bill_view/components/ViewTrendChart.vue";
 import PercentFormat from "@commons/utils/percentFormat";
 import DecimalFormat from "@commons/utils/decimalFormat";
-
+import type { Currency } from "@commons/api/bil_view/type";
 const props = withDefaults(
   defineProps<{
     // 分组
@@ -68,11 +74,19 @@ const props = withDefaults(
     viewData: Array<BillSummary>;
     // 当前规则组
     billRule?: BillRule;
+    currency?: Currency;
   }>(),
   {
     viewData: () => [],
 
     groups: () => [],
+    currency: () => ({
+      code: "CNY",
+      message: "人民币",
+      symbol: "¥",
+      unit: "元",
+      exchangeRate: 1,
+    }),
   }
 );
 /**
