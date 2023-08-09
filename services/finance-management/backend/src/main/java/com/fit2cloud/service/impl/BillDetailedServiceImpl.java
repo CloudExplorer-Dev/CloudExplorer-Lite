@@ -22,9 +22,12 @@ import com.fit2cloud.common.util.EsScriptUtil;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.controller.request.PageBillDetailedRequest;
 import com.fit2cloud.controller.response.BillDetailResponse;
+import com.fit2cloud.controller.response.CurrencyResponse;
 import com.fit2cloud.es.entity.CloudBill;
+import com.fit2cloud.provider.constants.CostFieldConstants;
 import com.fit2cloud.request.pub.OrderRequest;
 import com.fit2cloud.service.IBillDetailedService;
+import jakarta.annotation.Resource;
 import jodd.util.StringUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +41,6 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -73,7 +75,7 @@ public class BillDetailedServiceImpl implements IBillDetailedService {
         if (Objects.isNull(request.getOrder()) || StringUtil.isEmpty(request.getOrder().getColumn())) {
             request.setOrder(new OrderRequest() {{
                 setAsc(false);
-                setColumn("realTotalCost");
+                setColumn(CostFieldConstants.payableAmount.getField());
             }});
         }
         NativeQuery nativeQuery = new NativeQueryBuilder()
@@ -106,6 +108,7 @@ public class BillDetailedServiceImpl implements IBillDetailedService {
         billDetailResponse.setWorkspaceName(StringUtils.isEmpty(cloudBill.getWorkspaceId()) ? null : WorkSpaceCache.getCacheOrUpdate(cloudBill.getWorkspaceId()));
         billDetailResponse.setOrganizationName(StringUtil.isEmpty(cloudBill.getOrganizationId()) ? null : OrganizationCache.getCacheOrUpdate(cloudBill.getOrganizationId()));
         billDetailResponse.setCloudAccountName(StringUtil.isEmpty(cloudBill.getCloudAccountId()) ? null : CloudAccountCache.getCacheOrUpdate(cloudBill.getCloudAccountId()));
+        billDetailResponse.setCurrency(new CurrencyResponse(cloudBill.getCurrency()));
         return billDetailResponse;
     }
 }

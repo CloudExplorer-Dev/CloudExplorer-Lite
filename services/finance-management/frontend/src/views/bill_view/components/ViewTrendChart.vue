@@ -26,7 +26,7 @@ import { ref, inject, nextTick } from "vue";
 import { getTrendViewOption } from "@/echarts/bill_view";
 import TableTrend from "@/views/bill_view/components/TableTrend.vue";
 import CurrencyFormat from "@commons/utils/currencyFormat";
-
+import type { Currency } from "@commons/api/bil_view/type";
 const echarts: any = inject("echarts");
 const title = ref<string>();
 
@@ -34,9 +34,21 @@ const treeChart = ref<ECharts>();
 
 const tree = ref<InstanceType<typeof HTMLDivElement>>();
 
-const props = defineProps<{
-  billSummary: BillSummary;
-}>();
+const props = withDefaults(
+  defineProps<{
+    billSummary: BillSummary;
+    currency?: Currency;
+  }>(),
+  {
+    currency: () => ({
+      code: "CNY",
+      message: "人民币",
+      symbol: "¥",
+      unit: "元",
+      exchangeRate: 1,
+    }),
+  }
+);
 /**
  * 打开趋势图
  * @param treed 打开查看趋势图
@@ -53,7 +65,8 @@ const open = (treed: Array<TrendData>, row: BillSummary) => {
     trigger: "item",
     formatter: (p: any) => {
       return `<div>月份:${p.name}</div><div>金额:${CurrencyFormat.format(
-        p.value
+        p.value,
+        props.currency.code
       )}</div>`;
     },
   };

@@ -1,11 +1,11 @@
 package com.fit2cloud.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fit2cloud.es.entity.CloudBill;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -92,9 +92,9 @@ public class BillDetailResponse {
     @Schema(title = "标签对象", description = "标签对象")
     private Map<String, Object> tags;
 
-    @Schema(title = "原价", description = "原件")
-    private BigDecimal totalCost;
+    @Schema(title = "价钱", description = "价钱")
+    private CloudBill.Cost cost;
 
-    @Schema(title = "优惠后总价", description = "优惠后总价")
-    private BigDecimal realTotalCost;
+    @Schema(title = "币种", description = "币种")
+    private CurrencyResponse currency;
 }

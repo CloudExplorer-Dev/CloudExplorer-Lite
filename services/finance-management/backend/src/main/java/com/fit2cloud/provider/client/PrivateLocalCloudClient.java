@@ -10,6 +10,7 @@ import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.dto.UserDto;
 import com.fit2cloud.es.entity.CloudBill;
+import com.fit2cloud.provider.constants.CurrencyConstants;
 import com.fit2cloud.service.TokenPoolService;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +21,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -117,11 +119,20 @@ public class PrivateLocalCloudClient {
         cloudBill.setProductName(bill.getProductName());
         cloudBill.setProductDetail(bill.getProductDetail());
         cloudBill.setProvider(request.platform);
+        cloudBill.setCurrency(CurrencyConstants.CNY);
         cloudBill.setPayAccountId(bill.getPayAccountId());
+        cloudBill.setCost(toCost(bill));
         setProject(cloudBill, bill.getOrganizationId(), bill.getOrganizationName(), bill.getWorkspaceId(), bill.getWorkspaceName());
-        cloudBill.setRealTotalCost(bill.getTotalPrice());
-        cloudBill.setTotalCost(bill.getTotalPrice());
         return cloudBill;
+    }
+
+    private static CloudBill.Cost toCost(InstanceBill bill) {
+        CloudBill.Cost cost = new CloudBill.Cost();
+        cost.setPayableAmount(bill.getTotalPrice());
+        cost.setOfficialAmount(bill.getTotalPrice());
+        cost.setCashAmount(bill.getTotalPrice());
+        cost.setCouponAmount(BigDecimal.ZERO);
+        return cost;
     }
 
     /**

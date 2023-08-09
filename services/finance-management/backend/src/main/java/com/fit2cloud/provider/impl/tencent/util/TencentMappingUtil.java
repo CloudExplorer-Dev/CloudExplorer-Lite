@@ -4,6 +4,7 @@ import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.constants.BillModeConstants;
+import com.fit2cloud.provider.constants.CurrencyConstants;
 import com.fit2cloud.provider.impl.tencent.TencentCloudProvider;
 import com.fit2cloud.provider.impl.tencent.entity.csv.TencentCsvModel;
 import com.fit2cloud.provider.impl.tencent.entity.request.SyncBillRequest;
@@ -54,9 +55,9 @@ public class TencentMappingUtil {
         cloudBill.setProductName(csvModel.getProductName());
         cloudBill.setProductDetail(csvModel.getSubProductName());
         cloudBill.setProductId(csvModel.getProductName());
-        cloudBill.setTotalCost(BigDecimal.valueOf(csvModel.getComponentOriginalPrice()));
-        cloudBill.setRealTotalCost(BigDecimal.valueOf(csvModel.getDiscountTotalPrice()));
+        cloudBill.setCurrency(CurrencyConstants.CNY);
         cloudBill.setProvider(TencentCloudProvider.tencentBaseCloudProvider.getCloudAccountMeta().platform);
+        cloudBill.setCost(toCost(csvModel));
         return cloudBill;
     }
 
@@ -86,15 +87,59 @@ public class TencentMappingUtil {
         cloudBill.setProductName(item.getBusinessCodeName());
         cloudBill.setProductDetail(item.getProductCodeName());
         cloudBill.setProductId(item.getBusinessCode());
+        cloudBill.setCurrency(CurrencyConstants.CNY);
         cloudBill.setProvider(TencentCloudProvider.tencentBaseCloudProvider.getCloudAccountMeta().platform);
-        BillDetailComponent[] componentSet = item.getComponentSet();
-        DoubleSummaryStatistics cost = Arrays.stream(componentSet).collect(Collectors.summarizingDouble(c -> Double.parseDouble(c.getCost())));
-        DoubleSummaryStatistics realTotalCost = Arrays.stream(componentSet).collect(Collectors.summarizingDouble(c -> Double.parseDouble(c.getRealCost())));
-        cloudBill.setTotalCost(BigDecimal.valueOf(cost.getSum()));
-        cloudBill.setRealTotalCost(BigDecimal.valueOf(realTotalCost.getSum()));
+        cloudBill.setCost(toCost(item));
         return cloudBill;
     }
 
+    private static CloudBill.Cost toCost(BillDetail item) {
+        CloudBill.Cost cost = new CloudBill.Cost();
+        BillDetailComponent[] componentSet = item.getComponentSet();
+        DoubleSummaryStatistics cashPayAmount = Arrays.stream(componentSet)
+                .collect(Collectors
+                        .summarizingDouble(c -> ofNull(c.getCashPayAmount())
+                        ));
+
+        DoubleSummaryStatistics incentivePayAmount = Arrays.stream(componentSet)
+                .collect(Collectors.summarizingDouble(c -> ofNull(c.getIncentivePayAmount())));
+
+        DoubleSummaryStatistics transferPayAmount = Arrays.stream(componentSet)
+                .collect(Collectors.summarizingDouble(c -> ofNull(c.getTransferPayAmount())));
+
+        DoubleSummaryStatistics voucherPayAmount = Arrays.stream(componentSet)
+                .collect(Collectors.summarizingDouble(c -> ofNull(c.getVoucherPayAmount())));
+
+        DoubleSummaryStatistics costAmount = Arrays.stream(componentSet)
+                .collect(Collectors.summarizingDouble(c -> ofNull(c.getCost())));
+        cost.setPayableAmount(BigDecimal.valueOf(cashPayAmount.getSum())
+                .add(BigDecimal.valueOf(incentivePayAmount.getSum()))
+                .add(BigDecimal.valueOf(transferPayAmount.getSum()))
+                .add(BigDecimal.valueOf(voucherPayAmount.getSum())));
+        cost.setOfficialAmount(BigDecimal.valueOf(costAmount.getSum()));
+
+        cost.setCashAmount(BigDecimal.valueOf(cashPayAmount.getSum()));
+        cost.setCouponAmount(BigDecimal.valueOf(voucherPayAmount.getSum()));
+        return cost;
+    }
+
+    private static CloudBill.Cost toCost(TencentCsvModel item) {
+        CloudBill.Cost cost = new CloudBill.Cost();
+        BigDecimal payableAmount = ofNull(item.getCashAccountExpenses()).add(ofNull(item.getExpenseOfGiftAccount())).add(ofNull(item.getVoucherExpenditure()));
+        cost.setCouponAmount(Objects.nonNull(item.getVoucherExpenditure()) ? BigDecimal.valueOf(item.getVoucherExpenditure()) : BigDecimal.ZERO);
+        cost.setPayableAmount(payableAmount);
+        cost.setCashAmount(Objects.nonNull(item.getCashAccountExpenses()) ? BigDecimal.valueOf(item.getCashAccountExpenses()) : BigDecimal.ZERO);
+        cost.setOfficialAmount(Objects.nonNull(item.getComponentOriginalPrice()) ? BigDecimal.valueOf(item.getComponentOriginalPrice()) : BigDecimal.ZERO);
+        return cost;
+    }
+
+    private static Double ofNull(String amount) {
+        return StringUtils.isEmpty(amount) ? 0 : Double.parseDouble(amount);
+    }
+
+    private static BigDecimal ofNull(Double amount) {
+        return Objects.nonNull(amount) ? BigDecimal.valueOf(amount) : BigDecimal.ZERO;
+    }
 
     /**
      * 计费模式。

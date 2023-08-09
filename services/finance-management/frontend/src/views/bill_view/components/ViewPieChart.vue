@@ -26,6 +26,7 @@ import type { ECharts } from "echarts";
 import type { SimpleMap } from "@commons/api/base/type";
 import type { BillView } from "@/api/bill_view/type";
 import { initBillView, getBillViewOptions } from "@/echarts/bill_view/index";
+import type { Currency } from "@commons/api/bil_view/type";
 // 图表对象
 const chart = ref<ECharts>();
 // echarts根据
@@ -44,6 +45,7 @@ const props = withDefaults(
      * @param loading
      */
     getBillViewData: () => Promise<SimpleMap<Array<BillView>>>;
+    currency?: Currency;
   }>(),
   {
     month:
@@ -52,6 +54,13 @@ const props = withDefaults(
       ((new Date().getMonth() + 1).toString().length === 1
         ? "0" + (new Date().getMonth() + 1).toString()
         : (new Date().getMonth() + 1).toString()),
+    currency: () => ({
+      code: "CNY",
+      message: "人民币",
+      symbol: "¥",
+      unit: "元",
+      exchangeRate: 1,
+    }),
   }
 );
 // 下钻面包屑
@@ -117,7 +126,7 @@ const drawCharts = (viewData: Array<BillSummary>) => {
   groups.value = [];
   if (chart.value) {
     chart.value?.setOption(
-      getBillViewOptions(viewData, groups, undefined, undefined)
+      getBillViewOptions(viewData, groups, props.currency, undefined, undefined)
     );
     chart.value.resize();
   } else {
@@ -133,7 +142,8 @@ const init = () => {
     echarts,
     billRuleChart.value as HTMLElement,
     viewData.value,
-    groups
+    groups,
+    props.currency
   );
   // 监听图标点击事件
   chart.value?.on("click", "series", (param: { name: string }) => {
@@ -143,19 +153,22 @@ const init = () => {
       )
     ) {
       groups.value.push(param.name);
-      console.log("groups.value)", groups.value);
       emit("update:groups", groups.value);
+      const option = getBillViewOptions(
+        viewData.value,
+        groups,
+        props.currency,
+        undefined
+      );
       nextTick(() => {
-        chart.value?.setOption(
-          getBillViewOptions(viewData.value, groups, undefined)
-        );
+        chart.value?.setOption(option);
       });
     }
   });
   // 监听legend选中事件
   chart.value?.on("legendselectchanged", (param: any) => {
     chart.value?.setOption(
-      getBillViewOptions(viewData.value, groups, param.selected)
+      getBillViewOptions(viewData.value, groups, props.currency, param.selected)
     );
   });
 };
@@ -184,7 +197,9 @@ const reSize = () => {
 const fallback = () => {
   groups.value = [];
   emit("update:groups", groups.value);
-  chart.value?.setOption(getBillViewOptions(viewData.value, groups, undefined));
+  chart.value?.setOption(
+    getBillViewOptions(viewData.value, groups, props.currency, undefined)
+  );
 };
 /**
  *返回指定位置
@@ -197,7 +212,9 @@ const go = (group: string, index: number) => {
   }
   groups.value.splice(index + 1, groups.value.length);
   emit("update:groups", groups.value);
-  chart.value?.setOption(getBillViewOptions(viewData.value, groups, undefined));
+  chart.value?.setOption(
+    getBillViewOptions(viewData.value, groups, props.currency, undefined)
+  );
 };
 
 // 暴露刷新函数

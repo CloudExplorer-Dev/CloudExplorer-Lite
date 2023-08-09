@@ -4,6 +4,7 @@ import type { SimpleMap } from "@commons/api/base/type";
 import { interpolationColor } from "@commons/utils/color";
 import _ from "lodash";
 import CurrencyFormat from "@commons/utils/currencyFormat";
+import type { Currency } from "@commons/api/bil_view/type";
 /**
  * 重置数据
  * @param billData 数据
@@ -32,6 +33,7 @@ const resetBillData = (billData: Array<BillSummary>, groupNum: number) => {
 const getBillViewOptions = (
   billData: Array<BillSummary>,
   groups: Ref<Array<string>>,
+  currency: Currency,
   selected?: SimpleMap<boolean>,
   legendRichWidth?: number
 ) => {
@@ -112,7 +114,8 @@ const getBillViewOptions = (
           CurrencyFormat.format(
             Number.parseFloat(
               _.round(dataItem ? dataItem.value : 0, 2).toFixed(2)
-            )
+            ),
+            currency.code
           ) +
           "    (" +
           a +
@@ -128,7 +131,8 @@ const getBillViewOptions = (
       trigger: "item",
       formatter: (p: any) => {
         return `${p.name}:${CurrencyFormat.format(
-          Number.parseFloat(_.round(p.value, 2).toFixed(2))
+          Number.parseFloat(_.round(p.value, 2).toFixed(2)),
+          currency.code
         )}`;
       },
     },
@@ -140,7 +144,7 @@ const getBillViewOptions = (
           borderWidth: 2,
         },
         type: "pie",
-        center: ["120px", "50%"],
+        center: ["130px", "50%"],
         radius: ["80px", "100px"],
         zlevel: 1,
         avoidLabelOverlap: false,
@@ -158,7 +162,8 @@ const getBillViewOptions = (
               .map((a) => a.value)
               .reduce((p, n) => p + n, 0);
             return `{title|总费用}\r\n{value|${CurrencyFormat.format(
-              Number.parseFloat(_.round(sum, 2).toFixed(2))
+              Number.parseFloat(_.round(sum, 2).toFixed(2)),
+              currency.code
             )}}`;
           },
           rich: {
@@ -167,7 +172,7 @@ const getBillViewOptions = (
               color: "#333",
             },
             value: {
-              fontSize: 16,
+              fontSize: 12,
               color: "#000",
               lineHeight: 44,
             },
@@ -179,7 +184,8 @@ const getBillViewOptions = (
             width: 120,
             formatter: (a: any) => {
               return `{title|${a.name}}\r\n{value|${CurrencyFormat.format(
-                Number.parseFloat(_.round(a.value, 2).toFixed(2))
+                Number.parseFloat(_.round(a.value, 2).toFixed(2)),
+                currency.code
               )}}`;
             },
             fontSize: "18px",
@@ -253,13 +259,20 @@ const initBillView = (
   el: HTMLElement,
   billData: Array<BillSummary>,
   groups: Ref<Array<string>>,
+  currency: Currency,
   width?: number
 ) => {
   // 初始化echarts图表
   const myChart = echarts.init(el);
 
   // 获取数据
-  const options = getBillViewOptions(billData, groups, undefined, width);
+  const options = getBillViewOptions(
+    billData,
+    groups,
+    currency,
+    undefined,
+    width
+  );
   myChart.setOption(options);
   return myChart;
 };

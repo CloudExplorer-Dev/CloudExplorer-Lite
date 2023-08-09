@@ -6,17 +6,71 @@
       --ce-main-content-padding-left: 0;
       --ce-main-content-padding-right: 0;
       --ce-main-content-padding-bottom: 0;
+      --ce-main-top-height: 60px;
+      --ce-main-breadcrumb-margin-right: 24px;
+      --ce-main-breadcrumb-margin-left: 24px;
     "
   >
     <template #breadcrumb>
       <breadcrumb :auto="true"></breadcrumb>
     </template>
-
+    <template #top>
+      <el-card class="search-card">
+        <el-form>
+          <el-form-item label="云账号">
+            <el-select
+              v-model="searchForm.cloudAccountId"
+              class="m-2"
+              placeholder="请选择云账号"
+            >
+              <el-option label="全部云账号" :value="undefined" />
+              <el-option
+                v-for="item in cloudAccountList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              /> </el-select
+          ></el-form-item>
+          <el-form-item style="margin-left: 8px" label="成本类型">
+            <el-select
+              v-model="searchForm.costField"
+              class="m-2"
+              placeholder="Select"
+            >
+              <el-option
+                v-for="item in costList"
+                :key="item.value"
+                :label="item.key"
+                :value="item.value"
+              /> </el-select
+          ></el-form-item>
+          <el-form-item style="margin-left: 8px" label="单位">
+            <el-select
+              v-model="searchForm.currency"
+              class="m-2"
+              placeholder="Select"
+            >
+              <el-option
+                v-for="item in currencyList"
+                :key="item.code"
+                :label="item.unit"
+                :value="item.code"
+              /> </el-select
+          ></el-form-item>
+          <div style="flex: auto"></div>
+          <span class="currency-setting" @click="openCurrencySetting"
+            >汇率设置</span
+          >
+        </el-form>
+      </el-card>
+    </template>
     <el-row :gutter="16" v-resize="reSize" class="top-content">
       <el-col :span="6">
         <el-row class="left-div">
           <el-col :spam="24">
             <ViewExpensesAggsCard
+              ref="monthExpensesRef"
+              :currency="currentCurrency"
               :get-aggs-count="getMonthExpenses"
               compare-title="较上月"
               title="本月花费"
@@ -26,6 +80,8 @@
         <el-row class="left-div">
           <el-col :spam="24">
             <ViewExpensesAggsCard
+              ref="yearExpensesRef"
+              :currency="currentCurrency"
               :get-aggs-count="getYearExpenses"
               compare-title="较上周期"
               title="本年总花费"
@@ -34,7 +90,11 @@
         </el-row>
       </el-col>
       <el-col :span="18">
-        <BillTrend />
+        <BillTrend
+          ref="billTrendRef"
+          :request-params="searchForm"
+          :currency="currentCurrency"
+        />
       </el-col>
     </el-row>
 
@@ -85,6 +145,7 @@
               :month="viewMonth"
               ref="viewPieChart"
               :get-bill-view-data="getBillViewData"
+              :currency="currentCurrency"
             ></ViewPieChart>
           </div>
           <div class="table_content" v-loading="bullRuleViewDataLoading">
@@ -94,12 +155,18 @@
                 :bill-rule="activeBillRuleObj"
                 :view-data="viewData"
                 :groups="groups"
+                :currency="currentCurrency"
               ></ViewTable>
             </div>
           </div>
         </div>
       </div>
     </el-card>
+    <CurrencySetting
+      ref="currencySettingRef"
+      @change="refresh"
+      :currency-list="currencyList"
+    ></CurrencySetting>
   </layout-auto-height-content>
 </template>
 
@@ -107,6 +174,9 @@
 import { ref, onMounted, watch, computed } from "vue";
 import type { BillSummary } from "@/echarts/bill_view/type";
 import billViewAPi from "@/api/bill_view/index";
+import type { BaseViewRequest, Currency } from "@commons/api/bil_view/type";
+import baseCloudAccountApi from "@commons/api/cloud_account";
+import type { CloudAccount } from "@commons/api/cloud_account/type";
 import billRuleApi from "@/api/bill_rule/index";
 import type { BillRule } from "@/api/bill_rule/type";
 import ViewTable from "@/views/bill_view/components/ViewTable.vue";
@@ -115,6 +185,8 @@ import ViewTabs from "@/views/bill_view/components/ViewTabs.vue";
 import ViewExpensesAggsCard from "@/views/bill_view/components/ViewExpensesAggsCard.vue";
 import ViewPieChart from "@/views/bill_view/components/ViewPieChart.vue";
 import { useRoute } from "vue-router";
+import type { KeyValue } from "@commons/api/base/type";
+import CurrencySetting from "@/views/bill_view/components/CurrencySetting.vue";
 const route = useRoute();
 // tabs组建
 const viewTabs = ref<InstanceType<typeof ViewTabs> | null>(null);
@@ -133,6 +205,25 @@ const reSize = () => {
 const activeBillRuleObj = computed(() => {
   return billRules.value.find((b) => b.id === activeBillRule.value);
 });
+const searchForm = ref<BaseViewRequest>({
+  costField: "payableAmount",
+  currency: "CNY",
+});
+const currentCurrency = computed(() => {
+  return currencyList.value.find((c) => c.code === searchForm.value.currency);
+});
+
+const costList = ref<Array<KeyValue<string, string>>>([]);
+const currencyList = ref<Array<Currency>>([]);
+const monthExpensesRef = ref<InstanceType<typeof ViewExpensesAggsCard>>();
+const yearExpensesRef = ref<InstanceType<typeof ViewExpensesAggsCard>>();
+const billTrendRef = ref<InstanceType<typeof BillTrend>>();
+const currencySettingRef = ref<InstanceType<typeof CurrencySetting>>();
+const openCurrencySetting = () => {
+  currencySettingRef.value?.open();
+};
+// 云账号列表
+const cloudAccountList = ref<Array<CloudAccount>>([]);
 // 账单规则接口获取加载器
 const bullRuleViewDataLoading = ref<boolean>(false);
 /**
@@ -172,7 +263,12 @@ const billRules = ref<Array<BillRule>>([]);
  */
 const getMonthExpenses = () => {
   return billViewAPi
-    .getExpenses("MONTH", currentMonth, currentMonthExpensesLoading)
+    .getExpenses(
+      "MONTH",
+      currentMonth,
+      searchForm.value,
+      currentMonthExpensesLoading
+    )
     .then((ok) => {
       return ok.data;
     });
@@ -185,6 +281,7 @@ const getYearExpenses = () => {
     .getExpenses(
       "YEAR",
       new Date().getFullYear().toString(),
+      searchForm.value,
       currentYearExpensesLoading
     )
     .then((ok) => {
@@ -200,6 +297,16 @@ onMounted(() => {
     if (route.query.bill_rule_id) {
       activeBillRule.value = route.query.bill_rule_id as string;
     }
+  });
+  baseCloudAccountApi.listSupport().then((ok) => {
+    cloudAccountList.value = ok.data;
+  });
+
+  billViewAPi.listCost().then((ok) => {
+    costList.value = ok.data;
+  });
+  billViewAPi.listCurrency().then((ok) => {
+    currencyList.value = ok.data;
   });
 });
 /**
@@ -218,6 +325,7 @@ const getBillViewData = () => {
       .getBillView(
         activeBillRule.value,
         viewMonth.value,
+        searchForm.value,
         bullRuleViewDataLoading
       )
       .then((ok) => ok.data);
@@ -231,8 +339,46 @@ const getBillViewData = () => {
 watch(viewMonth, () => {
   viewPieChart.value?.refresh();
 });
+const refresh = () => {
+  viewPieChart.value?.refresh();
+  yearExpensesRef.value?.refresh();
+  monthExpensesRef.value?.refresh();
+  billTrendRef.value?.refresh();
+};
+/**
+ * 监听查询数据变化,重新渲染页面
+ */
+watch(
+  searchForm.value,
+  () => {
+    refresh();
+  },
+  { deep: true }
+);
 </script>
 <style lang="scss" scoped>
+.search-card {
+  width: 100%;
+  :deep(.el-card__body) {
+    margin: 0;
+    padding: 10px;
+    .el-form {
+      display: flex;
+      width: 100%;
+      .currency-setting {
+        line-height: 32px;
+        margin-right: 8px;
+        color: #3370ff;
+        cursor: pointer;
+      }
+      .el-form-item {
+        display: flex;
+        margin: 0;
+      }
+    }
+  }
+}
+
 @mixin title() {
   font-size: 16px;
   font-weight: 500;

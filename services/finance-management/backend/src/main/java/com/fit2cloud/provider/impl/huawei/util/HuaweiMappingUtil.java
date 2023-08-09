@@ -3,6 +3,7 @@ package com.fit2cloud.provider.impl.huawei.util;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.provider.constants.BillModeConstants;
+import com.fit2cloud.provider.constants.CurrencyConstants;
 import com.fit2cloud.provider.impl.huawei.HuaweiCloudProvider;
 import com.fit2cloud.provider.impl.huawei.entity.csv.HuaweiBillCsvModel;
 import com.fit2cloud.provider.impl.huawei.entity.request.SyncBillRequest;
@@ -10,10 +11,7 @@ import com.huaweicloud.sdk.bss.v2.model.ResFeeRecordV2;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -45,14 +43,14 @@ public class HuaweiMappingUtil {
         cloudBill.setResourceId(huaweiBillCsvModel.getResourceId());
         cloudBill.setResourceName(huaweiBillCsvModel.getResourceName());
         cloudBill.setTags(toTags(huaweiBillCsvModel.getResourceTag()));
-        cloudBill.setTotalCost(BigDecimal.valueOf(huaweiBillCsvModel.getOfficialPrice()));
-        cloudBill.setRealTotalCost(BigDecimal.valueOf(huaweiBillCsvModel.getAmountPayable()));
         cloudBill.setPayAccountId(huaweiBillCsvModel.getAccountId());
         cloudBill.setDeductionDate(CommonUtil.getLocalDateTime(huaweiBillCsvModel.getTransactionTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(huaweiBillCsvModel.getStartTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setUsageEndDate(CommonUtil.getLocalDateTime(huaweiBillCsvModel.getEndTime(), "yyyy-MM-dd HH:mm:ss"));
         cloudBill.setBillingCycle(CommonUtil.getLocalDateTime(request.getCycle(), "yyyy-MM"));
         cloudBill.setZone(huaweiBillCsvModel.getZone());
+        cloudBill.setCurrency(CurrencyConstants.CNY);
+        cloudBill.setCost(toCost(huaweiBillCsvModel));
         cloudBill.setBillMode(toBillModeByBucket(huaweiBillCsvModel.getBillMode()));
         return cloudBill;
     }
@@ -79,8 +77,8 @@ public class HuaweiMappingUtil {
         cloudBill.setProductName(item.getResourceTypeName());
         cloudBill.setProductDetail(item.getProductName());
         cloudBill.setTags(toTags(item.getResourceTag()));
-        cloudBill.setTotalCost(BigDecimal.valueOf(item.getOfficialAmount()));
-        cloudBill.setRealTotalCost(BigDecimal.valueOf(item.getAmount()));
+        cloudBill.setCost(toCost(item));
+        cloudBill.setCurrency(CurrencyConstants.CNY);
         cloudBill.setDeductionDate(CommonUtil.getLocalDateTime(item.getTradeTime(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
         //2022-04-30T14:00:00Z
         cloudBill.setUsageStartDate(CommonUtil.getLocalDateTime(item.getEffectiveTime(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
@@ -103,6 +101,28 @@ public class HuaweiMappingUtil {
         } else {
             return BillModeConstants.OTHER.name();
         }
+    }
+
+    public static CloudBill.Cost toCost(ResFeeRecordV2 item) {
+        CloudBill.Cost cost = new CloudBill.Cost();
+        cost.setCashAmount(ofNull(item.getOfficialAmount()));
+        cost.setCouponAmount(ofNull(item.getCouponAmount()));
+        cost.setOfficialAmount(ofNull(item.getOfficialAmount()));
+        cost.setPayableAmount(ofNull(item.getAmount()));
+        return cost;
+    }
+
+    public static CloudBill.Cost toCost(HuaweiBillCsvModel item) {
+        CloudBill.Cost cost = new CloudBill.Cost();
+        cost.setCashAmount(ofNull(item.getCashPayable()));
+        cost.setCouponAmount(ofNull(item.getVoucherDeduction()));
+        cost.setOfficialAmount(ofNull(item.getOfficialPrice()));
+        cost.setPayableAmount(ofNull(item.getAmountPayable()));
+        return cost;
+    }
+
+    private static BigDecimal ofNull(Double amount) {
+        return Objects.nonNull(amount) ? BigDecimal.valueOf(amount) : BigDecimal.ZERO;
     }
 
     /**

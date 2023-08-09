@@ -162,27 +162,70 @@
       </el-table-column>
       <el-table-column prop="projectName" label="企业项目" />
       <el-table-column
-        prop="totalCost"
-        label="总费用"
+        prop="cost.officialAmount"
+        label="官网价"
         min-width="100px"
         sortable
       >
         <template #default="scope">
-          <span :title="scope.row.totalCost + '元'">
-            {{ DecimalFormat.format(scope.row.totalCost, 2) }}元
+          <span
+            :title="scope.row.cost.officialAmount + scope.row.currency.unit"
+          >
+            {{
+              DecimalFormat.format(scope.row.cost.officialAmount, 2) +
+              scope.row.currency.unit
+            }}
           </span>
         </template>
       </el-table-column>
       <el-table-column
-        prop="realTotalCost"
+        prop="cost.payableAmount"
+        label="应付金额"
+        min-width="110px"
+        sortable
+      >
+        <template #default="scope">
+          <span :title="scope.row.cost.payableAmount + scope.row.currency.unit">
+            {{
+              DecimalFormat.format(scope.row.cost.payableAmount, 2) +
+              scope.row.currency.unit
+            }}
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="cost.cashAmount"
         label="现金支付"
         min-width="110px"
         sortable
       >
         <template #default="scope">
-          <span :title="scope.row.realTotalCost + '元'">
-            {{ DecimalFormat.format(scope.row.realTotalCost, 2) }}元
+          <span :title="scope.row.cost.cashAmount + scope.row.currency.unit">
+            {{
+              DecimalFormat.format(scope.row.cost.cashAmount, 2) +
+              scope.row.currency.unit
+            }}
           </span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="cost.couponAmount"
+        label="代金券支付"
+        min-width="120px"
+        sortable
+      >
+        <template #default="scope">
+          <span :title="scope.row.cost.couponAmount + scope.row.currency.unit">
+            {{
+              DecimalFormat.format(scope.row.cost.couponAmount, 2) +
+              scope.row.currency.unit
+            }}
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="currency.code" label="币种" min-width="120px">
+        <template #default="scope">
+          {{ `${scope.row.currency.code}(${scope.row.currency.message})` }}
         </template>
       </el-table-column>
       <template #buttons>

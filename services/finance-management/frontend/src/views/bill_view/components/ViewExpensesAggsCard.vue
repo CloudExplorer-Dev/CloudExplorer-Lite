@@ -2,7 +2,7 @@
   <div class="info-card view-expenses-aggs-card" v-loading="loading">
     <span class="title">{{ title }}</span>
     <div class="money">
-      {{ CurrencyFormat.format(expenses.current) }}
+      {{ CurrencyFormat.format(expenses.current, props.currency.code) }}
     </div>
     <div class="compare">
       {{ compareTitle }}
@@ -15,41 +15,58 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { computed } from "vue";
+import type { Currency } from "@commons/api/bil_view/type";
 import CurrencyFormat from "@commons/utils/currencyFormat";
 import PercentFormat from "@commons/utils/percentFormat";
 const loading = ref<boolean>(false);
 const expenses = ref<{ current: number; up: number }>({ current: 0, up: 0 });
-const props = defineProps<{
-  // 获取数据
-  getAggsCount: () => Promise<{ current: number; up: number }>;
-  // 标题
-  title: string;
-  /**
-   * 比较标题
-   */
-  compareTitle: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    // 获取数据
+    getAggsCount: () => Promise<{ current: number; up: number }>;
+    // 标题
+    title: string;
+    /**
+     * 比较标题
+     */
+    compareTitle: string;
+
+    currency?: Currency;
+  }>(),
+  {
+    currency: () => ({
+      code: "CNY",
+      message: "人民币",
+      symbol: "¥",
+      unit: "元",
+      exchangeRate: 1,
+    }),
+  }
+);
 const scale = computed(() => {
   const s =
-    expenses.value.up == 0
-      ? CurrencyFormat.format(expenses.value.current)
+    expenses.value.up <= 0
+      ? CurrencyFormat.format(expenses.value.current, props.currency.code)
       : PercentFormat.format(
           (expenses.value.current - expenses.value.up) / expenses.value.up
         );
   return expenses.value.current > expenses.value.up ? "+" + s : s;
 });
 onMounted(() => {
+  refresh();
+});
+const refresh = () => {
   loading.value = true;
   props
     .getAggsCount()
     .then((count) => {
       expenses.value = count;
-      loading.value = false;
     })
-    .catch(() => {
+    .finally(() => {
       loading.value = false;
     });
-});
+};
+defineExpose({ refresh });
 </script>
 <style lang="scss" scoped>
 .view-expenses-aggs-card {

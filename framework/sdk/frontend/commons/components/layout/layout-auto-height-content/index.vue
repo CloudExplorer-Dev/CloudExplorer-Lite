@@ -2,6 +2,9 @@
   <div class="breadcrumb" v-if="$slots.breadcrumb">
     <slot name="breadcrumb"></slot>
   </div>
+  <div class="top" v-if="$slots.top" :style="props.style">
+    <slot name="top"></slot>
+  </div>
   <div class="content" :style="props.style">
     <slot></slot>
   </div>
@@ -12,6 +15,15 @@ const props = withDefaults(defineProps<{ style?: any }>(), {
 });
 </script>
 <style lang="scss" scoped>
+.top {
+  height: var(--ce-main-top-height, 0px);
+  width: calc(
+      100% - var(--ce-main-breadcrumb-margin-left, 30px) -
+      var(--ce-main-breadcrumb-margin-right, 30px)
+  );
+  display: flex;
+  margin-left: var(--ce-main-breadcrumb-margin-left, 30px);
+}
 .breadcrumb {
   height: var(--ce-main-breadcrumb-height, 50px);
   width: calc(100% - var(--ce-main-breadcrumb-margin-left, 30px));

@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
+import co.elastic.clients.elasticsearch._types.mapping.RuntimeField;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
@@ -15,17 +16,19 @@ import com.fit2cloud.base.service.IBaseOrganizationService;
 import com.fit2cloud.common.util.AuthUtil;
 import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.constants.CalendarConstants;
+import com.fit2cloud.controller.request.BaseViewRequest;
 import com.fit2cloud.controller.request.BillExpensesRequest;
 import com.fit2cloud.controller.request.HistoryTrendRequest;
 import com.fit2cloud.controller.response.ExpensesResponse;
 import com.fit2cloud.controller.response.Trend;
 import com.fit2cloud.es.entity.CloudBill;
 import com.fit2cloud.service.BillSearchService;
+import com.fit2cloud.service.IBillCurrencyService;
+import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,15 +48,17 @@ public class BillSearchServiceImpl implements BillSearchService {
     private ElasticsearchClient elasticsearchClient;
     @Resource
     private IBaseOrganizationService organizationService;
+    @Resource
+    private IBillCurrencyService currencyService;
 
     @Override
     public List<Trend> trend(CalendarConstants calendarConstants, Integer historyNum) {
-        return appendDefaultTreed(trend(calendarConstants, historyNum, null, List.of()), historyNum);
+        return appendDefaultTreed(trend(calendarConstants, historyNum, null, List.of(), new BaseViewRequest().toRuntimeMappings()), historyNum);
     }
 
     @Override
     public List<Trend> trend(CalendarConstants calendarConstants, Integer historyNum, HistoryTrendRequest request) {
-        return appendDefaultTreed(trend(calendarConstants, historyNum, null, request.toQuery()), historyNum);
+        return appendDefaultTreed(trend(calendarConstants, historyNum, null, request.toQuery(), request.toRuntimeMappings(currencyService.listCurrency())), historyNum);
     }
 
     /**
@@ -63,7 +68,7 @@ public class BillSearchServiceImpl implements BillSearchService {
      * @return 趋势数据
      */
     @SneakyThrows
-    private List<Trend> trend(CalendarConstants calendarConstants, Integer historyNum, String endTime, List<Query> otherQuery) {
+    private List<Trend> trend(CalendarConstants calendarConstants, Integer historyNum, String endTime, List<Query> otherQuery, Map<String, RuntimeField> runtimeFieldMap) {
         String startTime = MonthUtil.getStartTime(calendarConstants, historyNum, endTime);
         // 查询format
         String format = calendarConstants.equals(CalendarConstants.MONTH) ? "yyyy-MM" : "yyyy";
@@ -93,7 +98,11 @@ public class BillSearchServiceImpl implements BillSearchService {
         Aggregation.Builder.ContainerBuilder aggregation = new Aggregation.Builder().dateHistogram(dateHistogramAggregation);
         aggregation.aggregations("total", new Aggregation.Builder().sum(new SumAggregation.Builder().field("realTotalCost").build()).build());
         // 构建查询与聚合
-        SearchRequest.Builder searchRequest = new SearchRequest.Builder().aggregations("group1", aggregation.build()).query(query);
+        SearchRequest.Builder searchRequest = new SearchRequest.Builder()
+                .aggregations("group1", aggregation.build())
+                .query(query)
+                .runtimeMappings(runtimeFieldMap);
+
         // 查询ing
         SearchResponse<CloudBill> search = elasticsearchClient.search(searchRequest.build(), CloudBill.class);
         Aggregate group1 = search.aggregations().get("group1");
@@ -137,7 +146,7 @@ public class BillSearchServiceImpl implements BillSearchService {
 
     @Override
     public ExpensesResponse expenses(CalendarConstants calendarConstants, String value) {
-        List<Trend> trend = trend(calendarConstants, 1, value, List.of(getExpensesQuery(calendarConstants)));
+        List<Trend> trend = trend(calendarConstants, 1, value, List.of(getExpensesQuery(calendarConstants)), new BillExpensesRequest().toRuntimeMappings());
         return toExpensesResponse(calendarConstants, value, trend);
     }
 
@@ -145,7 +154,7 @@ public class BillSearchServiceImpl implements BillSearchService {
     public ExpensesResponse expenses(CalendarConstants calendarConstants, String value, BillExpensesRequest request) {
         List<Query> requestQuery = new ArrayList<>(request.toQuery());
         requestQuery.add(getExpensesQuery(calendarConstants));
-        List<Trend> trend = trend(calendarConstants, 1, value, requestQuery);
+        List<Trend> trend = trend(calendarConstants, 1, value, requestQuery, request.toRuntimeMappings(currencyService.listCurrency()));
         return toExpensesResponse(calendarConstants, value, trend);
     }
 
