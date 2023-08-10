@@ -1,7 +1,7 @@
 import type { Ref } from "vue";
 import type { BillSummary, TrendData } from "@/echarts/bill_view/type";
 import type { SimpleMap } from "@commons/api/base/type";
-import { interpolationColor } from "@commons/utils/color";
+import { buildColors } from "@commons/utils/color";
 import _ from "lodash";
 import CurrencyFormat from "@commons/utils/currencyFormat";
 import type { Currency } from "@commons/api/bil_view/type";
@@ -196,16 +196,7 @@ const getBillViewOptions = (
           show: false,
         },
         data: filterData,
-        color: interpolationColor(
-          [
-            "rgba(148, 90, 246, 1)",
-            "rgba(78, 131, 253, 1)",
-            "rgba(250, 211, 85, 1)",
-            "rgba(20, 225, 198, 1)",
-            "rgba(80, 206, 251, 1)",
-          ],
-          filterData.length
-        ),
+        color: buildColors(filterData.length),
       },
     ],
   };
