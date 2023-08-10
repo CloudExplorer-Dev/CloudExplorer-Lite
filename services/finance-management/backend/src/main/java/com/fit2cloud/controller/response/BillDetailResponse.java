@@ -49,6 +49,10 @@ public class BillDetailResponse {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime billingCycle;
 
+    @Schema(title = "扣费时间", description = "扣费时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime deductionDate;
+
     @Schema(title = "账单开始时间", description = "账单开始时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime usageStartDate;

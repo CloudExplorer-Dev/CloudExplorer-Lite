@@ -38,6 +38,11 @@
           <span>{{ scope.row.billingCycle.substring(0, 7) }}</span>
         </template>
       </el-table-column>
+      <el-table-column prop="deductionDate" width="120px" label="日期" sortable>
+        <template #default="scope">
+          <span>{{ scope.row.deductionDate.substring(0, 10) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="resourceId"
         label="资源id"

@@ -55,7 +55,6 @@ public class HuaweiMappingUtil {
         return cloudBill;
     }
 
-
     /**
      * 将华为云账单对象转换为系统账单对象
      *

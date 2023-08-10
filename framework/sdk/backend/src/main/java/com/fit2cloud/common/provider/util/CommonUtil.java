@@ -5,7 +5,6 @@ import io.reactivex.rxjava3.functions.BiFunction;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.function.Function;
 
@@ -52,7 +51,7 @@ public class CommonUtil {
      * @return 解析后的时间对象
      */
     public static LocalDateTime getLocalDateTime(String dateStr, String format) {
-        return LocalDateTime.ofEpochSecond(getUTCTime(dateStr, format) / 1000, 0, ZoneOffset.ofHours(0));
+        return LocalDateTime.ofEpochSecond(getUTCTime(dateStr, format) / 1000, 0, ZoneOffset.ofHours(+8));
     }
 
     /**
