@@ -1,6 +1,6 @@
 SET SESSION innodb_lock_wait_timeout = 7200;
 
-CREATE TABLE `bill_currency` (
+CREATE TABLE IF NOT EXISTS `bill_currency` (
                                  `code` varchar(255)  NOT NULL COMMENT '币种code',
                                  `message` varchar(255)  DEFAULT NULL COMMENT '提示',
                                  `symbol` varchar(255) DEFAULT NULL COMMENT '符号',

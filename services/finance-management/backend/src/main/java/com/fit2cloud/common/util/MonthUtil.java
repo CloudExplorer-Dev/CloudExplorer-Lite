@@ -81,7 +81,9 @@ public class MonthUtil {
      */
     public static List<String> getMonthDays(String month) {
         Calendar instance = Calendar.getInstance();
-        instance.setTimeInMillis(CommonUtil.getUTCTime(month, "yyyy-MM"));
+        if (!StringUtils.equals(getCurrentMonth(), month)) {
+            instance.setTimeInMillis(CommonUtil.getUTCTime(month, "yyyy-MM"));
+        }
         return IntStream.range(1, StringUtils.equals(getCurrentMonth(), month) ? instance.get(Calendar.DAY_OF_MONTH) + 1 : instance.getActualMaximum(Calendar.DAY_OF_MONTH) + 1)
                 .boxed().map(day -> String.format("%04d-%02d-%02d", instance.get(Calendar.YEAR), instance.get(Calendar.MONTH) + 1, day))
                 .toList();
