@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
-import { useRouter } from "vue-router";
+import { useRouter, type TypesConfig } from "vue-router";
 import {
   PaginationConfig,
   TableConfig,
@@ -27,8 +27,9 @@ import OrgTreeFilter from "@commons/components/table-filter/OrgTreeFilter.vue";
 import AddDisk from "@/views/vm_cloud_server/AddDisk.vue";
 import ChangeConfig from "@/views/vm_cloud_server/ChangeConfig.vue";
 import { classifyIP } from "@commons/utils/util";
-import CeIcon from "@commons/components/ce-icon/index.vue";
 import PlatformIcon from "@commons/components/platform-icon/index.vue";
+import InstanceStatusUtils from "@commons/utils/vm_cloud_server/InstanceStatusUtils";
+import Renew from "@/views/vm_cloud_server/Renew.vue";
 const { t } = useI18n();
 const permissionStore = usePermissionStore();
 const useRoute = useRouter();
@@ -40,9 +41,7 @@ const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 const addDiskRef = ref<InstanceType<typeof AddDisk>>();
 const changeConfigRef = ref<InstanceType<typeof ChangeConfig>>();
-import InstanceStatusUtils from "@commons/utils/vm_cloud_server/InstanceStatusUtils";
-import EnableStatusSwitch from "@/views/vm_cloud_server/EnableStatusSwitch.vue";
-
+const renewRef = ref<InstanceType<typeof Renew>>();
 /**
  * 表头：组织树筛选
  */
@@ -254,6 +253,19 @@ const showDetail = (row: VmCloudServerVO) => {
     ),
   });
 };
+const openRenew = (row: VmCloudServerVO) => {
+  renewRef.value?.open([row]);
+};
+const batchOpenRenew = () => {
+  if (
+    selectedRowData.value.find((item) => item.instanceChargeType === "PrePaid")
+  ) {
+    renewRef.value?.open(selectedRowData.value);
+  } else {
+    ElMessage.error("未选择包年包月机器,无法续费");
+  }
+};
+
 const gotoCatalog = () => {
   useRoute.push({
     path: useRoute.currentRoute.value.path.replace("/list", "/catalog"),
@@ -595,6 +607,14 @@ const moreActions = ref<Array<ButtonActionType>>([
     permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
     disableBatch
   ),
+  new ButtonAction(
+    t("commons.btn.renew", "续期"),
+    undefined,
+    undefined,
+    batchOpenRenew,
+    permissionStore.hasPermission("[vm-service]CLOUD_SERVER:DELETE"),
+    disableBatch
+  ),
 ]);
 
 /**
@@ -692,6 +712,28 @@ const tableConfig = ref<TableConfig>({
     ),
   ]),
 });
+
+const getExpiredTimeMessage = (expiredTime: string) => {
+  if (!expiredTime) {
+    return "";
+  }
+  const expired = new Date(expiredTime);
+  const currentDate = new Date();
+  if (expired.getTime() < currentDate.getTime()) {
+    return "已过期";
+  } else {
+    const difference = expired.getTime() - currentDate.getTime();
+    if (difference < 1000 * 60 * 60 * 24 * 15) {
+      return (
+        "剩余" +
+        Math.ceil(
+          (expired.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
+        ) +
+        "天"
+      );
+    }
+  }
+};
 const getFirstIp = (list: Array<any>) => {
   if (list) {
     const publicIpItem = _.find(list, ["isPublicIp", true]);
@@ -793,6 +835,15 @@ const buttons = ref([
         (row.instanceStatus.toLowerCase() != "running" &&
           row.instanceStatus.toLowerCase().indexOf("ing") > -1)
       );
+    },
+  },
+  {
+    label: "续费",
+    icon: "",
+    click: openRenew,
+    show: permissionStore.hasPermission("[vm-service]CLOUD_SERVER:RESIZE"),
+    disabled: (row: { instanceChargeType: string }) => {
+      return row.instanceChargeType === "PostPaid";
     },
   },
 ]);
@@ -1060,7 +1111,14 @@ const buttons = ref([
       :label="$t('cloud_server.label.expired_time', '到期时间')"
       min-width="180px"
       :show="false"
-    ></el-table-column>
+    >
+      <template #default="scope">
+        <div>{{ scope.row.expiredTime }}</div>
+        <div style="color: red">
+          {{ getExpiredTimeMessage(scope.row.expiredTime) }}
+        </div></template
+      >
+    </el-table-column>
     <el-table-column
       prop="createTime"
       column-key="createTime"
@@ -1075,6 +1133,26 @@ const buttons = ref([
       min-width="120px"
       :show="false"
     ></el-table-column>
+    <el-table-column
+      prop="autoRenew"
+      column-key="autoRenew"
+      label="自动续费"
+      :filters="[
+        { text: '是', value: true },
+        { text: '否', value: false },
+      ]"
+      min-width="120px"
+    >
+      <template #default="scope">
+        {{
+          scope.row.instanceChargeType === "PostPaid"
+            ? "--"
+            : scope.row.autoRenew
+            ? "是"
+            : "否"
+        }}
+      </template>
+    </el-table-column>
     <fu-table-operations
       :ellipsis="2"
       :columns="columns"
@@ -1082,27 +1160,10 @@ const buttons = ref([
       :label="$t('commons.operation')"
       fixed="right"
     />
-    <!--    <el-table-column min-width="110px" label="操作" fixed="right">-->
-    <!--      <template #default="scope">-->
-    <!--        <el-space wrap>-->
-    <!--          <EnableStatusSwitch-->
-    <!--            :instance-status="scope.row.instanceStatus"-->
-    <!--            :final-function="refresh"-->
-    <!--            :function-props="scope.row"-->
-    <!--          />-->
-    <!--          <MoreOptionsButton-->
-    <!--            :buttons="tableConfig.tableOperations.buttons"-->
-    <!--            :row="scope.row"-->
-    <!--          />-->
-    <!--        </el-space>-->
-    <!--      </template>-->
-    <!--    </el-table-column>-->
+
     <template #buttons>
       <CeTableColumnSelect :columns="columns" />
     </template>
-    <!--    <template #bottomToolBar>-->
-    <!--      <ButtonToolBar :actions="moreActions || []" :ellipsis="2" />-->
-    <!--    </template>-->
   </ce-table>
 
   <!-- 授权页面弹出框 -->
@@ -1121,6 +1182,7 @@ const buttons = ref([
   </el-dialog>
   <AddDisk ref="addDiskRef"></AddDisk>
   <ChangeConfig ref="changeConfigRef"></ChangeConfig>
+  <Renew ref="renewRef"></Renew>
 </template>
 <style lang="scss" scoped>
 .name-span-class {

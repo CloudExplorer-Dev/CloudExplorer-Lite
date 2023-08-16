@@ -1,4 +1,4 @@
-package com.fit2cloud.utils;
+package com.fit2cloud.common.utils;
 
 import com.fit2cloud.base.entity.BillPolicyDetails;
 import com.fit2cloud.base.entity.json_entity.BillingField;

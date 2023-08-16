@@ -230,4 +230,9 @@ public class F2CVirtualMachine {
      * 监控插件(Agent)状态为运行中
      */
     private boolean agentRunning;
+
+    /**
+     * 是否自动续费
+     */
+    private boolean autoRenew;
 }

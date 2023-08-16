@@ -18,6 +18,13 @@ import com.fit2cloud.provider.impl.huawei.entity.*;
 import com.fit2cloud.provider.impl.huawei.entity.credential.HuaweiVmCredential;
 import com.fit2cloud.provider.impl.huawei.entity.request.*;
 import com.fit2cloud.provider.impl.huawei.util.HuaweiMappingUtil;
+import com.fit2cloud.vm.constants.*;
+import com.fit2cloud.vm.entity.F2CDisk;
+import com.fit2cloud.vm.entity.F2CImage;
+import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.fit2cloud.vm.entity.request.BaseDiskRequest;
+import com.fit2cloud.vm.entity.request.GetMetricsRequest;
+import com.fit2cloud.vm.entity.request.RenewInstanceRequest;
 import com.google.gson.Gson;
 import com.huaweicloud.sdk.bss.v2.BssClient;
 import com.huaweicloud.sdk.bss.v2.model.*;
@@ -46,15 +53,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import com.fit2cloud.vm.constants.*;
-import com.fit2cloud.vm.entity.F2CDisk;
-import com.fit2cloud.vm.entity.F2CImage;
-import com.fit2cloud.vm.entity.F2CVirtualMachine;
-import com.fit2cloud.vm.entity.request.BaseDiskRequest;
-import com.fit2cloud.vm.entity.request.GetMetricsRequest;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -92,14 +95,10 @@ public class HuaweiSyncCloudApi {
                     req -> req.setOffset(req.getOffset() + 1));
             if (CollectionUtils.isNotEmpty(instances)) {
                 List<Port> ports = listPorts(listVirtualMachineRequest.getCredential(), listVirtualMachineRequest.getRegionId());
-                return instances.stream().map(server -> {
-                            F2CVirtualMachine virtualMachine = HuaweiMappingUtil.toF2CVirtualMachine(server, ports);
-                            // 获取包年包月机器的到期时间
-                            if (F2CChargeType.PRE_PAID.equalsIgnoreCase(virtualMachine.getInstanceChargeType())) {
-                                appendExpiredTime(credential, server, virtualMachine);
-                            }
-                            return virtualMachine;
-                        }).map(virtualMachine -> {
+                List<OrderInstanceV2> orderInstanceV2s = listPayPerUseCustomerResources(credential, null);
+                return instances.stream()
+                        .map(server -> HuaweiMappingUtil.toF2CVirtualMachine(server, ports, orderInstanceV2s))
+                        .map(virtualMachine -> {
                             virtualMachine.setRegion(listVirtualMachineRequest.getRegionId());
                             return virtualMachine;
                         }).map(virtualMachine -> appendDisk(listVirtualMachineRequest.getCredential(), listVirtualMachineRequest.getRegionId(), virtualMachine))
@@ -107,6 +106,28 @@ public class HuaweiSyncCloudApi {
             }
         }
         return new ArrayList<>();
+    }
+
+
+    /**
+     * 查询流水账单列表
+     *
+     * @param credential 认证对象
+     * @param resourceId 资源id集合 传null代表查所有资源
+     * @return 流水账单列表
+     */
+    public static List<OrderInstanceV2> listPayPerUseCustomerResources(HuaweiVmCredential credential, List<String> resourceId) {
+        BssClient bssClient = credential.getBssClient();
+        ListPayPerUseCustomerResourcesRequest request = new ListPayPerUseCustomerResourcesRequest();
+        QueryResourcesReq queryResourcesReq = new QueryResourcesReq();
+        queryResourcesReq.setLimit(PageUtil.DefaultPageSize);
+        queryResourcesReq.setOffset(PageUtil.DefaultCurrentPage - 1);
+        queryResourcesReq.setResourceIds(resourceId);
+        request.setBody(queryResourcesReq);
+        return PageUtil.page(request, req -> bssClient.listPayPerUseCustomerResources(request),
+                ListPayPerUseCustomerResourcesResponse::getData,
+                (req, res) -> req.getBody().getLimit() <= res.getData().size(),
+                req -> req.getBody().setOffset(req.getBody().getOffset() + 1));
     }
 
 
@@ -190,7 +211,7 @@ public class HuaweiSyncCloudApi {
         if (CollectionUtils.isNotEmpty(response.getOrderLineItems())) {
             String expireTime = response.getOrderLineItems().stream().filter(orderLineItemEntityV2 ->
                     orderLineItemEntityV2.getProductId().equalsIgnoreCase(productId)
-            ).collect(Collectors.toList()).get(0).getExpireTime();
+            ).toList().get(0).getExpireTime();
             virtualMachine.setExpiredTime(new Date(CommonUtil.getUTCTime(expireTime, "yyyy-MM-dd'T'HH:mm:ss'Z'")).getTime());
         }
     }
@@ -203,11 +224,23 @@ public class HuaweiSyncCloudApi {
      * @return port对象
      */
     private static List<Port> listPorts(String credential, String regionId) {
+        HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(credential, HuaweiVmCredential.class);
+        return listPorts(huaweiVmCredential, regionId);
+    }
+
+    /**
+     * 获取网络端口
+     *
+     * @param credential 认证参数
+     * @param regionId   区域id
+     * @return 网络端口列表
+     */
+    private static List<Port> listPorts(HuaweiVmCredential credential, String regionId) {
         try {
-            HuaweiVmCredential huaweiVmCredential = JsonUtil.parseObject(credential, HuaweiVmCredential.class);
-            VpcClient vpcClient = huaweiVmCredential.getVpcClient(regionId);
-            ListPortsRequest listPortsRequest = new ListPortsRequest();
-            ListPortsResponse listPortsResponse = vpcClient.listPorts(listPortsRequest);
+            VpcClient vpcClient = credential.getVpcClient(regionId);
+            ListPortsRequest request = new ListPortsRequest();
+            request.setLimit(2000);
+            ListPortsResponse listPortsResponse = vpcClient.listPorts(request);
             return listPortsResponse.getPorts();
         } catch (Exception e) {
             return new ArrayList<>();
@@ -1102,7 +1135,8 @@ public class HuaweiSyncCloudApi {
             CreateServersResponse response = client.createServers(createServersRequest);
             List<Port> ports = listPorts(request.getCredential(), request.getRegionId());
             ServerDetail serverDetail = getJobEntities(client, response.getJobId());
-            f2CVirtualMachine = HuaweiMappingUtil.toF2CVirtualMachine(serverDetail, ports);
+            List<OrderInstanceV2> orderInstanceV2s = listPayPerUseCustomerResources(credential, List.of(serverDetail.getId()));
+            f2CVirtualMachine = HuaweiMappingUtil.toF2CVirtualMachine(serverDetail, ports, orderInstanceV2s);
             f2CVirtualMachine.setRegion(request.getRegionId());
             f2CVirtualMachine.setId(request.getId());
             setServerHostName(client, f2CVirtualMachine, request);
@@ -1480,7 +1514,7 @@ public class HuaweiSyncCloudApi {
         try {
             if (CollectionUtils.isNotEmpty(body.getProductInfos())) {
                 ListOnDemandResourceRatingsResponse response = credential.getBssClient().listOnDemandResourceRatings(request);
-                return response.getOfficialWebsiteAmount();
+                return response.getOfficialWebsiteAmount().doubleValue();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1569,7 +1603,7 @@ public class HuaweiSyncCloudApi {
         try {
             if (CollectionUtils.isNotEmpty(body.getProductInfos())) {
                 ListOnDemandResourceRatingsResponse response = credential.getBssClient().listOnDemandResourceRatings(request);
-                return response.getOfficialWebsiteAmount();
+                return response.getOfficialWebsiteAmount().doubleValue();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1665,7 +1699,7 @@ public class HuaweiSyncCloudApi {
         try {
             if (CollectionUtils.isNotEmpty(body.getProductInfos())) {
                 ListOnDemandResourceRatingsResponse response = credential.getBssClient().listOnDemandResourceRatings(request);
-                return response.getAmount();
+                return response.getAmount().doubleValue();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1887,5 +1921,86 @@ public class HuaweiSyncCloudApi {
         } catch (Exception e) {
             throw new RuntimeException("GetVmF2CDisks Error!" + e.getMessage(), e);
         }
+    }
+
+    public static F2CVirtualMachine renewInstance(RenewInstanceRequest request) {
+        HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+        BssClient bssClient = credential.getBssClient();
+        if (StringUtils.isNotEmpty(request.getPeriodNum())) {
+
+            RenewalResourcesRequest renewalResourcesRequest = new RenewalResourcesRequest();
+            RenewalResourcesReq renewalResourcesReq = new RenewalResourcesReq();
+            int period = Integer.parseInt(request.getPeriodNum());
+            Integer periodType = period >= 12 && period % 12 == 0 ? 3 : 2;
+            renewalResourcesReq.setResourceIds(List.of(request.getInstanceUuid()));
+            renewalResourcesReq.setPeriodNum(period >= 12 ? period / 12 : period);
+            renewalResourcesReq.setPeriodType(periodType);
+            renewalResourcesReq.setIsAutoPay(1);
+            /**
+             * 到期策略（字段已废弃，请勿使用该字段。此字段必填，需携带，但携带的枚举实际并不生效）：
+             * 0：进入宽限期/保留期
+             * 1：转按需
+             * 2：自动退订
+             * 3：自动续订
+             */
+            renewalResourcesReq.setExpirePolicy(3);
+            renewalResourcesRequest.setBody(renewalResourcesReq);
+            bssClient.renewalResources(renewalResourcesRequest);
+        }
+        if (Objects.nonNull(request.getExpirePolicy())) {
+            List<OrderInstanceV2> orderInstanceV2s = listPayPerUseCustomerResources(credential, List.of(request.getInstanceUuid()));
+            boolean autoRenew = HuaweiMappingUtil.getAutoRenew(request.getInstanceUuid(), orderInstanceV2s);
+            if (Objects.equals(request.getExpirePolicy(), ExpirePolicyConstants.YES) != autoRenew) {
+                if (Objects.equals(request.getExpirePolicy(), ExpirePolicyConstants.YES)) {
+                    AutoRenewalResourcesRequest autoRenewalResourcesRequest = new AutoRenewalResourcesRequest();
+                    autoRenewalResourcesRequest.setResourceId(request.getInstanceUuid());
+                    bssClient.autoRenewalResources(autoRenewalResourcesRequest);
+                } else {
+                    CancelAutoRenewalResourcesRequest cancelAutoRenewalResourcesRequest = new CancelAutoRenewalResourcesRequest();
+                    cancelAutoRenewalResourcesRequest.setResourceId(request.getInstanceUuid());
+                    bssClient.cancelAutoRenewalResources(cancelAutoRenewalResourcesRequest);
+                }
+
+            }
+        }
+        return getF2CVirtualMachine(credential, request.getRegionId(), request.getInstanceUuid());
+    }
+
+
+    public static F2CVirtualMachine getF2CVirtualMachine(HuaweiVmCredential credential, String regionId, String serverId) {
+        EcsClient ecsClient = credential.getEcsClient(regionId);
+        ServerDetail instance = getInstanceById(serverId, ecsClient);
+        List<Port> ports = listPorts(credential, regionId);
+        List<OrderInstanceV2> orderInstanceV2s = listPayPerUseCustomerResources(credential, List.of(instance.getId()));
+        return HuaweiMappingUtil.toF2CVirtualMachine(instance, ports, orderInstanceV2s);
+    }
+
+    public static String renewInstanceExpiresTime(HuaweiRenewInstanceExpiresTimeRequest request) {
+        LocalDateTime expiredTime = request.getExpiredTime();
+        if (StringUtils.isEmpty(request.getPeriodNum())) {
+            return expiredTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+        String periodNum = request.getPeriodNum();
+        return expiredTime.plusMonths(Long.parseLong(periodNum)).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
+    public static BigDecimal renewInstancePrice(HuaweiRenewInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getPeriodNum())) {
+            return BigDecimal.ZERO;
+        }
+        HuaweiVmCredential credential = JsonUtil.parseObject(request.getCredential(), HuaweiVmCredential.class);
+        BssClient bssClient = credential.getBssClient();
+        ListRenewRateOnPeriodRequest req = new ListRenewRateOnPeriodRequest();
+        ListRenewRateOnPeriodReq body = new ListRenewRateOnPeriodReq();
+        int period = Integer.parseInt(request.getPeriodNum());
+        Integer periodType = period >= 12 && period % 12 == 0 ? 3 : 2;
+        body.setPeriodNum(period >= 12 ? period / 12 : period);
+        body.setPeriodType(periodType);
+        body.setResourceIds(List.of(request.getInstanceUuid()));
+        req.withBody(body);
+
+        ListRenewRateOnPeriodResponse listRenewRateOnPeriodResponse = bssClient.listRenewRateOnPeriod(req);
+        return listRenewRateOnPeriodResponse.getRenewInquiryResults().stream().map(RenewInquiryResultInfo::getAmount).map(BigDecimal::new)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

@@ -109,4 +109,7 @@ public class PageVmCloudServerRequest extends PageRequest implements PageOrderRe
     @Schema(title = "排序", example = " {\"column\":\"createTime\",\"asc\":false}")
     private OrderRequest order;
 
+    @Schema(title = "自动续费")
+    private Boolean autoRenew;
+
 }

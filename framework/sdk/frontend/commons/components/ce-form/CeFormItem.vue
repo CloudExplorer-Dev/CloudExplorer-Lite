@@ -121,10 +121,11 @@ watch(
     props.listOptions(props.formItem, loading).then(() => {
       if (props.formItem.valueField && props.formItem.optionList) {
         if (
-          props.formItem.optionList.some(
-            (item: any) =>
-              item[props.formItem.valueField as string] ===
-              props.formItem.defaultValue
+          props.formItem.optionList.some((item: any) =>
+            item[props.formItem.valueField as string] ===
+            props.formItem.defaultJsonValue
+              ? JSON.parse(props.formItem.defaultValue)
+              : props.formItem.defaultValue
           )
         ) {
           props.initDefaultData(props.formItem);

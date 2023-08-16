@@ -12,6 +12,7 @@ import type {
   GrantRequest,
 } from "./type";
 import type { Ref } from "vue";
+import type { FormViewObject } from "@commons/components/ce-form/type";
 import type { SimpleMap } from "@commons/api/base/type";
 
 /**
@@ -231,7 +232,62 @@ export function getConfigUpdatePrice(
 export function grantVmCloudServer(req: GrantRequest, loading?: Ref<boolean>) {
   return post("/api/server/grant", null, req, loading);
 }
+/**
+ * 获取续费表单
+ * @param platform 云平台
+ * @param loading  加载器
+ * @returns 续费表单
+ */
+const getRenewForm: (
+  platform?: string,
+  loading?: Ref<boolean>
+) => Promise<Result<FormViewObject>> = (platform, loading) => {
+  return get(
+    `${
+      platform ? "/api/server/renew_form/" + platform : "/api/server/renew_form"
+    }`,
+    {},
+    loading
+  );
+};
 
+/**
+ * 续费价钱
+ * @param request 请求对象
+ * @param loading 加载器
+ * @returns 续费询价
+ */
+const renewPrice: (
+  request: SimpleMap<any>,
+  loading?: Ref<boolean>
+) => Promise<Result<number>> = (request, loading) => {
+  return post("/api/server/renew_price", undefined, request, loading);
+};
+
+/**
+ * 获取到期时间
+ * @param request 请求参数
+ * @param loading 加载器
+ * @returns 到期时间
+ */
+const renewExpiresTime: (
+  request: SimpleMap<any>,
+  loading?: Ref<boolean>
+) => Promise<Result<string>> = (request, loading) => {
+  return post("/api/server/renew_expires_time", undefined, request, loading);
+};
+/**
+ * 续费实例
+ * @param request 请求参数
+ * @param loading 加载器
+ * @returns 是否续费成功
+ */
+const renewInstance: (
+  request: Array<SimpleMap<any>>,
+  loading?: Ref<boolean>
+) => Promise<Result<boolean>> = (request, loading) => {
+  return post("/api/server/renew_instance", undefined, request, loading);
+};
 const VmCloudServerApi = {
   listVmCloudServer,
   shutdownInstance,
@@ -251,6 +307,10 @@ const VmCloudServerApi = {
   getConfigUpdatePrice,
   grantVmCloudServer,
   deleteFailedRecord,
+  getRenewForm,
+  renewPrice,
+  renewExpiresTime,
+  renewInstance,
 };
 
 export default VmCloudServerApi;

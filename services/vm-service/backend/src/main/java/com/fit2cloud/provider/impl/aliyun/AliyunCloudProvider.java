@@ -26,8 +26,10 @@ import com.fit2cloud.vm.entity.F2CNetwork;
 import com.fit2cloud.vm.entity.F2CVirtualMachine;
 import com.fit2cloud.vm.entity.request.BaseDiskRequest;
 import com.fit2cloud.vm.entity.request.GetMetricsRequest;
+import com.fit2cloud.vm.entity.request.RenewInstanceRequest;
 import org.pf4j.Extension;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +61,27 @@ public class AliyunCloudProvider extends AbstractCloudProvider<AliyunVmCredentia
     @Override
     public FormObject getCreateServerForm() {
         return FormUtil.toForm(AliyunVmCreateRequest.class);
+    }
+
+    @Override
+    public BigDecimal renewInstancePrice(String req) {
+        return AliyunSyncCloudApi.renewInstancePrice(JsonUtil.parseObject(req, RenewInstanceRequest.class));
+    }
+
+    @Override
+    public String renewInstanceExpiresTime(String req) {
+        return AliyunSyncCloudApi.renewInstanceExpiresTime(JsonUtil.parseObject(req, AliRenewInstanceExpiresTimeRequest.class));
+    }
+
+    @Override
+    public FormObject getRenewInstanceForm() {
+        return FormUtil.toForm(AliRenewInstanceRequest.class);
+    }
+
+
+    @Override
+    public F2CVirtualMachine renewInstance(String req) {
+        return AliyunSyncCloudApi.renewInstance(JsonUtil.parseObject(req, RenewInstanceRequest.class));
     }
 
     @Override

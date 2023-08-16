@@ -162,7 +162,7 @@ public class HuaweiVmCredential extends HuaweiCredential implements Credential {
                     .withSk(getSk());
             return BssClient.newBuilder()
                     .withCredential(auth)
-                    .withRegion(BssRegion.valueOf("cn-north-1"))
+                    .withRegion(BssRegion.CN_NORTH_1)
                     .build();
         } catch (Exception e) {
             SkipPageException.throwHuaweiSkip(e);

@@ -111,7 +111,10 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
      * @param saveBatchOrUpdateParams 插入更新数据所需要的参数
      */
     private void cloudServerSaveOrUpdate(SaveBatchOrUpdateParams<F2CVirtualMachine> saveBatchOrUpdateParams) {
-        List<VmCloudServer> vmCloudServers = saveBatchOrUpdateParams.getSyncRecord().stream().map(f2CVirtualMachine -> toVmCloudServer(f2CVirtualMachine, saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
+        List<VmCloudServer> vmCloudServers = saveBatchOrUpdateParams
+                .getSyncRecord()
+                .stream()
+                .map(f2CVirtualMachine -> toVmCloudServer(f2CVirtualMachine, saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getSyncTime())).toList();
         LambdaUpdateWrapper<VmCloudServer> updateWrapper = new LambdaUpdateWrapper<VmCloudServer>()
                 .eq(VmCloudServer::getAccountId, saveBatchOrUpdateParams.getCloudAccountId())
                 .eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())

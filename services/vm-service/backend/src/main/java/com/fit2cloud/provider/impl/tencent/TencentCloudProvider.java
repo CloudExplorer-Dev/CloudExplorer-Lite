@@ -27,8 +27,10 @@ import com.fit2cloud.vm.entity.F2CNetwork;
 import com.fit2cloud.vm.entity.F2CVirtualMachine;
 import com.fit2cloud.vm.entity.request.BaseDiskRequest;
 import com.fit2cloud.vm.entity.request.GetMetricsRequest;
+import com.fit2cloud.vm.entity.request.RenewInstanceRequest;
 import org.pf4j.Extension;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +60,26 @@ public class TencentCloudProvider extends AbstractCloudProvider<TencentCredentia
     @Override
     public FormObject getCreateServerForm() {
         return FormUtil.toForm(TencentVmCreateRequest.class);
+    }
+
+    @Override
+    public FormObject getRenewInstanceForm() {
+        return FormUtil.toForm(TencentRenewInstanceRequest.class);
+    }
+
+    @Override
+    public String renewInstanceExpiresTime(String req) {
+        return TencentSyncCloudApi.renewInstanceExpiresTime(JsonUtil.parseObject(req, TencentRenewInstanceExpiresTimeRequest.class));
+    }
+
+    @Override
+    public BigDecimal renewInstancePrice(String req) {
+        return TencentSyncCloudApi.renewInstancePrice(JsonUtil.parseObject(req, TencentRenewInstanceRequest.class));
+    }
+
+    @Override
+    public F2CVirtualMachine renewInstance(String req) {
+        return TencentSyncCloudApi.renewInstance(JsonUtil.parseObject(req, TencentRenewInstanceRequest.class));
     }
 
     @Override

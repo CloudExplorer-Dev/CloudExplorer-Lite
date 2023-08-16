@@ -7,14 +7,13 @@ import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.SpringUtil;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -62,10 +61,9 @@ public class FormUtil {
                 }));
 
         boolean hasGroup = groupAnnotationMap.size() > 0, hasStep = stepAnnotationMap.size() > 0, hasConfirm = confirmAnnotationMap.size() > 0;
-
-        Field[] fieldsWithAnnotation = FieldUtils.getFieldsWithAnnotation(clazz, com.fit2cloud.common.form.annotaion.Form.class);
+        List<Field> fieldList = listField(clazz);
         AtomicInteger atomicInteger = new AtomicInteger(0);
-        FormObject formObject = new FormObject().setForms(Arrays.stream(fieldsWithAnnotation).map(field -> {
+        FormObject formObject = new FormObject().setForms(fieldList.stream().map(field -> {
             field.setAccessible(true);
             com.fit2cloud.common.form.annotaion.Form annotation = field.getAnnotation(com.fit2cloud.common.form.annotaion.Form.class);
             Map<String, Object> map = new HashMap<>();
@@ -140,6 +138,34 @@ public class FormUtil {
         }
 
         return formObject;
+    }
+
+
+    /**
+     * 获取当前Class的所有Field,如果field名称则取子类field
+     *
+     * @param clazz class对象
+     * @param <T>   class泛型
+     * @return 字段列表
+     */
+    private static <T> List<Field> listField(Class<T> clazz) {
+        Field[] fieldsWithAnnotation = FieldUtils.getFieldsWithAnnotation(clazz, com.fit2cloud.common.form.annotaion.Form.class);
+        List<Field> fieldList = new ArrayList<>();
+        Map<String, List<Field>> collect = Arrays.stream(fieldsWithAnnotation)
+                .collect(Collectors.groupingBy(Field::getName));
+
+        // 获取class的继承关系
+        List<Class<?>> allSuperclasses = ClassUtils.getAllSuperclasses(clazz);
+
+        for (Map.Entry<String, List<Field>> stringListEntry : collect.entrySet()) {
+            List<Field> fields = stringListEntry
+                    .getValue()
+                    .stream()
+                    .sorted(Comparator.comparing(s -> allSuperclasses.indexOf(s.getDeclaringClass())))
+                    .toList();
+            fieldList.add(fields.get(0));
+        }
+        return fieldList;
     }
 
     /**

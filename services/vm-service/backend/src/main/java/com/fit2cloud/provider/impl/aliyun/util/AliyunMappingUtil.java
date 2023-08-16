@@ -2,20 +2,21 @@ package com.fit2cloud.provider.impl.aliyun.util;
 
 import com.aliyun.ecs20140526.models.DescribeDisksResponseBody;
 import com.aliyun.ecs20140526.models.DescribeImagesResponseBody;
+import com.aliyun.ecs20140526.models.DescribeInstanceAutoRenewAttributeResponseBody;
 import com.aliyun.ecs20140526.models.DescribeInstancesResponseBody;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.impl.aliyun.constants.AliyunChargeType;
-import com.google.gson.Gson;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import com.fit2cloud.vm.constants.DeleteWithInstance;
 import com.fit2cloud.vm.constants.F2CChargeType;
 import com.fit2cloud.vm.constants.F2CDiskStatus;
 import com.fit2cloud.vm.entity.F2CDisk;
 import com.fit2cloud.vm.entity.F2CImage;
 import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.google.gson.Gson;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -33,6 +34,30 @@ import java.util.TimeZone;
  * @注释:
  */
 public class AliyunMappingUtil {
+
+    /**
+     * 将DescribeInstancesResponseBodyInstancesInstance对象转换为F2CVirtualMachine对象
+     *
+     * @param instance   实例
+     * @param attributes 实例续费数据
+     * @return 云管公共对象
+     */
+    public static F2CVirtualMachine toF2CVirtualMachine(DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance instance, List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> attributes) {
+        boolean autoRenew = autoRenew(attributes, instance.getInstanceId());
+        F2CVirtualMachine f2CVirtualMachine = toF2CVirtualMachine(instance);
+        f2CVirtualMachine.setAutoRenew(autoRenew);
+        return f2CVirtualMachine;
+    }
+
+    public static boolean autoRenew(List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> attributes, String instanceId) {
+        return attributes
+                .stream()
+                .filter(attr -> StringUtils.equals(attr.instanceId, instanceId))
+                .findFirst()
+                .map(DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute::getAutoRenewEnabled)
+                .orElse(false);
+    }
+
     /**
      * 将DescribeInstancesResponseBodyInstancesInstance对象转换为F2CVirtualMachine对象
      *

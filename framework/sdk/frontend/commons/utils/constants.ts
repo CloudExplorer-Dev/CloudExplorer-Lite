@@ -34,6 +34,7 @@ export const JobTypeConst = {
   CLOUD_DISK_ATTACH_JOB: "磁盘挂载",
   CLOUD_DISK_DETACH_JOB: "磁盘卸载",
   CLOUD_DISK_ENLARGE_JOB: "磁盘扩容",
+  CLOUD_RENEW_INSTANCE_JOB: "续期实例",
 };
 
 export const AllJobTypeConst = {

@@ -21,4 +21,11 @@ import java.util.List;
 public interface BaseVmCloudServerMapper extends MPJBaseMapper<VmCloudServer> {
     @Select("SELECT source_id as `key`,count(*) as `value` FROM  vm_cloud_server ${ew.customSqlSegment} GROUP BY source_id")
     List<DefaultKeyValue<String, Integer>> groupSourceId(@Param(Constants.WRAPPER) Wrapper<VmCloudServer> wrapper);
+
+    /**
+     * 修改自动续费的超时时间
+     *
+     * @param cloudAccountIdList 云账号id
+     */
+    void renewInstance(@Param("cloudAccountIdList") List<String> cloudAccountIdList);
 }

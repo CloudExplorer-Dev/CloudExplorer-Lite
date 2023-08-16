@@ -22,6 +22,7 @@
             vm_cloud_server.`instance_id`,
             vm_cloud_server.`instance_name`,
             vm_cloud_server.`image_id`,
+            vm_cloud_server.`auto_renew`,
             CASE
                 WHEN recycle_bin.STATUS = 'ToBeRecycled' and vm_cloud_server.instance_status !='Deleted' THEN
                     'ToBeRecycled' ELSE vm_cloud_server.instance_status

@@ -25,6 +25,7 @@ import com.huaweicloud.sdk.ecs.v2.model.NovaSimpleKeypair;
 import org.apache.commons.lang3.StringUtils;
 import org.pf4j.Extension;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +50,26 @@ public class HuaweiCloudProvider extends AbstractCloudProvider<HuaweiVmCredentia
     @Override
     public Class<? extends ICreateServerRequest> getCreateServerRequestClass() {
         return HuaweiVmCreateRequest.class;
+    }
+
+    @Override
+    public BigDecimal renewInstancePrice(String req) {
+        return HuaweiSyncCloudApi.renewInstancePrice(JsonUtil.parseObject(req, HuaweiRenewInstanceRequest.class));
+    }
+
+    @Override
+    public String renewInstanceExpiresTime(String req) {
+        return HuaweiSyncCloudApi.renewInstanceExpiresTime(JsonUtil.parseObject(req, HuaweiRenewInstanceExpiresTimeRequest.class));
+    }
+
+    @Override
+    public FormObject getRenewInstanceForm() {
+        return FormUtil.toForm(HuaweiRenewInstanceRequest.class);
+    }
+
+    @Override
+    public F2CVirtualMachine renewInstance(String req) {
+        return HuaweiSyncCloudApi.renewInstance(JsonUtil.parseObject(req, HuaweiRenewInstanceRequest.class));
     }
 
     @Override
