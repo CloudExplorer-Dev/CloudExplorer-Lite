@@ -19,6 +19,16 @@ import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentVmCredential;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
+import com.fit2cloud.vm.constants.DeleteWithInstance;
+import com.fit2cloud.vm.constants.ExpirePolicyConstants;
+import com.fit2cloud.vm.constants.F2CInstanceStatus;
+import com.fit2cloud.vm.constants.PriceUnit;
+import com.fit2cloud.vm.entity.F2CDisk;
+import com.fit2cloud.vm.entity.F2CImage;
+import com.fit2cloud.vm.entity.F2CNetwork;
+import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.fit2cloud.vm.entity.request.BaseDiskRequest;
+import com.fit2cloud.vm.entity.request.GetMetricsRequest;
 import com.tencentcloudapi.cbs.v20170312.CbsClient;
 import com.tencentcloudapi.cbs.v20170312.models.Filter;
 import com.tencentcloudapi.cbs.v20170312.models.Placement;
@@ -26,6 +36,7 @@ import com.tencentcloudapi.cbs.v20170312.models.*;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.cvm.v20170312.CvmClient;
 import com.tencentcloudapi.cvm.v20170312.models.Image;
+import com.tencentcloudapi.cvm.v20170312.models.InstanceChargePrepaid;
 import com.tencentcloudapi.cvm.v20170312.models.ItemPrice;
 import com.tencentcloudapi.cvm.v20170312.models.Price;
 import com.tencentcloudapi.cvm.v20170312.models.*;
@@ -42,21 +53,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import com.fit2cloud.vm.constants.DeleteWithInstance;
-import com.fit2cloud.vm.constants.F2CInstanceStatus;
-import com.fit2cloud.vm.constants.PriceUnit;
-import com.fit2cloud.vm.entity.F2CDisk;
-import com.fit2cloud.vm.entity.F2CImage;
-import com.fit2cloud.vm.entity.F2CNetwork;
-import com.fit2cloud.vm.entity.F2CVirtualMachine;
-import com.fit2cloud.vm.entity.request.BaseDiskRequest;
-import com.fit2cloud.vm.entity.request.GetMetricsRequest;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.fit2cloud.provider.impl.tencent.constants.RenewFlagConstants.NOTIFY_AND_AUTO_RENEW;
+import static com.fit2cloud.provider.impl.tencent.constants.RenewFlagConstants.NOTIFY_AND_MANUAL_RENEW;
 import static com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil.toF2cDiskStatus;
 
 /**
@@ -239,7 +245,7 @@ public class TencentSyncCloudApi {
                 for (InstanceTypeQuotaItem instanceTypeQuotaItem : instanceTypeQuotaItems) {
                     if ("SELL".equalsIgnoreCase(instanceTypeQuotaItem.getStatus())) {
                         String cpuMemory = instanceTypeQuotaItem.getCpu() + "vCPU " + instanceTypeQuotaItem.getMemory() + "GB";
-                        TencentInstanceType tencentInstanceType = new TencentInstanceType().builder()
+                        TencentInstanceType tencentInstanceType = TencentInstanceType.builder()
                                 .instanceTypeFamily(instanceTypeQuotaItem.getInstanceFamily())
                                 .instanceTypeFamilyName(instanceTypeQuotaItem.getTypeName())
                                 .instanceType(instanceTypeQuotaItem.getInstanceType())
@@ -300,6 +306,68 @@ public class TencentSyncCloudApi {
             throw new RuntimeException(e);
         }
     }
+
+    public static F2CVirtualMachine renewInstance(TencentRenewInstanceRequest request) {
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(request.getRegionId());
+        Instance instance = getInstanceById(request.getInstanceUuid(), cvmClient);
+        String renewFlag = instance.getRenewFlag();
+        if (StringUtils.isNotEmpty(request.getPeriodNum())) {
+            RenewInstancesRequest renewInstancesRequest = new RenewInstancesRequest();
+            renewInstancesRequest.setInstanceIds(new String[]{request.getInstanceUuid()});
+            InstanceChargePrepaid instanceChargePrepaid = new InstanceChargePrepaid();
+            instanceChargePrepaid.setPeriod(Long.valueOf(request.getPeriodNum()));
+            // 设置是否自动续费
+            String newRenewFlag = Objects.equals(request.getExpirePolicy(), ExpirePolicyConstants.YES) ? NOTIFY_AND_AUTO_RENEW.name() : NOTIFY_AND_MANUAL_RENEW.name();
+            instanceChargePrepaid.setRenewFlag(renewFlag.equals(newRenewFlag) || Objects.isNull(request.getExpirePolicy()) ? null : newRenewFlag);
+            renewInstancesRequest.setInstanceChargePrepaid(instanceChargePrepaid);
+            renewInstancesRequest.setRenewPortableDataDisk(Boolean.FALSE);
+            try {
+                cvmClient.RenewInstances(renewInstancesRequest);
+
+            } catch (TencentCloudSDKException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (Objects.nonNull(request.getExpirePolicy())) {
+            String newRenewFlag = Objects.equals(request.getExpirePolicy(), ExpirePolicyConstants.YES) ? NOTIFY_AND_AUTO_RENEW.name() : NOTIFY_AND_MANUAL_RENEW.name();
+            if (!renewFlag.equals(newRenewFlag)) {
+                ModifyInstancesRenewFlagRequest modifyInstancesRenewFlagRequest = new ModifyInstancesRenewFlagRequest();
+                modifyInstancesRenewFlagRequest.setInstanceIds(new String[]{request.getInstanceUuid()});
+                modifyInstancesRenewFlagRequest.setRenewFlag(newRenewFlag);
+                try {
+                    cvmClient.ModifyInstancesRenewFlag(modifyInstancesRenewFlagRequest);
+                } catch (TencentCloudSDKException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return getF2CVirtualMachine(tencentVmCredential, request.getRegionId(), request.getInstanceUuid());
+    }
+
+    /**
+     * @param credential   认证对象
+     * @param regionId     区域id
+     * @param instanceUuid 实例id
+     * @return 虚拟机实例对象
+     */
+    public static F2CVirtualMachine getF2CVirtualMachine(TencentVmCredential credential, String regionId, String instanceUuid) {
+        CvmClient cvmClient = credential.getCvmClient(regionId);
+        Instance instance = getInstanceById(instanceUuid, cvmClient);
+        F2CVirtualMachine f2CVirtualMachine = TencentMappingUtil.toF2CVirtualMachine(instance);
+        f2CVirtualMachine.setRegion(regionId);
+        return f2CVirtualMachine;
+    }
+
+    public static String renewInstanceExpiresTime(TencentRenewInstanceExpiresTimeRequest request) {
+        LocalDateTime expiredTime = request.getExpiredTime();
+        if (StringUtils.isEmpty(request.getPeriodNum())) {
+            return expiredTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+        String periodNum = request.getPeriodNum();
+        return expiredTime.plusMonths(Long.parseLong(periodNum)).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
 
     /**
      * 获取系统盘类型
@@ -369,7 +437,7 @@ public class TencentSyncCloudApi {
             }
         });
 
-        return new TencentDiskTypeDTO()
+        return TencentDiskTypeDTO
                 .builder()
                 .systemDiskTypes(systemDiskTypes.stream().distinct().toList())
                 .dataDiskTypes(dataDiskTypes.stream().distinct().toList())
@@ -642,11 +710,10 @@ public class TencentSyncCloudApi {
                     res -> Arrays.stream(res.getInstanceSet()).toList(),
                     (req, res) -> req.getLimit() <= res.getInstanceSet().length,
                     req -> req.setOffset(req.getOffset() + req.getLimit()));
-            List<F2CVirtualMachine> f2CVirtualMachines = page.stream().map(TencentMappingUtil::toF2CVirtualMachine).map(f2CVirtualMachine -> {
+            return page.stream().map(TencentMappingUtil::toF2CVirtualMachine).map(f2CVirtualMachine -> {
                 f2CVirtualMachine.setRegion(listVirtualMachineRequest.getRegionId());
                 return f2CVirtualMachine;
             }).toList();
-            return f2CVirtualMachines;
         }
         return new ArrayList<>();
     }
@@ -1533,7 +1600,7 @@ public class TencentSyncCloudApi {
                             !instanceTypeConfigStatus.getInstanceTypeConfig().getInstanceType().equalsIgnoreCase(request.getCurrentInstanceType())) {
                         InstanceTypeConfig instanceTypeConfig = instanceTypeConfigStatus.getInstanceTypeConfig();
                         String cpuMemory = instanceTypeConfig.getCPU() + "vCPU " + instanceTypeConfig.getMemory() + "GB";
-                        TencentInstanceType tencentInstanceType = new TencentInstanceType().builder()
+                        TencentInstanceType tencentInstanceType = TencentInstanceType.builder()
                                 .instanceType(instanceTypeConfig.getInstanceType())
                                 .instanceTypeDesc(instanceTypeConfig.getInstanceType() + "（" + cpuMemory + "）")
                                 .instanceTypeFamily(instanceTypeConfig.getInstanceFamily())
@@ -1627,6 +1694,29 @@ public class TencentSyncCloudApi {
             return Arrays.asList(response.getDiskSet());
         } catch (Exception e) {
             throw new RuntimeException("Failed to get disks of instance.Instance id:" + instanceId + e.getMessage(), e);
+        }
+    }
+
+    public static BigDecimal renewInstancePrice(TencentRenewInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getPeriodNum())) {
+            return BigDecimal.ZERO;
+        }
+        TencentVmCredential tencentVmCredential = JsonUtil.parseObject(request.getCredential(), TencentVmCredential.class);
+        CvmClient cvmClient = tencentVmCredential.getCvmClient(request.getRegionId());
+        InquiryPriceRenewInstancesRequest inquiryPriceRenewInstancesRequest = new InquiryPriceRenewInstancesRequest();
+        inquiryPriceRenewInstancesRequest.setInstanceIds(new String[]{request.getInstanceUuid()});
+        inquiryPriceRenewInstancesRequest.setRenewPortableDataDisk(false);
+        InstanceChargePrepaid instanceChargePrepaid = new InstanceChargePrepaid();
+        instanceChargePrepaid.setRenewFlag(NOTIFY_AND_MANUAL_RENEW.name());
+        instanceChargePrepaid.setPeriod(Long.parseLong(request.getPeriodNum()));
+        inquiryPriceRenewInstancesRequest.setInstanceChargePrepaid(instanceChargePrepaid);
+        try {
+            InquiryPriceRenewInstancesResponse inquiryPriceRenewInstancesResponse = cvmClient.InquiryPriceRenewInstances(inquiryPriceRenewInstancesRequest);
+            ItemPrice price = inquiryPriceRenewInstancesResponse.getPrice().getInstancePrice();
+            return BigDecimal.valueOf(Objects.isNull(price) ? 0.0 : price.getDiscountPrice());
+        } catch (TencentCloudSDKException e) {
+            e.printStackTrace();
+            return BigDecimal.valueOf(0);
         }
     }
 }

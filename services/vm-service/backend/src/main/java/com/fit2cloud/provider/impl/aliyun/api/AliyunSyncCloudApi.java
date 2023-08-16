@@ -26,14 +26,7 @@ import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.impl.aliyun.util.AliyunMappingUtil;
-import com.google.common.base.Joiner;
-import com.google.gson.Gson;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.plugin.PluginException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
+import com.fit2cloud.vm.constants.ExpirePolicyConstants;
 import com.fit2cloud.vm.constants.F2CDiskStatus;
 import com.fit2cloud.vm.constants.F2CInstanceStatus;
 import com.fit2cloud.vm.constants.PriceUnit;
@@ -43,9 +36,23 @@ import com.fit2cloud.vm.entity.F2CNetwork;
 import com.fit2cloud.vm.entity.F2CVirtualMachine;
 import com.fit2cloud.vm.entity.request.BaseDiskRequest;
 import com.fit2cloud.vm.entity.request.GetMetricsRequest;
+import com.fit2cloud.vm.entity.request.RenewInstanceRequest;
+import com.google.common.base.Joiner;
+import com.google.gson.Gson;
+import lombok.SneakyThrows;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.plugin.PluginException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -136,6 +143,34 @@ public class AliyunSyncCloudApi {
         } catch (Exception e) {
             throw new RuntimeException("Failed to create instance." + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 根据 instanceId获取 云主机实例对象
+     *
+     * @param credential 认证信息
+     * @param regionId   区域id
+     * @param instanceId 实例id
+     * @return 云主机实例对象
+     */
+    public static F2CVirtualMachine getF2CVirtualMachine(AliyunVmCredential credential, String regionId, String instanceId) {
+        Client client = credential.getClient();
+        return getF2CVirtualMachine(client, regionId, instanceId);
+    }
+
+    /**
+     * 根据 instanceId 获取云主机实例对象
+     *
+     * @param client     客户端
+     * @param regionId   区域id
+     * @param instanceId 实例id
+     * @return 云主机实例对象
+     */
+    public static F2CVirtualMachine getF2CVirtualMachine(Client client, String regionId, String instanceId) {
+        DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance instance = getInstanceById(instanceId, regionId, client);
+        List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> attributes =
+                listInstanceAutoRenewAttribute(client, regionId, List.of(instanceId));
+        return AliyunMappingUtil.toF2CVirtualMachine(instance, attributes);
     }
 
     public static F2CVirtualMachine getSimpleServerByCreateRequest(AliyunVmCreateRequest request) {
@@ -699,9 +734,63 @@ public class AliyunSyncCloudApi {
             Client client = credential.getClientByRegion(listVirtualMachineRequest.getRegionId());
             // 分页查询云主机列表
             List<DescribeInstancesResponseBody.DescribeInstancesResponseBodyInstancesInstance> instance = PageUtil.page(listVirtualMachineRequest, req -> describeInstancesWithOptions(client, req), res -> res.getBody().getInstances().instance, (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstances().instance.size(), req -> req.setPageNumber(req.getPageNumber() + 1));
-            return instance.stream().map(AliyunMappingUtil::toF2CVirtualMachine).map(f2CVirtualMachine -> appendDisk(listVirtualMachineRequest.getCredential(), f2CVirtualMachine)).map(f2CVirtualMachine -> appendInstanceType(listVirtualMachineRequest.getCredential(), f2CVirtualMachine)).toList();
+            List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> autoRenewAttributeList = listInstanceAutoRenewAttribute(credential, listVirtualMachineRequest.getRegionId(), null);
+            return instance.stream().map(ins -> AliyunMappingUtil.toF2CVirtualMachine(ins, autoRenewAttributeList)).map(f2CVirtualMachine -> appendDisk(listVirtualMachineRequest.getCredential(), f2CVirtualMachine)).map(f2CVirtualMachine -> appendInstanceType(listVirtualMachineRequest.getCredential(), f2CVirtualMachine)).toList();
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * 获取ECS实例的自动续费状态实例列表
+     *
+     * @param credential 认证对象
+     * @param regionId   区域对象
+     * @param resourceId 资源id列表 如果为null则查询区域内全部资源的吸顶续费状态
+     * @return ECS实例的自动续费状态列表
+     */
+    public static List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> listInstanceAutoRenewAttribute(AliyunVmCredential credential, String regionId, List<String> resourceId) {
+        Client client = credential.getClient();
+        return listInstanceAutoRenewAttribute(client, regionId, resourceId);
+
+    }
+
+    /**
+     * 获取ECS实例的自动续费状态实例列表
+     *
+     * @param client     客户端
+     * @param regionId   区域对象
+     * @param resourceId 资源id列表 如果为null则查询区域内全部资源的吸顶续费状态
+     * @return ECS实例的自动续费状态列表
+     */
+    public static List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> listInstanceAutoRenewAttribute(Client client, String regionId, List<String> resourceId) {
+        DescribeInstanceAutoRenewAttributeRequest request = new DescribeInstanceAutoRenewAttributeRequest();
+        request.setRegionId(regionId);
+        request.setPageNumber(PageUtil.DefaultCurrentPage.toString());
+        request.setPageSize(PageUtil.DefaultPageSize.toString());
+        request.setInstanceId(CollectionUtils.isEmpty(resourceId) ? null : String.join(",", resourceId));
+        request.setRenewalStatus("AutoRenewal");
+        return PageUtil.page(request,
+                req -> describeInstanceAutoRenewAttribute(client, req),
+                res -> res.getBody().getInstanceRenewAttributes().instanceRenewAttribute,
+                (req, res) -> res.getBody().getPageSize() <= res.getBody().getInstanceRenewAttributes().instanceRenewAttribute.size(),
+                req -> req.setPageNumber((Integer.parseInt(req.getPageNumber()) + 1) + ""));
+
+    }
+
+    /**
+     * 查询一台或多台包年包月ECS实例的自动续费状态
+     *
+     * @param client  客户端
+     * @param request 请求参数
+     * @return ECS实例的自动续费状态列表
+     */
+    public static DescribeInstanceAutoRenewAttributeResponse describeInstanceAutoRenewAttribute(Client client, DescribeInstanceAutoRenewAttributeRequest request) {
+        try {
+            return client.describeInstanceAutoRenewAttribute(request);
+        } catch (Exception e) {
+            SkipPageException.throwSkip(e);
+            throw new Fit2cloudException(1002, "获取续费实例状态失败" + e.getMessage());
+        }
     }
 
     /**
@@ -1819,4 +1908,71 @@ public class AliyunSyncCloudApi {
         }
     }
 
+    /**
+     * 续费
+     *
+     * @param request 续费请求对象
+     * @return 虚拟机详情
+     */
+    @SneakyThrows
+    public static F2CVirtualMachine renewInstance(RenewInstanceRequest request) {
+        Client client = JsonUtil.parseObject(request.getCredential(), AliyunVmCredential.class).getClient();
+        if (StringUtils.isNotEmpty(request.getPeriodNum())) {
+            com.aliyun.ecs20140526.models.RenewInstanceRequest renewInstanceRequest = new com.aliyun.ecs20140526.models.RenewInstanceRequest();
+            renewInstanceRequest.setInstanceId(request.getInstanceUuid());
+            Pattern pattern = Pattern.compile("^\\d+week$");
+            Integer period = Integer.parseInt(request.getPeriodNum().replace("week", ""));
+            String periodUnit = pattern.matcher(request.getPeriodNum()).find() ? "Week" : period >= 12 && period % 12 == 0 ? "Year" : "Month";
+            renewInstanceRequest.setPeriod(period >= 12 ? period / 12 : period);
+            renewInstanceRequest.setPeriodUnit(periodUnit);
+            client.renewInstance(renewInstanceRequest);
+        }
+        List<DescribeInstanceAutoRenewAttributeResponseBody.DescribeInstanceAutoRenewAttributeResponseBodyInstanceRenewAttributesInstanceRenewAttribute> attributes =
+                listInstanceAutoRenewAttribute(client, request.getRegionId(), List.of(request.getInstanceUuid()));
+        boolean autoRenew = AliyunMappingUtil.autoRenew(attributes, request.getInstanceUuid());
+        if (autoRenew != Objects.equals(request.getExpirePolicy(), ExpirePolicyConstants.YES)) {
+            ModifyInstanceAutoRenewAttributeRequest modifyInstanceAutoRenewAttributeRequest = new ModifyInstanceAutoRenewAttributeRequest();
+            modifyInstanceAutoRenewAttributeRequest.setAutoRenew(Objects.equals(request.getExpirePolicy(), ExpirePolicyConstants.YES));
+            modifyInstanceAutoRenewAttributeRequest.setInstanceId(request.getInstanceUuid());
+            modifyInstanceAutoRenewAttributeRequest.setRegionId(request.getRegionId());
+            modifyInstanceAutoRenewAttributeRequest.setPeriodUnit("Week");
+            modifyInstanceAutoRenewAttributeRequest.setDuration(1);
+            client.modifyInstanceAutoRenewAttribute(modifyInstanceAutoRenewAttributeRequest);
+        }
+        return getF2CVirtualMachine(client, request.getRegionId(), request.getInstanceUuid());
+    }
+
+    public static String renewInstanceExpiresTime(AliRenewInstanceExpiresTimeRequest request) {
+        LocalDateTime expiredTime = request.getExpiredTime();
+        if (StringUtils.isEmpty(request.getPeriodNum())) {
+            return expiredTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+        Pattern pattern = Pattern.compile("^\\d+week$");
+        String periodNum = request.getPeriodNum();
+        return (pattern.matcher(request.getPeriodNum()).find() ? expiredTime.plusWeeks(Long.parseLong(periodNum.replace("week", ""))) : expiredTime.plusMonths(Long.parseLong(periodNum))).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+    }
+
+    public static BigDecimal renewInstancePrice(RenewInstanceRequest request) {
+        if (StringUtils.isEmpty(request.getPeriodNum())) {
+            return BigDecimal.ZERO;
+        }
+        Client client = JsonUtil.parseObject(request.getCredential(), AliyunVmCredential.class).getClient();
+        DescribeRenewalPriceRequest req = new DescribeRenewalPriceRequest();
+        Pattern pattern = Pattern.compile("^\\d+week$");
+        Integer period = Integer.parseInt(request.getPeriodNum().replace("week", ""));
+        String periodUnit = pattern.matcher(request.getPeriodNum()).find() ? "Week" : period >= 12 && period % 12 == 0 ? "Year" : "Month";
+
+        req.setPeriod(period >= 12 ? period / 12 : period);
+        req.setPriceUnit(periodUnit);
+        req.setResourceId(request.getInstanceUuid());
+        req.setRegionId(request.getRegionId());
+        try {
+            DescribeRenewalPriceResponse describeRenewalPriceResponse = client.describeRenewalPrice(req);
+            Float tradePrice = describeRenewalPriceResponse.getBody().getPriceInfo().price.tradePrice;
+            return new BigDecimal(tradePrice.toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

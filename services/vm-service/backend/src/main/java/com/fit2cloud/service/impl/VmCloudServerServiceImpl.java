@@ -29,10 +29,7 @@ import com.fit2cloud.common.log.utils.LogUtil;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.*;
 import com.fit2cloud.constants.ErrorCodeConstants;
-import com.fit2cloud.controller.request.CreateJobRecordRequest;
-import com.fit2cloud.controller.request.ExecProviderMethodRequest;
-import com.fit2cloud.controller.request.GrantRequest;
-import com.fit2cloud.controller.request.ResourceState;
+import com.fit2cloud.controller.request.*;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
 import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
 import com.fit2cloud.controller.request.vm.CreateServerRequest;
@@ -62,8 +59,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -162,6 +161,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         return vmCloudServerMapper.pageVmCloudServer(page, wrapper);
     }
 
+
     @Override
     public List<VmCloudServerDTO> listVmCloudServer(PageVmCloudServerRequest request) {
         setCurrentInfos(request);
@@ -171,6 +171,11 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                 .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.WaitCreating.name())
                 .ne(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Failed.name());
         return vmCloudServerMapper.pageVmCloudServer(wrapper);
+    }
+
+    @Override
+    public void renewInstance(List<String> cloudAccountIdList) {
+        baseMapper.renewInstance(cloudAccountIdList);
     }
 
     @Override
@@ -213,7 +218,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
         wrapper.in(CollectionUtils.isNotEmpty(request.getAccountIds()), ColumnNameUtil.getColumnName(VmCloudServer::getAccountId, true), request.getAccountIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getInstanceChargeType()), ColumnNameUtil.getColumnName(VmCloudServer::getInstanceChargeType, true), request.getInstanceChargeType());
         wrapper.in(CollectionUtils.isNotEmpty(request.getVmToolsStatus()), ColumnNameUtil.getColumnName(VmCloudServer::getVmToolsStatus, true), request.getVmToolsStatus());
-
+        wrapper.eq(Objects.nonNull(request.getAutoRenew()), ColumnNameUtil.getColumnName(VmCloudServer::getAutoRenew, true), request.getAutoRenew());
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getSourceIds());
         wrapper.in(CollectionUtils.isNotEmpty(request.getWorkspaceIds()), ColumnNameUtil.getColumnName(VmCloudServer::getSourceId, true), request.getWorkspaceIds());
         if (CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
@@ -391,6 +396,62 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
             return null;
         }
         return list.get(0);
+    }
+
+    @Override
+    public FormObject getRenewForm(String platform) {
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, platform);
+        try {
+            return iCloudProvider.getRenewInstanceForm();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get config update form!" + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public BigDecimal getRenewPrice(RenewInstanceRequest request) {
+        VmCloudServerDTO vmCloudServerDTO = getById(request.getUuid());
+        CloudAccount cloudAccount = cloudAccountService.getById(request.getAccountId());
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, cloudAccount.getPlatform());
+        request.put("credential", cloudAccount.getCredential());
+        request.put("cpu", vmCloudServerDTO.getCpu());
+        request.put("mem", vmCloudServerDTO.getMemory());
+        request.put("cloudAccountId", cloudAccount.getId());
+        return iCloudProvider.renewInstancePrice(JsonUtil.toJSONString(request));
+    }
+
+    @Override
+    public Boolean renewInstance(RenewInstanceRequest request) {
+        QueryWrapper<VmCloudServer> wrapper = new QueryWrapper<VmCloudServer>()
+                .eq(ColumnNameUtil.getColumnName(VmCloudServer::getId, true), request.getUuid())
+                .ne(ColumnNameUtil.getColumnName(VmCloudServer::getInstanceStatus, true), F2CInstanceStatus.Deleted.name());
+        VmCloudServer vmCloudServer = baseMapper.selectOne(wrapper);
+        Optional.ofNullable(vmCloudServer).orElseThrow(() -> new Fit2cloudException(ErrorCodeConstants.VM_NOT_EXIST.getCode(), ErrorCodeConstants.VM_NOT_EXIST.getMessage()));
+        CloudAccount cloudAccount = cloudAccountService.getById(vmCloudServer.getAccountId());
+        operate(request.getUuid(), OperatedTypeEnum.RENEW_INSTANCE.getDescription(), (p, req) -> {
+                    request.put("credential", cloudAccount.getCredential());
+                    request.put("instanceUuid", vmCloudServer.getInstanceUuid());
+                    request.put("region", vmCloudServer.getRegion());
+                    request.put("expiredTime", (Objects.isNull(vmCloudServer.getExpiredTime()) ? LocalDateTime.now() : vmCloudServer.getExpiredTime()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                    F2CVirtualMachine f2CVirtualMachine = p.renewInstance(JsonUtil.toJSONString(request));
+                    VmCloudServer updateVmCloudServer = new VmCloudServer();
+                    updateVmCloudServer.setExpiredTime(CommonUtil.getLocalDateTime(new Date(f2CVirtualMachine.getExpiredTime())));
+                    updateVmCloudServer.setAutoRenew(f2CVirtualMachine.isAutoRenew());
+                    updateVmCloudServer.setId(vmCloudServer.getId());
+                    updateById(updateVmCloudServer);
+                    return true;
+                },
+                vmCloudServer.getInstanceStatus(), vmCloudServer.getInstanceStatus(), (c) -> {
+                },
+                jobRecordCommonService::initJobRecord, jobRecordCommonService::modifyJobRecord, JobTypeConstants.CLOUD_RENEW_INSTANCE_JOB);
+        return true;
+    }
+
+    @Override
+    public String getRenewExpiresTime(RenewInstanceRequest request) {
+        ICloudProvider iCloudProvider = PluginsContextHolder.getPlatformExtension(ICloudProvider.class, request.getPlatform());
+        return iCloudProvider.renewInstanceExpiresTime(JsonUtil.toJSONString(request));
+
     }
 
     @Override
@@ -843,8 +904,8 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
      */
     private void updateCloudServer(VmCloudServer vmCloudServer, F2CVirtualMachine f2CVirtualMachine) {
         VmCloudServer vmCloudServerUpdate = SyncProviderServiceImpl.toVmCloudServer(f2CVirtualMachine, vmCloudServer.getAccountId(), DateUtil.getSyncTime());
-        BeanUtils.copyProperties(vmCloudServerUpdate, vmCloudServer, new String[]{"id", "ipArray"});
-        baseMapper.updateById(vmCloudServer);
+        BeanUtils.copyProperties(vmCloudServerUpdate, vmCloudServer, "id", "ipArray");
+        updateById(vmCloudServer);
     }
 
     @Override

@@ -70,12 +70,12 @@
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-iam</artifactId>
-            <version>3.1.9</version>
+            <version>3.1.53</version>
         </dependency>
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-bss</artifactId>
-            <version>3.1.9</version>
+            <version>3.1.53</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.huaweicloud/esdk-obs-java -->
         <dependency>
@@ -86,7 +86,7 @@
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-ces</artifactId>
-            <version>3.1.6</version>
+            <version>3.1.53</version>
         </dependency>
         <!--    华为云 end  -->
         <!--     腾讯云 start   -->

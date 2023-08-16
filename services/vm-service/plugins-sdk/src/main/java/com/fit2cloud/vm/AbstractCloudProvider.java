@@ -4,18 +4,29 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fit2cloud.common.exception.Fit2cloudException;
+import com.fit2cloud.common.form.util.FormUtil;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.platform.credential.Credential;
 import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
+import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.common.utils.JsonUtil;
+import com.fit2cloud.vm.constants.ExpirePolicyConstants;
 import com.fit2cloud.vm.entity.*;
+import com.fit2cloud.vm.entity.request.RenewInstanceExpiresTimeRequest;
+import com.fit2cloud.vm.entity.request.RenewInstancePriceRequest;
+import com.fit2cloud.vm.entity.request.RenewInstanceRequest;
 import com.fit2cloud.vm.entity.result.CheckCreateServerResult;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @Author:张少虎
@@ -62,6 +73,44 @@ public abstract class AbstractCloudProvider<C extends Credential> implements ICl
             return getCredential(credential.asText());
         }
         throw new Fit2cloudException(1001, "不存在认证对象");
+    }
+
+    @Override
+    public String renewInstanceExpiresTime(String req) {
+        RenewInstanceExpiresTimeRequest request = JsonUtil.parseObject(req, RenewInstanceExpiresTimeRequest.class);
+        LocalDateTime expiredTime = Objects.isNull(request.getExpiredTime()) ? LocalDateTime.now() : request.getExpiredTime();
+        if (StringUtils.isEmpty(request.getPeriodNum())) {
+            return expiredTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+        String periodNum = request.getPeriodNum();
+        return expiredTime.plusMonths(Long.parseLong(periodNum)).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
+    @Override
+    public BigDecimal renewInstancePrice(String req) {
+        RenewInstancePriceRequest renewInstancePriceRequest = JsonUtil.parseObject(req, RenewInstancePriceRequest.class);
+        PrivateLocalCloudClient client = new PrivateLocalCloudClient("admin");
+        return client.renewInstancePrice(renewInstancePriceRequest);
+
+    }
+
+    @Override
+    public FormObject getRenewInstanceForm() {
+        return FormUtil.toForm(RenewInstanceRequest.class);
+    }
+
+    @Override
+    public F2CVirtualMachine renewInstance(String req) {
+        RenewInstanceRequest renewInstanceRequest = JsonUtil.parseObject(req, RenewInstanceRequest.class);
+        F2CVirtualMachine f2CVirtualMachine = new F2CVirtualMachine();
+        f2CVirtualMachine.setInstanceId(renewInstanceRequest.getInstanceUuid());
+        f2CVirtualMachine.setRegion(renewInstanceRequest.getRegionId());
+        long utcTime = CommonUtil.getUTCTime(renewInstanceExpiresTime(req), "yyyy-MM-dd HH:mm:ss");
+        f2CVirtualMachine.setExpiredTime(utcTime);
+        if (Objects.nonNull(renewInstanceRequest.getExpirePolicy())) {
+            f2CVirtualMachine.setAutoRenew(Objects.equals(renewInstanceRequest.getExpirePolicy(), ExpirePolicyConstants.YES));
+        }
+        return f2CVirtualMachine;
     }
 
     @Override

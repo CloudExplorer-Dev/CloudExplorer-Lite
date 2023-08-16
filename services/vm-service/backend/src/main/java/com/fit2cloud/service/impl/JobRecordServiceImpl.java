@@ -85,7 +85,8 @@ public class JobRecordServiceImpl implements IJobRecordService {
                         JobTypeConstants.CLOUD_DISK_DELETE_JOB,
                         JobTypeConstants.CLOUD_DISK_ATTACH_JOB,
                         JobTypeConstants.CLOUD_DISK_DETACH_JOB,
-                        JobTypeConstants.CLOUD_DISK_ENLARGE_JOB
+                        JobTypeConstants.CLOUD_DISK_ENLARGE_JOB,
+                        JobTypeConstants.CLOUD_RENEW_INSTANCE_JOB
                 ));
         wrapper.in(CollectionUtils.isNotEmpty(request.getSourceIds()), "resource.source_id", request.getSourceIds());
         wrapper.like(StringUtils.isNotEmpty(request.getResourceName()), "resource.resource_name", request.getResourceName());

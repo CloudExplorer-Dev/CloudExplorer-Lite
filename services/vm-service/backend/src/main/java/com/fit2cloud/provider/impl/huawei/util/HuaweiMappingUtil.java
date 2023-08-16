@@ -7,6 +7,12 @@ import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSecurityGroups;
 import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiSubnet;
 import com.fit2cloud.provider.impl.huawei.entity.F2CHuaweiVpc;
 import com.fit2cloud.provider.impl.huawei.entity.InstanceSpecType;
+import com.fit2cloud.vm.constants.DeleteWithInstance;
+import com.fit2cloud.vm.constants.F2CChargeType;
+import com.fit2cloud.vm.entity.F2CDisk;
+import com.fit2cloud.vm.entity.F2CImage;
+import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.huaweicloud.sdk.bss.v2.model.OrderInstanceV2;
 import com.huaweicloud.sdk.ces.v1.model.DatapointForBatchMetric;
 import com.huaweicloud.sdk.ecs.v2.model.*;
 import com.huaweicloud.sdk.evs.v2.model.VolumeDetail;
@@ -16,11 +22,6 @@ import com.huaweicloud.sdk.vpc.v2.model.SecurityGroup;
 import com.huaweicloud.sdk.vpc.v2.model.Subnet;
 import com.huaweicloud.sdk.vpc.v2.model.Vpc;
 import org.apache.commons.lang3.StringUtils;
-import com.fit2cloud.vm.constants.DeleteWithInstance;
-import com.fit2cloud.vm.constants.F2CChargeType;
-import com.fit2cloud.vm.entity.F2CDisk;
-import com.fit2cloud.vm.entity.F2CImage;
-import com.fit2cloud.vm.entity.F2CVirtualMachine;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -36,10 +37,10 @@ import java.util.stream.Collectors;
 public class HuaweiMappingUtil {
 
     public static F2CVirtualMachine toF2CVirtualMachine(ServerDetail server) {
-        return toF2CVirtualMachine(server, null);
+        return toF2CVirtualMachine(server, null, List.of());
     }
 
-    public static F2CVirtualMachine toF2CVirtualMachine(ServerDetail server, List<Port> ports) {
+    public static F2CVirtualMachine toF2CVirtualMachine(ServerDetail server, List<Port> ports, List<OrderInstanceV2> orderInstanceV2s) {
         F2CVirtualMachine f2CVirtualMachine = new F2CVirtualMachine();
         if (StringUtils.isNotEmpty(server.getName())) {
             f2CVirtualMachine.setName(server.getName());
@@ -85,12 +86,43 @@ public class HuaweiMappingUtil {
         }
         // 付费方式
         f2CVirtualMachine.setInstanceChargeType(instanceChargeType);
+        // 是否自动续费
+        f2CVirtualMachine.setAutoRenew(getAutoRenew(server.getId(), orderInstanceV2s));
+        // 设置到期时间
+        f2CVirtualMachine.setExpiredTime(getExpiredTime(server.getId(), orderInstanceV2s));
         if (!CollectionUtils.isEmpty(server.getSecurityGroups())) {
             // 安全组
             List<String> sgIds = server.getSecurityGroups().stream().map(ServerSecurityGroup::getId).collect(Collectors.toList());
             f2CVirtualMachine.setSecurityGroupIds(sgIds);
         }
         return f2CVirtualMachine;
+    }
+
+    /**
+     * 获取是否自动续期
+     *
+     * @param resourceId       资源id
+     * @param orderInstanceV2s 实例订单列表
+     * @return 是否自动续期
+     */
+    public static boolean getAutoRenew(String resourceId, List<OrderInstanceV2> orderInstanceV2s) {
+        return orderInstanceV2s
+                .stream()
+                .filter(item -> StringUtils.equals(resourceId, item.getResourceId()))
+                .findFirst()
+                .map(item -> Objects.equals(item.getExpirePolicy(), 3))
+                .orElse(false);
+
+    }
+
+    public static Long getExpiredTime(String resourceId, List<OrderInstanceV2> orderInstanceV2s) {
+        return orderInstanceV2s
+                .stream()
+                .filter(item -> StringUtils.equals(resourceId, item.getResourceId()))
+                .findFirst()
+                .map(item -> CommonUtil.getUTCTime(item.getExpireTime(), "yyyy-MM-dd'T'HH:mm:ss'Z'"))
+                .orElse(null);
+
     }
 
     /**

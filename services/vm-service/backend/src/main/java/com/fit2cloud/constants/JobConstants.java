@@ -10,11 +10,8 @@ import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.quartz.CloudAccountSyncJob;
 import com.fit2cloud.vm.ICloudProvider;
 import com.fit2cloud.vm.constants.ActionInfoConstants;
-import org.aopalliance.intercept.MethodInterceptor;
 import org.quartz.DateBuilder;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -141,7 +138,11 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         JobSetting recorderInstanceChange = new JobSetting(CloudAccountSyncJob.recorderInstanceChange.class, "RECORDER_INSTANCE_CHANGE", com.fit2cloud.common.constants.JobConstants.DefaultGroup.SYSTEM_GROUP.name(),
                 "记录实例变更",
                 1, DateBuilder.IntervalUnit.MINUTE, p -> true, p -> false, p -> false);
+        // 续期
+        JobSetting renewInstance = new JobSetting(CloudAccountSyncJob.RenewInstance.class,
+                "RENEW_INSTANCE", com.fit2cloud.common.constants.JobConstants.DefaultGroup.SYSTEM_GROUP.name(),
+                "续期", 1, DateBuilder.IntervalUnit.HOUR, p -> false, p -> false, p -> false);
 
-        return List.of(syncVirtual, syncDisk, syncImage, syncHost, syncDatastore, syncMetricMonitor, recorderInstanceState, recorderInstanceChange);
+        return List.of(syncVirtual, syncDisk, syncImage, syncHost, syncDatastore, syncMetricMonitor, recorderInstanceState, recorderInstanceChange, renewInstance);
     }
 }

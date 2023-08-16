@@ -14,9 +14,11 @@ import com.fit2cloud.common.scheduler.handler.AsyncJob;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.service.ISyncProviderService;
+import com.fit2cloud.service.impl.VmCloudServerServiceImpl;
 import com.fit2cloud.vm.ICloudProvider;
 import com.fit2cloud.vm.constants.ActionInfoConstants;
 import jdk.jfr.Name;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.Job;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +43,30 @@ public class CloudAccountSyncJob {
             billSettings
                     .parallelStream()
                     .forEach(billSetting -> SimpleInstanceStateRecorder.of(billSetting).runRecordState());
+        }
+    }
+
+    @Name("自动续费")
+    public static class RenewInstance extends AsyncJob implements Job {
+
+        @Override
+        protected void run(Map<String, Object> map) {
+            LogUtil.info("开始自动续费任务");
+            VmCloudServerServiceImpl vmCloudServerService = SpringUtil.getBean(VmCloudServerServiceImpl.class);
+            IBaseCloudAccountService cloudAccountService = SpringUtil.getBean(IBaseCloudAccountService.class);
+            List<CloudAccount> cloudAccountList = cloudAccountService.list();
+            List<ICloudProvider> extensions = PluginsContextHolder.getExtensions(ICloudProvider.class);
+            // 获取私有云账号
+            List<CloudAccount> cloudAccounts = cloudAccountList.stream()
+                    .filter(cloudAccount -> extensions
+                            .stream()
+                            .anyMatch(e ->
+                                    StringUtils.equals(e.getCloudAccountMeta().platform, cloudAccount.getPlatform())
+                                            && !e.getCloudAccountMeta().isPublicCloud()))
+                    .toList();
+            // 续期私有云
+            vmCloudServerService.renewInstance(cloudAccounts.stream().map(CloudAccount::getId).distinct().toList());
+            LogUtil.info("结束自动续费任务");
         }
     }
 

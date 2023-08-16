@@ -24,7 +24,7 @@ public class HuaweiBaseCloudApi {
             BssClient bssClient = credential.getBssClient(request.getRegionId() != null ? request.getRegionId() : "cn-north-1");
             ShowCustomerAccountBalancesResponse response = bssClient.showCustomerAccountBalances(request);
             AccountBalanceV3 customerAccount = response.getAccountBalances().stream().filter(accountBalance -> 1 == accountBalance.getAccountType()).findFirst().get();
-            return new F2CBalance(customerAccount.getAmount(), customerAccount.getCurrency(), response.getDebtAmount());
+            return new F2CBalance(customerAccount.getAmount().doubleValue(), customerAccount.getCurrency(), response.getDebtAmount().doubleValue());
         }
         return new F2CBalance();
     }

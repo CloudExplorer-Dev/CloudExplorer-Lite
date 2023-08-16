@@ -50,6 +50,7 @@ interface VmCloudServerVO {
   instanceChargeType?: string;
   applyUser?: string;
   applyUserName?: string;
+  autoRenew?: boolean;
 }
 
 /**

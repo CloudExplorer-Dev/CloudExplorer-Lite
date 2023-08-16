@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.fit2cloud.base.entity.VmCloudServer;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.controller.request.GrantRequest;
+import com.fit2cloud.controller.request.RenewInstanceRequest;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
 import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
 import com.fit2cloud.controller.request.vm.CreateServerRequest;
@@ -12,6 +13,7 @@ import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.response.JobRecordResourceResponse;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +30,8 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
     IPage<VmCloudServerDTO> pageVmCloudServer(PageVmCloudServerRequest request);
 
     List<VmCloudServerDTO> listVmCloudServer(PageVmCloudServerRequest request);
+
+    void renewInstance(List<String> cloudAccountIdList);
 
     boolean powerOff(String vmId);
 
@@ -68,4 +72,12 @@ public interface IVmCloudServerService extends IService<VmCloudServer> {
     List<Map<String, Object>> countByStatus();
 
     VmCloudServerDTO getSingleById(String vmId);
+
+    FormObject getRenewForm(String platform);
+
+    BigDecimal getRenewPrice(RenewInstanceRequest request);
+
+    Boolean renewInstance(RenewInstanceRequest request);
+
+    String getRenewExpiresTime(RenewInstanceRequest request);
 }

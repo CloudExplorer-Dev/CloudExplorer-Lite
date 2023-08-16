@@ -28,6 +28,7 @@ import org.openstack4j.model.network.Network;
 import org.openstack4j.model.network.SecurityGroup;
 import org.pf4j.Extension;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Extension
@@ -37,6 +38,13 @@ public class OpenStackCloudProvider extends AbstractCloudProvider<OpenStackCrede
     private static final Info info = new Info("vm-service", ActionInfoConstants.all(
             ActionInfoConstants.SYNC_DATA_STORE_MACHINE_METRIC_MONITOR
     ), Map.of());
+
+    @Override
+    public BigDecimal renewInstancePrice(String req) {
+
+        return super.renewInstancePrice(req);
+    }
+
 
     @Override
     public Class<? extends ICreateServerRequest> getCreateServerRequestClass() {

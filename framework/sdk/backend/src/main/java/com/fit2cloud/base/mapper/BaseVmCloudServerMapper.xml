@@ -2,4 +2,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fit2cloud.base.mapper.BaseVmCloudServerMapper">
 
+    <update id="renewInstance">
+        UPDATE vm_cloud_server
+        SET expired_time = date_add( `expired_time`, INTERVAL 1 MONTH )
+        WHERE
+        TIMESTAMPDIFF( HOUR, NOW(), expired_time )&lt;=0
+        AND instance_charge_type='PrePaid'
+        AND auto_renew=true
+        <if test="cloudAccountIdList!=null and cloudAccountIdList.size >0">
+            AND account_id IN
+            <foreach collection="cloudAccountIdList" index="index" item="cloudAccountId" separator="," close=")"
+                     open="(">
+                #{cloudAccountId}
+            </foreach>
+        </if>
+        ;
+    </update>
 </mapper>

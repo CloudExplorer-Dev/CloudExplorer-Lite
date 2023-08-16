@@ -7,6 +7,7 @@ import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.GrantRequest;
+import com.fit2cloud.controller.request.RenewInstanceRequest;
 import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
 import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
 import com.fit2cloud.controller.request.vm.CreateServerRequest;
@@ -22,6 +23,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -208,5 +211,34 @@ public class VmCloudServerController {
             resourceId = "#grantServerRequest.ids")
     public ResultHolder<Boolean> grant(@RequestBody GrantRequest grantServerRequest) {
         return ResultHolder.success(iVmCloudServerService.grant(grantServerRequest));
+    }
+
+    @Operation(summary = "根据云平台查询续费表单")
+    @GetMapping("/renew_form/{platform}")
+    public ResultHolder<FormObject> getRenewForm(@PathVariable("platform") String platform) {
+        return ResultHolder.success(iVmCloudServerService.getRenewForm(platform));
+    }
+
+    @Operation(summary = "获取到期时间")
+    @PostMapping("/renew_expires_time")
+    public ResultHolder<String> getRenewExpiresTime(@RequestBody RenewInstanceRequest request) {
+        String expiresTime = iVmCloudServerService.getRenewExpiresTime(request);
+        return ResultHolder.success(expiresTime);
+    }
+
+    @Operation(summary = "续费询价")
+    @PostMapping("/renew_price")
+    public ResultHolder<BigDecimal> getRenewPrice(@RequestBody RenewInstanceRequest request) {
+        BigDecimal price = iVmCloudServerService.getRenewPrice(request);
+        return ResultHolder.success(price);
+    }
+
+    @Operation(summary = "续费")
+    @PostMapping("/renew_instance")
+    public ResultHolder<Boolean> renewInstance(@RequestBody ArrayList<RenewInstanceRequest> list) {
+        for (RenewInstanceRequest renewInstanceRequest : list) {
+            iVmCloudServerService.renewInstance(renewInstanceRequest);
+        }
+        return ResultHolder.success(true);
     }
 }

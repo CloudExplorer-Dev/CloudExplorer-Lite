@@ -31,6 +31,7 @@ public enum OperatedTypeEnum {
     ATTACH_DISK("ATTACH_DISK", "挂载磁盘"),
     DETACH_DISK("DETACH_DISK", "卸载磁盘"),
     DELETE_DISK("DELETE_DISK", "删除磁盘"),
+    RENEW_INSTANCE("RENEW_INSTANCE", "续费"),
     //    RECYCLE_DISK("RECYCLE_DISK", "磁盘放入回收站"),
 //    BATCH_ATTACH_DISK("BATCH_ATTACH_DISK", "批量挂载磁盘"),
 //    BATCH_DETACH_DISK("BATCH_DETACH_DISK", "批量卸载磁盘"),

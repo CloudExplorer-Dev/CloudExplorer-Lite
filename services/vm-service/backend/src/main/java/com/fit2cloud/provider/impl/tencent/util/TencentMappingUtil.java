@@ -5,11 +5,6 @@ import com.fit2cloud.common.provider.entity.F2CPerfMetricMonitorData;
 import com.fit2cloud.common.provider.util.CommonUtil;
 import com.fit2cloud.provider.impl.tencent.constants.TencentChargeType;
 import com.fit2cloud.provider.impl.tencent.constants.TencentPerfMetricConstants;
-import com.tencentcloudapi.cbs.v20170312.models.Disk;
-import com.tencentcloudapi.cvm.v20170312.models.DataDisk;
-import com.tencentcloudapi.cvm.v20170312.models.Image;
-import com.tencentcloudapi.cvm.v20170312.models.Instance;
-import org.apache.commons.lang3.StringUtils;
 import com.fit2cloud.vm.constants.DeleteWithInstance;
 import com.fit2cloud.vm.constants.F2CChargeType;
 import com.fit2cloud.vm.constants.F2CDiskStatus;
@@ -17,6 +12,11 @@ import com.fit2cloud.vm.constants.F2CInstanceStatus;
 import com.fit2cloud.vm.entity.F2CDisk;
 import com.fit2cloud.vm.entity.F2CImage;
 import com.fit2cloud.vm.entity.F2CVirtualMachine;
+import com.tencentcloudapi.cbs.v20170312.models.Disk;
+import com.tencentcloudapi.cvm.v20170312.models.DataDisk;
+import com.tencentcloudapi.cvm.v20170312.models.Image;
+import com.tencentcloudapi.cvm.v20170312.models.Instance;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -84,6 +84,7 @@ public class TencentMappingUtil {
                 break;
             default:
         }
+        f2CInstance.setAutoRenew(StringUtils.equals(instance.getRenewFlag(), "NOTIFY_AND_AUTO_RENEW"));
         f2CInstance.setInstanceChargeType(instanceChargeType);
         if (F2CChargeType.PRE_PAID.equalsIgnoreCase(f2CInstance.getInstanceChargeType()) && StringUtils.isNotEmpty(instance.getExpiredTime())) {
             long utcTime = CommonUtil.getUTCTime(instance.getExpiredTime(), "yyyy-MM-dd'T'HH:mm:ss'Z'");

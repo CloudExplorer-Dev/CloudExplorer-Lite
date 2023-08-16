@@ -19,7 +19,7 @@ import com.fit2cloud.provider.impl.openstack.entity.VolumeType;
 import com.fit2cloud.provider.impl.openstack.entity.request.*;
 import com.fit2cloud.provider.impl.openstack.util.OpenStackPerfMetricConstants;
 import com.fit2cloud.provider.impl.openstack.util.OpenStackUtils;
-import com.fit2cloud.utils.ChargingUtil;
+import com.fit2cloud.common.utils.ChargingUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

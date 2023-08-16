@@ -82,7 +82,11 @@ public enum JobTypeConstants {
     /**
      * 扩容磁盘
      */
-    CLOUD_DISK_ENLARGE_JOB(305);
+    CLOUD_DISK_ENLARGE_JOB(305),
+    /**
+     * 续期
+     */
+    CLOUD_RENEW_INSTANCE_JOB(306);
 
     @EnumValue
     private final int code;
