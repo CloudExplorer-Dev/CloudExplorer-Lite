@@ -1,9 +1,12 @@
 <template>
-  <div v-loading="loading" class="price">{{ price }}</div>
+  <div v-loading="loading" class="price">
+    {{ decimalFormat.format(price, 2) }}
+  </div>
 </template>
 <script setup lang="ts">
 import type { VmCloudServerVO } from "@/api/vm_cloud_server/type";
 import { watch, computed, ref } from "vue";
+import decimalFormat from "@commons/utils/decimalFormat";
 import VmCloudServerApi from "@/api/vm_cloud_server";
 const props = defineProps<{
   modelValue: number;

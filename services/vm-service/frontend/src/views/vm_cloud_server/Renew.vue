@@ -170,7 +170,8 @@
       </base-container>
       <template #footer>
         <span class="total-price"
-          ><span class="title">费用:</span>{{ totalPrice }}</span
+          ><span class="title">费用:</span
+          >{{ decimalFormat.format(totalPrice, 2) }}</span
         >
         <el-button @click="close()">{{ $t("commons.btn.cancel") }} </el-button>
         <el-button type="primary" @click="renew"> 续费 </el-button>
@@ -190,6 +191,7 @@ import RenewPrice from "@/views/vm_cloud_server/RenewPrice.vue";
 import RenewExpiresTime from "@/views/vm_cloud_server/RenewExpiresTime.vue";
 import _ from "lodash";
 import type { SimpleMap } from "@commons/api/base/type";
+import decimalFormat from "@commons/utils/decimalFormat";
 const drawer = ref<boolean>(false);
 const loading = ref<boolean>(false);
 const tableData = ref<Array<VmCloudServerVO>>([]);
