@@ -151,7 +151,7 @@ public class MappingUtil {
     }
 
 
-    public static F2CDisk toF2CDisk(DiskStatusInfo diskStatusInfo, Disk disk, String node) {
+    public static F2CDisk toF2CDisk(DiskStatusInfo diskStatusInfo, Disk disk, String node, Cluster cluster) {
         F2CDisk f2CDisk = new F2CDisk();
         String diskId = toInstanceId(disk.getVolid(), diskStatusInfo.getVmGenId());
         String instanceId = toVmId(disk.getVmId().toString(), diskStatusInfo.getVmGenId());
@@ -170,7 +170,7 @@ public class MappingUtil {
         f2CDisk.setRegion(node);
         f2CDisk.setDiskType(disk.getFormat());
         f2CDisk.setDevice(diskStatusInfo.getDevice());
-        f2CDisk.setZone(node);
+        f2CDisk.setZone(Objects.nonNull(cluster) ? cluster.getName() : null);
         return f2CDisk;
     }
 

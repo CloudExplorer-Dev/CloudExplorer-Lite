@@ -38,6 +38,7 @@ import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Service;
@@ -123,9 +124,9 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
                 .set(VmCloudServer::getInstanceStatus, F2CInstanceStatus.Deleted.name());
         //todo 处理创建中的同步？
         saveBatchOrUpdate(vmCloudServerService, vmCloudServers, vmCloudServer -> new LambdaQueryWrapper<VmCloudServer>()
-                        .eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId())
-                        .eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid())
-                /*.eq(VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())*/, updateWrapper);
+                .eq(VmCloudServer::getAccountId, vmCloudServer.getAccountId())
+                .eq(VmCloudServer::getInstanceUuid, vmCloudServer.getInstanceUuid())
+                .eq(StringUtils.isNotEmpty(vmCloudServer.getRegion()), VmCloudServer::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()), updateWrapper);
         // 初始云主机状态时间
         try {
             vmCloudServerStatusTimingService.batchInsertVmCloudServerStatusEvent(saveBatchOrUpdateParams.getCloudAccountId(), saveBatchOrUpdateParams.getRegion().getRegionId(), saveBatchOrUpdateParams.getSyncTime());
@@ -169,7 +170,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         saveBatchOrUpdate(vmCloudDiskService, vmCloudDisks, vmCloudDisk -> new LambdaQueryWrapper<VmCloudDisk>()
                         .eq(VmCloudDisk::getAccountId, vmCloudDisk.getAccountId())
                         .eq(VmCloudDisk::getDiskId, vmCloudDisk.getDiskId())
-                /*.eq(VmCloudDisk::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())*/,
+                        .eq(StringUtils.isNotEmpty(vmCloudDisk.getRegion()), VmCloudDisk::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId()),
                 updateWrapper);
     }
 
@@ -188,7 +189,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         saveBatchOrUpdate(vmCloudHostService, vmCloudHosts, vmCloudHost -> new LambdaQueryWrapper<VmCloudHost>()
                         .eq(VmCloudHost::getAccountId, vmCloudHost.getAccountId())
                         .eq(VmCloudHost::getHostId, vmCloudHost.getHostId())
-                /*.eq(VmCloudHost::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())*/,
+                        .eq(StringUtils.isNotEmpty(vmCloudHost.getRegion()), VmCloudHost::getRegion, vmCloudHost.getRegion()),
                 updateWrapper);
     }
 
@@ -207,7 +208,7 @@ public class SyncProviderServiceImpl extends BaseSyncService implements ISyncPro
         saveBatchOrUpdate(vmCloudDatastoreService, vmCloudDatastores, vmCloudDatastore -> new LambdaQueryWrapper<VmCloudDatastore>()
                         .eq(VmCloudDatastore::getAccountId, vmCloudDatastore.getAccountId())
                         .eq(VmCloudDatastore::getDatastoreId, vmCloudDatastore.getDatastoreId())
-                /*.eq(VmCloudDatastore::getRegion, saveBatchOrUpdateParams.getRegion().getRegionId())*/,
+                        .eq(StringUtils.isNotEmpty(vmCloudDatastore.getRegion()), VmCloudDatastore::getRegion, vmCloudDatastore.getRegion()),
                 updateWrapper);
     }
 

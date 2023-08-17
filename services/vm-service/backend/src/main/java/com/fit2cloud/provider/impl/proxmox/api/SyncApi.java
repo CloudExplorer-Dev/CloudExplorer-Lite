@@ -506,6 +506,7 @@ public class SyncApi {
         PveClient client = credential.getClient();
         List<Disk> allDisk = listDisk(request);
         List<Qemu> qemuList = listQemu(request);
+        Cluster cluster = getCluster(client);
         List<DiskStatusInfo> mountDiskVolIdList = qemuList.stream().map(qemu -> {
             Config qemuConfig = getQemuConfig(client, request.getRegionId(), qemu.getVmid() + "");
             List<DiskStatusInfo> result = new ArrayList<>();
@@ -518,7 +519,7 @@ public class SyncApi {
         return mountDiskVolIdList.stream().map(diskStatusInfo -> allDisk.stream()
                         .filter(disk -> StringUtil.equals(diskStatusInfo.getVolId(), disk.getVolid()))
                         .findFirst()
-                        .map(disk -> MappingUtil.ofError(() -> MappingUtil.toF2CDisk(diskStatusInfo, disk, request.getRegionId()), null))
+                        .map(disk -> MappingUtil.ofError(() -> MappingUtil.toF2CDisk(diskStatusInfo, disk, request.getRegionId(), cluster), null))
                         .orElse(null))
                 .filter(Objects::nonNull).toList();
     }
@@ -535,10 +536,11 @@ public class SyncApi {
     public static F2CDisk getF2CDisk(PveClient client, String node, String vmId, String configKey) {
         Config qemuConfig = getQemuConfig(client, node, vmId);
         Qemu qemu = getQemuById(client, node, vmId + "");
+        Cluster cluster = getCluster(client);
         com.fit2cloud.common.provider.impl.proxmox.client.entity.config.Disk disk = qemuConfig.getDisks().stream().filter(d -> StringUtils.equals(configKey, d.getKey())).findFirst().orElseThrow(() -> new Fit2cloudException(404, "未找到磁盘"));
         Disk d = getDisk(client, node, disk.getVolId());
         DiskStatusInfo diskStatusInfo = new DiskStatusInfo(disk.getVolId(), disk.isBoot(), true, disk.getDevice(), qemu, Objects.isNull(qemuConfig.getMeta()) ? "" : qemuConfig.getVmGenId());
-        return MappingUtil.toF2CDisk(diskStatusInfo, d, node);
+        return MappingUtil.toF2CDisk(diskStatusInfo, d, node, cluster);
     }
 
 
@@ -561,7 +563,7 @@ public class SyncApi {
      * @return 存储器列表
      */
     public static List<DataStore> listDataStore(PveClient client, String node) {
-        Result index = client.getNodes().get(node).getStorage().index(Map.of("format", 1, "content", "images"));
+        Result index = client.getNodes().get(node).getStorage().index(Map.of("format", 1, "content", "images", "enabled", 1, "target", node));
         if (index.getStatusCode() == 200) {
             return JsonUtil.parseArray(index.getResponse().getJSONArray("data").toString(), DataStore.class).stream().filter(dataStore -> dataStore.getContent().contains("images")).toList();
         }
@@ -603,6 +605,7 @@ public class SyncApi {
         VmProxmoxCredential credential = JsonUtil.parseObject(request.getCredential(), VmProxmoxCredential.class);
         PveClient client = credential.getClient();
         Config config = getQemuConfig(client, request.getRegionId(), request.getUuid().getUuid());
+        Cluster cluster = getCluster(client);
         Qemu qemu = getQemuById(client, request.getRegionId(), request.getUuid().getUuid());
         List<Disk> disks = listDisk(client, request.getRegionId());
         List<DiskStatusInfo> result = new ArrayList<>();
@@ -617,7 +620,7 @@ public class SyncApi {
         return result.stream()
                 .map(diskStatusInfo -> disks.stream().filter(disk -> StringUtils.equals(disk.getVolid(), diskStatusInfo.getVolId()))
                         .findFirst()
-                        .map(disk -> MappingUtil.toF2CDisk(diskStatusInfo, disk, request.getRegionId()))
+                        .map(disk -> MappingUtil.toF2CDisk(diskStatusInfo, disk, request.getRegionId(), cluster))
                         .orElse(null)
                 ).filter(Objects::nonNull).toList();
     }
@@ -750,6 +753,9 @@ public class SyncApi {
                                         return null;
                                     }
                                     F2CBasePerfMetricMonitorData f2CBasePerfMetricMonitorData = item.getF2CBasePerfMetricMonitorData().apply(jsonObject);
+                                    if (Objects.isNull(f2CBasePerfMetricMonitorData.getAverage()) && Objects.isNull(f2CBasePerfMetricMonitorData.getMaximum()) && Objects.isNull(f2CBasePerfMetricMonitorData.getMinimum())) {
+                                        return null;
+                                    }
                                     F2CPerfMetricMonitorData f2CPerfMetricMonitorData = new F2CPerfMetricMonitorData();
                                     BeanUtils.copyProperties(f2CBasePerfMetricMonitorData, f2CPerfMetricMonitorData);
                                     f2CPerfMetricMonitorData.setMetricName(item.name());
@@ -837,8 +843,8 @@ public class SyncApi {
                     f2CDatastore.setFreeSpace(dataStore.getAvail() / 1024 / 1024 / 1024);
                     f2CDatastore.setRegion(proxmoxBaseRequest.getRegionId());
                     f2CDatastore.setAllocatedSpace(disks.stream().map(Disk::getSize).mapToLong(Long::longValue).sum() / 1024 / 1024 / 1024);
-                    f2CDatastore.setZone(proxmoxBaseRequest.getRegionId());
-                    f2CDatastore.setDataStoreId(dataStore.getStorage());
+                    f2CDatastore.setZone(Objects.nonNull(cluster) ? cluster.getName() : null);
+                    f2CDatastore.setDataStoreId(proxmoxBaseRequest.getRegionId() + "/" + dataStore.getStorage());
                     f2CDatastore.setDataStoreName(dataStore.getStorage());
                     return f2CDatastore;
                 })

@@ -234,5 +234,5 @@ public class F2CVirtualMachine {
     /**
      * 是否自动续费
      */
-    private boolean autoRenew;
+    private Boolean autoRenew;
 }

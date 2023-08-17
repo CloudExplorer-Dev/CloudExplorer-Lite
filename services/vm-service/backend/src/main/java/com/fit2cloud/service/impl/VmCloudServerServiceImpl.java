@@ -436,7 +436,7 @@ public class VmCloudServerServiceImpl extends ServiceImpl<BaseVmCloudServerMappe
                     F2CVirtualMachine f2CVirtualMachine = p.renewInstance(JsonUtil.toJSONString(request));
                     VmCloudServer updateVmCloudServer = new VmCloudServer();
                     updateVmCloudServer.setExpiredTime(CommonUtil.getLocalDateTime(new Date(f2CVirtualMachine.getExpiredTime())));
-                    updateVmCloudServer.setAutoRenew(f2CVirtualMachine.isAutoRenew());
+                    updateVmCloudServer.setAutoRenew(f2CVirtualMachine.getAutoRenew());
                     updateVmCloudServer.setId(vmCloudServer.getId());
                     updateById(updateVmCloudServer);
                     return true;

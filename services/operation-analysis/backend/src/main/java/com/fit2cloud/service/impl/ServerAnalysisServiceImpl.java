@@ -329,22 +329,42 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
                     PerfMetricMonitorData vo = JsonUtil.parseObject(Objects.requireNonNull(m.aggregations().get("top1").topHits().hits().hits().get(0).source()).toString(), PerfMetricMonitorData.class);
                     metricMonitorDataList.add(vo);
                 }));
-                list.forEach(v -> metricMonitorDataList.stream().filter(d -> StringUtils.equalsIgnoreCase(v.getInstanceUuid(), d.getInstanceId())
-                        && StringUtils.equalsIgnoreCase(v.getAccountId(), d.getCloudAccountId())).forEach(m -> {
-                    if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.CPU_USED_UTILIZATION.name(), m.getMetricName())) {
-                        v.setCpuAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
-                        v.setCpuMaximum(m.getMaximum().setScale(3, RoundingMode.HALF_UP));
-                        v.setCpuMinimum(m.getMinimum().setScale(3, RoundingMode.HALF_UP));
+                Map<String, Map<String, Map<String, Optional<PerfMetricMonitorData>>>> groups = metricMonitorDataList
+                        .stream()
+                        .collect(Collectors.groupingBy(PerfMetricMonitorData::getCloudAccountId,
+                                Collectors.groupingBy(PerfMetricMonitorData::getInstanceId,
+                                        Collectors.groupingBy(PerfMetricMonitorData::getMetricName, Collectors.reducing((pre, next) -> pre))))
+                        );
+                List<String> perfMetricNameList = List.of(ResourcePerfMetricEnum.CPU_USED_UTILIZATION.name(), ResourcePerfMetricEnum.MEMORY_USED_UTILIZATION.name(), ResourcePerfMetricEnum.DISK_USED_UTILIZATION.name());
+
+                for (AnalysisServerDTO analysisServerDTO : list) {
+                    for (String metricName : perfMetricNameList) {
+                        groups.getOrDefault(analysisServerDTO.getAccountId(), Map.of())
+                                .getOrDefault(analysisServerDTO.getInstanceUuid(), Map.of())
+                                .getOrDefault(metricName, Optional.empty())
+                                .ifPresent(m -> {
+                                    BigDecimal average = Objects.nonNull(m.getAverage()) ? m.getAverage().setScale(3, RoundingMode.HALF_UP) : null;
+                                    BigDecimal maximum = Objects.nonNull(m.getMaximum()) ? m.getMaximum().setScale(3, RoundingMode.HALF_UP) : null;
+                                    BigDecimal minimum = Objects.nonNull(m.getMinimum()) ? m.getMinimum().setScale(3, RoundingMode.HALF_UP) : null;
+                                    if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.CPU_USED_UTILIZATION.name(), m.getMetricName())) {
+                                        analysisServerDTO.setCpuAverage(average);
+                                        analysisServerDTO.setCpuMaximum(maximum);
+                                        analysisServerDTO.setCpuMinimum(minimum);
+                                    }
+                                    if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.MEMORY_USED_UTILIZATION.name(), m.getMetricName())) {
+                                        analysisServerDTO.setMemoryAverage(average);
+                                        analysisServerDTO.setMemoryMaximum(maximum);
+                                        analysisServerDTO.setMemoryMinimum(minimum);
+                                    }
+                                    if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.DISK_USED_UTILIZATION.name(), m.getMetricName())) {
+                                        analysisServerDTO.setDiskAverage(average);
+                                    }
+                                });
+
                     }
-                    if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.MEMORY_USED_UTILIZATION.name(), m.getMetricName())) {
-                        v.setMemoryAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
-                        v.setMemoryMaximum(m.getMaximum().setScale(3, RoundingMode.HALF_UP));
-                        v.setMemoryMinimum(m.getMinimum().setScale(3, RoundingMode.HALF_UP));
-                    }
-                    if (StringUtils.equalsIgnoreCase(ResourcePerfMetricEnum.DISK_USED_UTILIZATION.name(), m.getMetricName())) {
-                        v.setDiskAverage(m.getAverage().setScale(3, RoundingMode.HALF_UP));
-                    }
-                }));
+
+
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
