@@ -6,7 +6,7 @@
         UPDATE vm_cloud_server
         SET expired_time = date_add( `expired_time`, INTERVAL 1 MONTH )
         WHERE
-        TIMESTAMPDIFF( HOUR, NOW(), expired_time )&lt;=0
+        TIMESTAMPDIFF( DAY, NOW(), expired_time )&lt;=0
         AND instance_charge_type='PrePaid'
         AND auto_renew=true
         <if test="cloudAccountIdList!=null and cloudAccountIdList.size >0">
