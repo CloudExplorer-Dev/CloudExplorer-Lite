@@ -137,7 +137,7 @@ public class ProxmoxProvider extends AbstractCloudProvider<ProxmoxComplianceCred
                                 getCloudAccountMeta().platform,
                                 ResourceTypeConstants.DISK,
                                 resource.getDiskId(),
-                                resource.getDatastoreName(), resource)
+                                resource.getDiskName(), resource)
                 ).toList();
     }
 
