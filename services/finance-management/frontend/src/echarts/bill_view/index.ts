@@ -109,7 +109,10 @@ const getBillViewOptions = (
         const sum = filterData
           .map((i) => i.value)
           .reduce((p: number, n: number) => p + n, 0);
-        const a = Math.floor(((dataItem?.value as number) / sum) * 10000) / 100;
+        const a =
+          sum == 0
+            ? 0
+            : Math.floor(((dataItem?.value as number) / sum) * 10000) / 100;
         const tow =
           CurrencyFormat.format(
             Number.parseFloat(
