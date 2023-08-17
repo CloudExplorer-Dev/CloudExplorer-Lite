@@ -7,6 +7,7 @@ import com.fit2cloud.common.form.annotaion.FormStepInfo;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.common.utils.SpringUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -165,6 +166,8 @@ public class FormUtil {
                     .toList();
             fieldList.add(fields.get(0));
         }
+        // 使用字段顺序排序
+        fieldList = fieldList.stream().sorted(Comparator.comparing(s -> ArrayUtils.indexOf(fieldsWithAnnotation, s))).toList();
         return fieldList;
     }
 
