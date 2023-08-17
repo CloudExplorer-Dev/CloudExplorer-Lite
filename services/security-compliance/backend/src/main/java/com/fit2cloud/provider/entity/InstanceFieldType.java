@@ -19,7 +19,7 @@ public enum InstanceFieldType {
     /**
      * 字符串
      */
-    String(EQ, NOT_EQ, INCLUDED_IN, EXIST, NOT_EXIST),
+    String(EQ, NOT_EQ, STRING_CONTAIN, INCLUDED_IN, EXIST, NOT_EXIST),
     /**
      * 数字
      */

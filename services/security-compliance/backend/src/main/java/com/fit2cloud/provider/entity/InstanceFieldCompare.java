@@ -5,6 +5,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * {@code @Author:张少虎}
@@ -105,8 +106,11 @@ public enum InstanceFieldCompare {
     /**
      * 长度大于
      */
-    LENGTH_LT("长度小于", loadingScript("painless/length_lt"));
-
+    LENGTH_LT("长度小于", loadingScript("painless/length_lt")),
+    /**
+     * 包含
+     */
+    STRING_CONTAIN("包含", loadingScript("painless/string_contain"));
     /**
      * 比较器提示
      */
@@ -127,7 +131,7 @@ public enum InstanceFieldCompare {
         InputStream inputStream = classPathResource.getInputStream();
         byte[] bytes = new byte[inputStream.available()];
         inputStream.read(bytes);
-        return new String(bytes, Charset.forName("utf-8"));
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     public String getMessage() {
