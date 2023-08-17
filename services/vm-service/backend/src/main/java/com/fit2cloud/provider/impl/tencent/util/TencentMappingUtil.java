@@ -73,16 +73,11 @@ public class TencentMappingUtil {
         // 计费方式
         String instanceChargeType = null;
         switch (instance.getInstanceChargeType()) {
-            case "PREPAID":
-                instanceChargeType = F2CChargeType.PRE_PAID;
-                break;
-            case "POSTPAID_BY_HOUR":
-                instanceChargeType = F2CChargeType.POST_PAID;
-                break;
-            case "SPOTPAID":
-                instanceChargeType = F2CChargeType.SPOT_PAID;
-                break;
-            default:
+            case "PREPAID" -> instanceChargeType = F2CChargeType.PRE_PAID;
+            case "POSTPAID_BY_HOUR" -> instanceChargeType = F2CChargeType.POST_PAID;
+            case "SPOTPAID" -> instanceChargeType = F2CChargeType.SPOT_PAID;
+            default -> {
+            }
         }
         f2CInstance.setAutoRenew(StringUtils.equals(instance.getRenewFlag(), "NOTIFY_AND_AUTO_RENEW"));
         f2CInstance.setInstanceChargeType(instanceChargeType);
