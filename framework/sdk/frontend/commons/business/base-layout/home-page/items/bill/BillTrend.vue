@@ -220,11 +220,7 @@ defineExpose({ refresh });
       }"
     >
       <div class="top">
-        <div class="title title_font">
-          费用趋势<span class="sub_title_font"
-            >（单位：{{ currency.unit }}）</span
-          >
-        </div>
+        <div class="title title_font">费用趋势</div>
         <div style="flex: auto"></div>
         <div class="operation_wrapper">
           <div class="operation">

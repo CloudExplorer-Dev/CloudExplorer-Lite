@@ -17,7 +17,7 @@ public enum CurrencyConstants implements CurrencyParent {
 
     EUR("欧元", "€", "欧元", BigDecimal.valueOf(0.1261)),
 
-    GBP("英镑", "£", "镑", BigDecimal.valueOf(0.1086)),
+    GBP("英镑", "£", "英镑", BigDecimal.valueOf(0.1086)),
 
     KRW("韩元", "₩", "韩元", BigDecimal.valueOf(0.1086)),
 

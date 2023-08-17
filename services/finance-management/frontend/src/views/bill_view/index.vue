@@ -15,7 +15,11 @@
       <breadcrumb :auto="true"></breadcrumb>
     </template>
     <template #top>
-      <el-card class="search-card">
+      <el-card
+        class="search-card"
+        style="border: none; padding: 6px 14px"
+        shadow="never"
+      >
         <el-form>
           <el-form-item label="云账号">
             <el-select
@@ -31,7 +35,7 @@
                 :value="item.id"
               /> </el-select
           ></el-form-item>
-          <el-form-item style="margin-left: 8px" label="成本类型">
+          <el-form-item style="margin-left: 12px" label="成本类型">
             <el-select
               v-model="searchForm.costField"
               class="m-2"
@@ -44,7 +48,7 @@
                 :value="item.value"
               /> </el-select
           ></el-form-item>
-          <el-form-item style="margin-left: 8px" label="单位">
+          <el-form-item style="margin-left: 12px" label="单位">
             <el-select
               v-model="searchForm.currency"
               class="m-2"
@@ -357,6 +361,9 @@ watch(
 );
 </script>
 <style lang="scss" scoped>
+:deep(.el-form-item__label) {
+  padding-right: 8px;
+}
 .search-card {
   width: 100%;
   :deep(.el-card__body) {

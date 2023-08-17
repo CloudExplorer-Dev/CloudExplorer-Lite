@@ -105,7 +105,9 @@
                   <template #default="scope">
                     <div style="display: flex; align-items: center">
                       <PlatformIcon :platform="scope.row.provider" />
-                      <div>{{ scope.row.cloudAccountName }}</div>
+                      <div style="margin-left: 8px">
+                        {{ scope.row.cloudAccountName }}
+                      </div>
                     </div>
                   </template>
                 </el-table-column>

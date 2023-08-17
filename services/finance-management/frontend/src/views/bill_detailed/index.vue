@@ -84,7 +84,9 @@
         <template #default="scope">
           <div style="display: flex; align-items: center">
             <PlatformIcon :platform="scope.row.provider"> </PlatformIcon>
-            <div class="table_overflow">{{ scope.row.cloudAccountName }}</div>
+            <div class="table_overflow" style="margin-left: 8px">
+              {{ scope.row.cloudAccountName }}
+            </div>
           </div>
         </template>
       </el-table-column>

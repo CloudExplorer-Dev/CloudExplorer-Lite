@@ -171,7 +171,8 @@
       <template #footer>
         <span class="total-price"
           ><span class="title">费用:</span
-          >{{ decimalFormat.format(totalPrice, 2) }}</span
+          >{{ decimalFormat.format(totalPrice, 2)
+          }}<span class="title">元</span></span
         >
         <el-button @click="close()">{{ $t("commons.btn.cancel") }} </el-button>
         <el-button type="primary" @click="renew"> 续费 </el-button>
