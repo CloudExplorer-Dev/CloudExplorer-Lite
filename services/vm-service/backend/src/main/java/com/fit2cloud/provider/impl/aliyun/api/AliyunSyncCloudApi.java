@@ -26,10 +26,7 @@ import com.fit2cloud.provider.impl.aliyun.entity.AliyunInstanceType;
 import com.fit2cloud.provider.impl.aliyun.entity.credential.AliyunVmCredential;
 import com.fit2cloud.provider.impl.aliyun.entity.request.*;
 import com.fit2cloud.provider.impl.aliyun.util.AliyunMappingUtil;
-import com.fit2cloud.vm.constants.ExpirePolicyConstants;
-import com.fit2cloud.vm.constants.F2CDiskStatus;
-import com.fit2cloud.vm.constants.F2CInstanceStatus;
-import com.fit2cloud.vm.constants.PriceUnit;
+import com.fit2cloud.vm.constants.*;
 import com.fit2cloud.vm.entity.F2CDisk;
 import com.fit2cloud.vm.entity.F2CImage;
 import com.fit2cloud.vm.entity.F2CNetwork;
@@ -181,7 +178,8 @@ public class AliyunSyncCloudApi {
                 .setId(request.getId())
                 .setName(request.getServerInfos().get(index).getName())
                 .setIpArray(new ArrayList<>())
-                .setInstanceType(request.getInstanceType());
+                .setInstanceType(request.getInstanceType())
+                .setInstanceChargeType(StringUtils.equals(request.getInstanceChargeType(), AliyunChargeType.PREPAID.getId()) ? F2CChargeType.PRE_PAID : F2CChargeType.POST_PAID);
         return virtualMachine;
     }
 

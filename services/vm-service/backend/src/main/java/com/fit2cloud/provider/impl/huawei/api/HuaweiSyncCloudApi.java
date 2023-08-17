@@ -1001,7 +1001,8 @@ public class HuaweiSyncCloudApi {
                 .setId(request.getId())
                 .setName(request.getServerNameInfos().get(index).getName())
                 .setIpArray(new ArrayList<>())
-                .setInstanceType(request.getInstanceType());
+                .setInstanceType(request.getInstanceType())
+                .setInstanceChargeType(request.getChargeMode());
 
         return virtualMachine;
 

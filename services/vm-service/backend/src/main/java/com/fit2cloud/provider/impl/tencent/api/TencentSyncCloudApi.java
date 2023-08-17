@@ -19,10 +19,7 @@ import com.fit2cloud.provider.impl.tencent.entity.TencentInstanceType;
 import com.fit2cloud.provider.impl.tencent.entity.credential.TencentVmCredential;
 import com.fit2cloud.provider.impl.tencent.entity.request.*;
 import com.fit2cloud.provider.impl.tencent.util.TencentMappingUtil;
-import com.fit2cloud.vm.constants.DeleteWithInstance;
-import com.fit2cloud.vm.constants.ExpirePolicyConstants;
-import com.fit2cloud.vm.constants.F2CInstanceStatus;
-import com.fit2cloud.vm.constants.PriceUnit;
+import com.fit2cloud.vm.constants.*;
 import com.fit2cloud.vm.entity.F2CDisk;
 import com.fit2cloud.vm.entity.F2CImage;
 import com.fit2cloud.vm.entity.F2CNetwork;
@@ -194,7 +191,8 @@ public class TencentSyncCloudApi {
                 .setId(request.getId())
                 .setName(request.getServerInfos().get(index).getName())
                 .setIpArray(new ArrayList<>())
-                .setInstanceType(request.getInstanceTypeDTO() != null ? StringUtils.isEmpty(request.getInstanceTypeDTO().getInstanceType()) ? "" : request.getInstanceTypeDTO().getInstanceType() : "");
+                .setInstanceType(request.getInstanceTypeDTO() != null ? StringUtils.isEmpty(request.getInstanceTypeDTO().getInstanceType()) ? "" : request.getInstanceTypeDTO().getInstanceType() : "")
+                .setInstanceChargeType(StringUtils.equals(request.getInstanceChargeType(), TencentChargeType.PREPAID.getId()) ? F2CChargeType.PRE_PAID : F2CChargeType.POST_PAID);
 
         return virtualMachine;
     }
