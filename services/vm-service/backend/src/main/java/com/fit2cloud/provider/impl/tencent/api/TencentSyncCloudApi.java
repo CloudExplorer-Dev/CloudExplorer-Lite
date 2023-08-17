@@ -310,7 +310,7 @@ public class TencentSyncCloudApi {
         CvmClient cvmClient = tencentVmCredential.getCvmClient(request.getRegionId());
         Instance instance = getInstanceById(request.getInstanceUuid(), cvmClient);
         String renewFlag = instance.getRenewFlag();
-        if (StringUtils.isNotEmpty(request.getPeriodNum())) {
+        if (StringUtils.isNotEmpty(request.getPeriodNum()) && Objects.nonNull(request.getExpirePolicy())) {
             RenewInstancesRequest renewInstancesRequest = new RenewInstancesRequest();
             renewInstancesRequest.setInstanceIds(new String[]{request.getInstanceUuid()});
             InstanceChargePrepaid instanceChargePrepaid = new InstanceChargePrepaid();
@@ -322,12 +322,10 @@ public class TencentSyncCloudApi {
             renewInstancesRequest.setRenewPortableDataDisk(Boolean.FALSE);
             try {
                 cvmClient.RenewInstances(renewInstancesRequest);
-
             } catch (TencentCloudSDKException e) {
                 throw new RuntimeException(e);
             }
-        }
-        if (Objects.nonNull(request.getExpirePolicy())) {
+        } else if (Objects.nonNull(request.getExpirePolicy())) {
             String newRenewFlag = Objects.equals(request.getExpirePolicy(), ExpirePolicyConstants.YES) ? NOTIFY_AND_AUTO_RENEW.name() : NOTIFY_AND_MANUAL_RENEW.name();
             if (!renewFlag.equals(newRenewFlag)) {
                 ModifyInstancesRenewFlagRequest modifyInstancesRenewFlagRequest = new ModifyInstancesRenewFlagRequest();

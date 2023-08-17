@@ -5,6 +5,7 @@ import com.fit2cloud.autoconfigure.PluginsContextHolder;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.common.constants.JobTypeConstants;
 import com.fit2cloud.common.platform.credential.Credential;
+import com.fit2cloud.common.scheduler.util.CronUtils;
 import com.fit2cloud.common.utils.JsonUtil;
 import com.fit2cloud.dto.job.JobSetting;
 import com.fit2cloud.quartz.CloudAccountSyncJob;
@@ -13,6 +14,7 @@ import com.fit2cloud.vm.constants.ActionInfoConstants;
 import org.quartz.DateBuilder;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -141,7 +143,7 @@ public class JobConstants implements JobSettingConfig.JobConfig {
         // 续期
         JobSetting renewInstance = new JobSetting(CloudAccountSyncJob.RenewInstance.class,
                 "RENEW_INSTANCE", com.fit2cloud.common.constants.JobConstants.DefaultGroup.SYSTEM_GROUP.name(),
-                "续期", 1, DateBuilder.IntervalUnit.HOUR, p -> false, p -> false, p -> false);
+                "续期", CronUtils.create(new Integer[]{0}, Calendar.MINUTE), p -> false, p -> false, p -> false);
 
         return List.of(syncVirtual, syncDisk, syncImage, syncHost, syncDatastore, syncMetricMonitor, recorderInstanceState, recorderInstanceChange, renewInstance);
     }
