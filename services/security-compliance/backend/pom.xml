@@ -29,7 +29,7 @@
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-bss</artifactId>
-            <version>3.1.5</version>
+            <version>3.1.53</version>
         </dependency>
         <dependency>
             <groupId>com.tencentcloudapi</groupId>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-ecs</artifactId>
-            <version>3.1.2</version>
+            <version>3.1.53</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun</groupId>
@@ -152,61 +152,61 @@
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-rds</artifactId>
-            <version>3.1.20</version>
+            <version>3.1.53</version>
         </dependency>
         <!--        华为云 云备份-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-cbr</artifactId>
-            <version>3.1.20</version>
+            <version>3.1.53</version>
         </dependency>
         <!--        华为云 redis-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-dcs</artifactId>
-            <version>3.1.20</version>
+            <version>3.1.53</version>
         </dependency>
         <!--        华为云 mongodb-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-dds</artifactId>
-            <version>3.1.20</version>
+            <version>3.1.53</version>
         </dependency>
         <!--        华为云 Elasticsearch-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-css</artifactId>
-            <version>3.1.20</version>
+            <version>3.1.53</version>
         </dependency>
         <!--        华为云 云硬盘-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-evs</artifactId>
-            <version>3.1.20</version>
+            <version>3.1.53</version>
         </dependency>
         <!--        华为云 负载均衡-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-elb</artifactId>
-            <version>3.1.21</version>
+            <version>3.1.53</version>
         </dependency>
         <!--        华为云 弹性公网ip-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-eip</artifactId>
-            <version>3.1.21</version>
+            <version>3.1.53</version>
         </dependency>
         <!--        华为云 vpc-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-vpc</artifactId>
-            <version>3.1.21</version>
+            <version>3.1.53</version>
         </dependency>
         <!--        华为云 身份认证服务-->
         <dependency>
             <groupId>com.huaweicloud.sdk</groupId>
             <artifactId>huaweicloud-sdk-iam</artifactId>
-            <version>3.1.21</version>
+            <version>3.1.53</version>
         </dependency>
     </dependencies>
 
