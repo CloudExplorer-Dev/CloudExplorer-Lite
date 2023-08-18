@@ -10,9 +10,9 @@ import com.fit2cloud.common.util.MonthUtil;
 import com.fit2cloud.common.utils.SpringUtil;
 import com.fit2cloud.provider.ICloudProvider;
 import com.fit2cloud.service.SyncService;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 /**
@@ -37,7 +37,7 @@ public class EventListener {
         CloudAccount cloudAccount = baseCloudAccountService.getById(cloudAccountId);
         if (ICloudProvider.support(cloudAccount.getPlatform())) {
             // 创建云账号需要同步12个月数据
-            syncService.syncBill(cloudAccountId, MonthUtil.getMonths(12));
+            syncService.syncBill(cloudAccountId, MonthUtil.getHistoryMonth(12));
         }
     }
 
