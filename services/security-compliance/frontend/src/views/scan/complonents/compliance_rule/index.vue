@@ -227,6 +227,7 @@ import UpdateComplianceRule from "@/views/rule/components/UpdateComplianceRule.v
 import { useRoute } from "vue-router";
 import { usePlatformStore } from "@commons/stores/modules/platform";
 import type { Platform } from "@commons/api/cloud_account/type";
+import PlatformIcon from "@commons/components/platform-icon/index.vue";
 const platformStore = usePlatformStore();
 const route = useRoute();
 let jobInterval: number;
