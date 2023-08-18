@@ -44,6 +44,18 @@ public class CommonUtil {
     }
 
     /**
+     * 如果value为空 则返回默认值
+     *
+     * @param value        值
+     * @param defaultValue 默认值
+     * @param <T>          默认值类型
+     * @return 如果值为空则返回默认值
+     */
+    public static <T> T orDefault(T value, T defaultValue) {
+        return Objects.isNull(value) ? defaultValue : value;
+    }
+
+    /**
      * 解析时间字符串
      *
      * @param dateStr 时间字符串
