@@ -15,21 +15,35 @@
       row-key="id"
     >
       <template #toolbar>
+        <el-select style="width: 90px" v-model="activeDate">
+          <el-option label="账期" value="billingCycle"></el-option>
+          <el-option label="日期" value="deductionDate"></el-option
+        ></el-select>
         <el-date-picker
+          v-if="activeDate === 'billingCycle'"
+          :key="'billingCycle'"
           :editable="false"
           v-model="viewMonth"
           type="month"
-          placeholder="请选择月份"
+          placeholder="请选择账期"
           format="YYYY-MM"
           :clearable="false"
           :disabled-date="disabledDate"
           value-format="YYYY-MM"
         >
-          <template #default="cell">
-            <div class="cell" :class="{ current: cell.isCurrent }">
-              <span class="text">{{ cell.text }}</span>
-            </div>
-          </template>
+        </el-date-picker>
+        <el-date-picker
+          v-else
+          :editable="false"
+          :key="'deductionDate'"
+          v-model="viewDeductionDate"
+          type="date"
+          placeholder="请选择日期"
+          format="YYYY-MM-DD"
+          :clearable="false"
+          :disabled-date="disabledDate"
+          value-format="YYYY-MM-DD"
+        >
         </el-date-picker>
       </template>
       <el-table-column type="selection" />
@@ -242,7 +256,7 @@
   </layout-content>
 </template>
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, computed } from "vue";
 import {
   PaginationConfig,
   TableConfig,
@@ -263,6 +277,7 @@ const currentMonth =
     ? "0" + (new Date().getMonth() + 1).toString()
     : (new Date().getMonth() + 1).toString());
 const viewMonth = ref<string>(currentMonth);
+const viewDeductionDate = ref<string>();
 /**
  * 日志选择框禁用大于当前月份的时间
  * @param time 时间
@@ -273,6 +288,8 @@ const disabledDate = (time: Date) => {
 
 const cloudAccountList = ref<Array<CloudAccount>>([]);
 
+const activeDate = ref<"billingCycle" | "deductionDate">("billingCycle");
+
 /**
  * 表格对象
  */
@@ -280,22 +297,34 @@ const table = ref<any>();
 
 const clearCondition = () => {
   viewMonth.value = "";
+  viewDeductionDate.value = "";
 };
 
+const otherSearchQuery = computed(() => {
+  const query: any = {};
+  if (viewMonth.value) {
+    query["month"] = {
+      value: viewMonth.value,
+      label: "账期",
+      valueLabel: viewMonth.value,
+      field: "month",
+    };
+  }
+  if (viewDeductionDate.value) {
+    query["deductionDate"] = {
+      value: viewDeductionDate.value,
+      label: "日期",
+      valueLabel: viewDeductionDate.value,
+      field: "deductionDate",
+    };
+  }
+  return query;
+});
 onMounted(() => {
   /**
    * 组件挂载查询数据
    */
-  search(
-    table.value?.getTableSearch({
-      month: {
-        value: viewMonth.value,
-        label: "月份",
-        valueLabel: viewMonth.value,
-        field: "month",
-      },
-    })
-  );
+  search(table.value?.getTableSearch(otherSearchQuery.value));
   cloudAccountApi.listAll().then((ok) => {
     cloudAccountList.value = ok.data;
   });
@@ -304,18 +333,9 @@ onMounted(() => {
 /**
  * 月份发生改变的时候查询数据
  */
-watch(viewMonth, () => {
+watch(otherSearchQuery, () => {
   const tabSearch: TableSearch = table.value?.getTableSearch(
-    viewMonth.value
-      ? {
-          month: {
-            value: viewMonth.value,
-            label: "月份",
-            valueLabel: viewMonth.value,
-            field: "month",
-          },
-        }
-      : undefined
+    otherSearchQuery.value
   );
   search(tabSearch);
 });
