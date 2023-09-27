@@ -48,7 +48,7 @@ public class TwtTokenAuthFilter implements WebFilter {
 
         String path = request.getPath().value();
         //针对网关，只有部分接口需要认证，其余都交给子模块
-        if (path.startsWith("/api/")) {
+        if (path.startsWith("/api")) {
             UserDto userDtoFromToken = null;
             String token = request.getHeaders().getFirst(JwtTokenUtils.TOKEN_NAME);
             RoleConstants.ROLE role = RoleConstants.ROLE.ANONYMOUS;
