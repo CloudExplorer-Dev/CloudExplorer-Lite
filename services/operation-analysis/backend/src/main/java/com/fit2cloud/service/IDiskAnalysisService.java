@@ -2,6 +2,7 @@ package com.fit2cloud.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.CloudAccount;
+import com.fit2cloud.controller.request.disk.DiskRequest;
 import com.fit2cloud.controller.request.disk.PageDiskRequest;
 import com.fit2cloud.controller.request.disk.ResourceAnalysisRequest;
 import com.fit2cloud.controller.response.ChartData;
@@ -25,6 +26,14 @@ public interface IDiskAnalysisService {
      * @return IPage<AnalysisDiskDTO>
      */
     IPage<AnalysisDiskDTO> pageDisk(PageDiskRequest request);
+
+    /**
+     * 磁盘明细列表
+     *
+     * @param request 查询磁盘列表请求参数
+     * @return 磁盘明细列表
+     */
+    List<AnalysisDiskDTO> listDisk(DiskRequest request);
 
     /**
      * 所有云账号

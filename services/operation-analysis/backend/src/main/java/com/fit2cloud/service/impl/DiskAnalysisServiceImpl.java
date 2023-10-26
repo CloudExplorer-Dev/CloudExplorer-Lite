@@ -13,6 +13,7 @@ import com.fit2cloud.common.utils.CurrentUserUtils;
 import com.fit2cloud.common.utils.PageUtil;
 import com.fit2cloud.constants.DiskTypeConstants;
 import com.fit2cloud.constants.SpecialAttributesConstants;
+import com.fit2cloud.controller.request.disk.DiskRequest;
 import com.fit2cloud.controller.request.disk.PageDiskRequest;
 import com.fit2cloud.controller.request.disk.ResourceAnalysisRequest;
 import com.fit2cloud.controller.response.ChartData;
@@ -73,14 +74,28 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
         // 构建查询参数
         MPJLambdaWrapper<VmCloudDisk> wrapper = addDiskPageQuery(request);
         IPage<AnalysisDiskDTO> result = baseVmCloudDiskMapper.selectJoinPage(page, AnalysisDiskDTO.class, wrapper);
+        resetAnalysisDiskDTO(result.getRecords());
+        return result;
+    }
+
+    @Override
+    public List<AnalysisDiskDTO> listDisk(DiskRequest request) {
+        // 构建查询参数
+        MPJLambdaWrapper<VmCloudDisk> wrapper = addDiskPageQuery(request);
+        List<AnalysisDiskDTO> result = baseVmCloudDiskMapper.selectJoinList(AnalysisDiskDTO.class, wrapper);
+        resetAnalysisDiskDTO(result);
+        return result;
+    }
+
+    private void resetAnalysisDiskDTO(List<AnalysisDiskDTO> analysisDiskDTOList) {
         // 设置云主机名称
-        List<String> vmCloudUuids = result.getRecords().stream().map(AnalysisDiskDTO::getInstanceUuid).toList();
+        List<String> vmCloudUuids = analysisDiskDTOList.stream().map(AnalysisDiskDTO::getInstanceUuid).toList();
         if (CollectionUtils.isNotEmpty(vmCloudUuids)) {
             MPJLambdaWrapper<VmCloudServer> vmCloudServerMPJLambdaWrapper = new MPJLambdaWrapper<>();
             vmCloudServerMPJLambdaWrapper.in(true, VmCloudServer::getInstanceUuid, vmCloudUuids);
             List<VmCloudServer> list = baseVmCloudServerMapper.selectList(vmCloudServerMPJLambdaWrapper);
             if (CollectionUtils.isNotEmpty(list)) {
-                result.getRecords().forEach(disk -> {
+                analysisDiskDTOList.forEach(disk -> {
                     List<VmCloudServer> has = list.stream().filter(v -> StringUtils.equalsIgnoreCase(v.getAccountId(), disk.getAccountId()) && StringUtils.equalsIgnoreCase(v.getInstanceUuid(), disk.getInstanceUuid())).toList();
                     if (CollectionUtils.isNotEmpty(has)) {
                         disk.setVmInstanceName(has.get(0).getInstanceName());
@@ -88,13 +103,12 @@ public class DiskAnalysisServiceImpl implements IDiskAnalysisService {
                 });
             }
         }
-        return result;
     }
 
     /**
      * 分页查询参数
      */
-    private MPJLambdaWrapper<VmCloudDisk> addDiskPageQuery(PageDiskRequest request) {
+    private MPJLambdaWrapper<VmCloudDisk> addDiskPageQuery(DiskRequest request) {
         List<String> sourceIds = permissionService.getSourceIds();
         if (!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds)) {
             request.setSourceIds(sourceIds);

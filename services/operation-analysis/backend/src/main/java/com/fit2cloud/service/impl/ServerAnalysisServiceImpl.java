@@ -25,6 +25,7 @@ import com.fit2cloud.constants.ResourcePerfMetricEnum;
 import com.fit2cloud.constants.SpecialAttributesConstants;
 import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
+import com.fit2cloud.controller.request.server.ServerRequest;
 import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.response.TreeNode;
@@ -104,10 +105,21 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         return result;
     }
 
+    @Override
+    public List<AnalysisServerDTO> listServer(ServerRequest request) {
+        MPJLambdaWrapper<VmCloudServer> wrapper = addServerPageQuery(request);
+        List<AnalysisServerDTO> result = baseVmCloudServerMapper.selectJoinList(AnalysisServerDTO.class, wrapper);
+        if (CollectionUtils.isNotEmpty(result)) {
+            //设置监控数据
+            getVmPerfMetric(result);
+        }
+        return result;
+    }
+
     /**
      * 构建分页查询参数
      */
-    private MPJLambdaWrapper<VmCloudServer> addServerPageQuery(PageServerRequest request) {
+    private MPJLambdaWrapper<VmCloudServer> addServerPageQuery(ServerRequest request) {
         List<String> sourceIds = permissionService.getSourceIds();
         if (!CurrentUserUtils.isAdmin() && CollectionUtils.isNotEmpty(sourceIds)) {
             request.setSourceIds(sourceIds);
@@ -320,7 +332,7 @@ public class ServerAnalysisServiceImpl implements IServerAnalysisService {
         try {
             if (elasticsearchTemplate.indexOps(IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode())).exists()) {
                 Query query = getVmPerfMetricQuery(instanceUuids);
-                SearchHits<Object> response = elasticsearchTemplate.search(query, Object.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
+                    SearchHits<Object> response = elasticsearchTemplate.search(query, Object.class, IndexCoordinates.of(IndexConstants.CE_PERF_METRIC_MONITOR_DATA.getCode()));
                 ElasticsearchAggregations aggregations = (ElasticsearchAggregations) response.getAggregations();
                 assert aggregations != null;
                 List<StringTermsBucket> lastData = aggregations.aggregations().get(0).aggregation().getAggregate().sterms().buckets().array();

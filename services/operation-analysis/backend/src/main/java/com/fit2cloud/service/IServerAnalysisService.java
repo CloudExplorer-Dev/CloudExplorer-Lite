@@ -5,6 +5,7 @@ import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudHost;
 import com.fit2cloud.controller.request.server.PageServerRequest;
 import com.fit2cloud.controller.request.server.ResourceAnalysisRequest;
+import com.fit2cloud.controller.request.server.ServerRequest;
 import com.fit2cloud.controller.response.BarTreeChartData;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.response.TreeNode;
@@ -27,6 +28,14 @@ public interface IServerAnalysisService {
      * @return IPage<AnalysisServerDTO>
      */
     IPage<AnalysisServerDTO> pageServer(PageServerRequest request);
+
+    /**
+     * 云主机明细列表
+     *
+     * @param request 查询云主机列表参数
+     * @return 云主机列表
+     */
+    List<AnalysisServerDTO> listServer(ServerRequest request);
 
     /**
      * 所有云账号

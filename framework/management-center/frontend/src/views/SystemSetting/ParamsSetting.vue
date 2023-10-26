@@ -66,7 +66,7 @@
               special-step="1"
               v-model.number="form.loginLogReservedMonth"
               :min="1"
-              :max="24"
+              :max="1000"
               :step="1"
               required
               @change="
@@ -88,7 +88,7 @@
               special-step="1"
               v-model.number="form.manageLogReservedMonth"
               :min="1"
-              :max="24"
+              :max="1000"
               :step="1"
               required
               @change="
@@ -110,7 +110,7 @@
               special-step="1"
               v-model.number="form.systemLogReservedMonth"
               :min="1"
-              :max="24"
+              :max="1000"
               :step="1"
               required
               @change="
@@ -134,7 +134,7 @@
               special-step="1"
               v-model.number="form.metricLogReservedMonth"
               :min="1"
-              :max="24"
+              :max="1000"
               :step="1"
               required
               @change="
@@ -200,11 +200,11 @@ const rules = [
     required: true,
   },
   {
-    message: `最小为1，最大为24`,
+    message: `最小为1，最大为1000`,
     trigger: ["change", "blur"],
     type: "number",
     min: 1,
-    max: 24,
+    max: 1000,
   },
 ];
 

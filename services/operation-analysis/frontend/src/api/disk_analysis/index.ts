@@ -1,4 +1,4 @@
-import { get } from "@commons/request";
+import { exportExcel, get } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type {
@@ -55,6 +55,20 @@ export function getAnalysisOrgWorkspaceDiskCount(
 ): Promise<Result<any>> {
   return get("api/disk_analysis/org_workspace_disk_count_bar", req, loading);
 }
+/**
+ * 导出磁盘明细
+ * @param req 请求参数
+ * @param loading 加载器
+ * @returns void
+ */
+const exportData = (req: any, loading: Ref<boolean>) => {
+  return exportExcel(
+    "磁盘明细",
+    "/api/disk_analysis/disk/download",
+    req,
+    loading
+  );
+};
 
 const ResourceSpreadViewApi = {
   listDisk,
@@ -64,6 +78,7 @@ const ResourceSpreadViewApi = {
   getAnalysisOrgDiskCount,
   getAnalysisWorkspaceDiskCount,
   getAnalysisOrgWorkspaceDiskCount,
+  exportData,
 };
 
 export default ResourceSpreadViewApi;

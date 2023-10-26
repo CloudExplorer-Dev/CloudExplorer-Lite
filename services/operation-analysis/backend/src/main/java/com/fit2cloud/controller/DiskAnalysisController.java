@@ -1,8 +1,10 @@
 package com.fit2cloud.controller;
 
+import com.alibaba.excel.EasyExcelFactory;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.controller.handler.ResultHolder;
+import com.fit2cloud.controller.request.disk.DiskRequest;
 import com.fit2cloud.controller.request.disk.PageDiskRequest;
 import com.fit2cloud.controller.request.disk.ResourceAnalysisRequest;
 import com.fit2cloud.controller.response.ChartData;
@@ -10,8 +12,13 @@ import com.fit2cloud.controller.response.TreeNode;
 import com.fit2cloud.dto.AnalysisDiskDTO;
 import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.service.IDiskAnalysisService;
+import com.fit2cloud.utils.CustomCellWriteHeightConfig;
+import com.fit2cloud.utils.CustomCellWriteWidthConfig;
+import com.fit2cloud.utils.EasyExcelUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +47,23 @@ public class DiskAnalysisController {
     @PreAuthorize("@cepc.hasAnyCePermission('DISK_ANALYSIS:READ')")
     public ResultHolder<IPage<AnalysisDiskDTO>> pageDiskList(@Validated PageDiskRequest request) {
         return ResultHolder.success(iDiskAnalysisService.pageDisk(request));
+    }
+
+    @Operation(summary = "磁盘明细下载", description = "磁盘明细下载")
+    @GetMapping("/disk/download")
+    @PreAuthorize("@cepc.hasAnyCePermission('SERVER_ANALYSIS:READ')")
+    public void datastoreListDownload(@Validated DiskRequest request, HttpServletResponse response) {
+        List<AnalysisDiskDTO> list = iDiskAnalysisService.listDisk(request);
+        try {
+            EasyExcelFactory.write(response.getOutputStream(), AnalysisDiskDTO.class)
+                    .sheet("磁盘明细列表")
+                    .registerWriteHandler(new CustomCellWriteWidthConfig())
+                    .registerWriteHandler(new CustomCellWriteHeightConfig())
+                    .registerWriteHandler(EasyExcelUtils.getStyleStrategy())
+                    .doWrite(list);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Operation(summary = "查询云账号", description = "查询云账号")

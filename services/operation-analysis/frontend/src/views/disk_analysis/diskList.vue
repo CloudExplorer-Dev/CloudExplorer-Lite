@@ -21,7 +21,7 @@ const tableData = ref<Array<VmCloudDiskVO>>([]);
 const tableLoading = ref<boolean>(false);
 const table = ref();
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
-
+const loading = ref<boolean>(false);
 //硬盘状态
 const diskStatus = ref<Array<SimpleMap<string>>>([
   { text: "已删除", value: "deleted" },
@@ -118,6 +118,11 @@ const tableConfig = ref<TableConfig>({
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([]),
 });
+const exportData = () => {
+  const condition = table?.value.getTableSearch();
+  const tableParams = TableSearch.toSearchParams(condition);
+  ResourceSpreadViewApi.exportData(tableParams, loading);
+};
 </script>
 <template>
   <div class="log-table">
@@ -225,6 +230,26 @@ const tableConfig = ref<TableConfig>({
         </template>
       </el-table-column>
       <template #buttons>
+        <!-- 导出 -->
+        <el-button
+          :loading="loading"
+          @click="exportData('xlsx')"
+          style="width: 32px"
+        >
+          <ce-icon
+            v-if="!loading"
+            size="16"
+            code="icon_bottom-align_outlined"
+          />
+          <template #loading>
+            <ce-icon
+              class="is-loading"
+              style="margin-left: 6px"
+              size="16"
+              code="Loading"
+            />
+          </template>
+        </el-button>
         <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>

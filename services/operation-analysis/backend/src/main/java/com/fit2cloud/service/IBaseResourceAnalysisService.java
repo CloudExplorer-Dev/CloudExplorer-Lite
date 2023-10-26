@@ -8,7 +8,9 @@ import com.fit2cloud.base.entity.VmCloudHost;
 import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceAnalysisRequest;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceUsedTrendRequest;
+import com.fit2cloud.controller.request.datastore.DatastoreRequest;
 import com.fit2cloud.controller.request.datastore.PageDatastoreRequest;
+import com.fit2cloud.controller.request.host.HostRequest;
 import com.fit2cloud.controller.request.host.PageHostRequest;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.response.ResourceAllocatedInfo;
@@ -36,6 +38,8 @@ public interface IBaseResourceAnalysisService {
      */
     IPage<AnalysisHostDTO> pageHost(PageHostRequest request);
 
+    List<AnalysisHostDTO> listHost(HostRequest request);
+
     long countHost();
 
     long countHost(String cloudAccountId);
@@ -47,6 +51,14 @@ public interface IBaseResourceAnalysisService {
      * @return IPage<AnalysisDatastoreDTO>
      */
     IPage<AnalysisDatastoreDTO> pageDatastore(PageDatastoreRequest request);
+
+    /**
+     * 获取存储器列表
+     *
+     * @param request 存储器查询参数
+     * @return 存储器列表
+     */
+    List<AnalysisDatastoreDTO> listDatastore(DatastoreRequest request);
 
     long countDatastore();
 

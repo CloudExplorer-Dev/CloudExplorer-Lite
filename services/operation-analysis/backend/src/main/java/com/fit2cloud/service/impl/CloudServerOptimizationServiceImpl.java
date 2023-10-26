@@ -212,7 +212,10 @@ public class CloudServerOptimizationServiceImpl implements ICloudServerOptimizat
             VmCloudServerExcelDTO vmCloudServerExcelDTO = new VmCloudServerExcelDTO();
             BeanUtils.copyProperties(v, vmCloudServerExcelDTO);
             if (CollectionUtils.isNotEmpty(vmCloudServerMonitoringDataList)) {
-                List<VmCloudServerDTO> monitoringDataList = vmCloudServerMonitoringDataList.stream().filter(a -> StringUtils.equalsIgnoreCase(v.getInstanceUuid(), a.getInstanceUuid())).toList();
+                List<VmCloudServerDTO> monitoringDataList = vmCloudServerMonitoringDataList
+                        .stream()
+                        .filter(a -> StringUtils.equalsIgnoreCase(v.getInstanceUuid(), a.getInstanceUuid()))
+                        .toList();
                 if (CollectionUtils.isNotEmpty(monitoringDataList)) {
                     MonitoringDataValueDTO cpuValue = monitoringDataList.get(0).getCpuMonitoringValue();
                     MonitoringDataValueDTO memoryValue = monitoringDataList.get(0).getMemoryMonitoringValue();

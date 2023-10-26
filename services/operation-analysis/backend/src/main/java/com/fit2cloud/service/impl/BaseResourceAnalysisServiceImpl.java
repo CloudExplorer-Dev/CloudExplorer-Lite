@@ -26,7 +26,9 @@ import com.fit2cloud.common.utils.QueryUtil;
 import com.fit2cloud.constants.SpecialAttributesConstants;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceAnalysisRequest;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceUsedTrendRequest;
+import com.fit2cloud.controller.request.datastore.DatastoreRequest;
 import com.fit2cloud.controller.request.datastore.PageDatastoreRequest;
+import com.fit2cloud.controller.request.host.HostRequest;
 import com.fit2cloud.controller.request.host.PageHostRequest;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.response.ResourceAllocatedInfo;
@@ -87,14 +89,50 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     public IPage<AnalysisHostDTO> pageHost(PageHostRequest request) {
         Page<AnalysisHostDTO> page = PageUtil.of(request, AnalysisHostDTO.class, null, true);
         // 构建查询参数
+        MPJLambdaWrapper<VmCloudHost> wrapper = getVmCloudHostMPJLambdaWrapper(request);
+        return baseVmCloudHostMapper.selectJoinPage(page, AnalysisHostDTO.class, wrapper);
+    }
+
+    @Override
+    public List<AnalysisHostDTO> listHost(HostRequest request) {
+        MPJLambdaWrapper<VmCloudHost> wrapper = getVmCloudHostMPJLambdaWrapper(request);
+        return baseVmCloudHostMapper.selectJoinList(AnalysisHostDTO.class, wrapper);
+    }
+
+
+    /**
+     * 获取宿主机查询 Wrapper
+     *
+     * @param request 请求对象
+     * @return 查询 Wrapper
+     */
+    private static MPJLambdaWrapper<VmCloudHost> getVmCloudHostMPJLambdaWrapper(HostRequest request) {
+        // 构建查询参数
         MPJLambdaWrapper<VmCloudHost> wrapper = new MPJLambdaWrapper<VmCloudHost>().selectAll(VmCloudHost.class);
         wrapper.like(StringUtils.isNotBlank(request.getHostName()), VmCloudHost::getHostName, request.getHostName());
         wrapper.selectAs(CloudAccount::getName, AnalysisHostDTO::getAccountName);
+        wrapper.selectAs(CloudAccount::getPlatform, AnalysisHostDTO::getPlatform);
+        wrapper.leftJoin(CloudAccount.class, CloudAccount::getId, AnalysisHostDTO::getAccountId);
+        wrapper.orderByDesc(CloudAccount::getCreateTime);
+        return wrapper;
+    }
+
+    /**
+     * 获取 存储器查询 Wrapper
+     *
+     * @param request 请求对象
+     * @return 存储器查询 Wrapper
+     */
+    private MPJLambdaWrapper<VmCloudDatastore> getVmCloudDatastoreMPJLambdaWrapper(DatastoreRequest request) {
+        // 构建查询参数
+        MPJLambdaWrapper<VmCloudDatastore> wrapper = addQueryDatastore(request);
+        wrapper.selectAs(CloudAccount::getName, AnalysisDatastoreDTO::getAccountName);
         wrapper.selectAs(CloudAccount::getPlatform, AnalysisDatastoreDTO::getPlatform);
         wrapper.leftJoin(CloudAccount.class, CloudAccount::getId, AnalysisDatastoreDTO::getAccountId);
-        wrapper.orderByDesc(CloudAccount::getCreateTime);
-        return baseVmCloudHostMapper.selectJoinPage(page, AnalysisHostDTO.class, wrapper);
+        wrapper.orderByDesc(VmCloudDatastore::getCreateTime);
+        return wrapper;
     }
+
 
     @Override
     public long countHost() {
@@ -114,22 +152,32 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
     @Override
     public IPage<AnalysisDatastoreDTO> pageDatastore(PageDatastoreRequest request) {
         Page<AnalysisDatastoreDTO> page = PageUtil.of(request, AnalysisDatastoreDTO.class, null, false);
-        // 构建查询参数
-        MPJLambdaWrapper<VmCloudDatastore> wrapper = addQueryDatastore(request);
-        wrapper.selectAs(CloudAccount::getName, AnalysisDatastoreDTO::getAccountName);
-        wrapper.selectAs(CloudAccount::getPlatform, AnalysisDatastoreDTO::getPlatform);
-        wrapper.leftJoin(CloudAccount.class, CloudAccount::getId, AnalysisDatastoreDTO::getAccountId);
-        wrapper.orderByDesc(VmCloudDatastore::getCreateTime);
+        MPJLambdaWrapper<VmCloudDatastore> wrapper = getVmCloudDatastoreMPJLambdaWrapper(request);
         IPage<AnalysisDatastoreDTO> result = baseVmCloudDatastoreMapper.selectJoinPage(page, AnalysisDatastoreDTO.class, wrapper);
-        //计算
-        result.getRecords().forEach(v -> {
-            v.setAllocated(String.valueOf(v.getAllocatedSpace()));
-            BigDecimal useRate = new BigDecimal(v.getCapacity()).subtract(new BigDecimal(v.getFreeSpace())).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()), 2, RoundingMode.UP);
-            v.setUseRate(String.valueOf(useRate));
-            BigDecimal freeRate = new BigDecimal(v.getFreeSpace()).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()), 2, RoundingMode.UP);
-            v.setFreeRate(String.valueOf(freeRate));
-        });
-        return result;
+        return result.convert(this::resetAnalysisDatastoreDTO);
+    }
+
+
+    @Override
+    public List<AnalysisDatastoreDTO> listDatastore(DatastoreRequest request) {
+        MPJLambdaWrapper<VmCloudDatastore> wrapper = getVmCloudDatastoreMPJLambdaWrapper(request);
+        List<AnalysisDatastoreDTO> list = baseVmCloudDatastoreMapper.selectJoinList(AnalysisDatastoreDTO.class, wrapper);
+        return list.stream().map(this::resetAnalysisDatastoreDTO).toList();
+    }
+
+    /**
+     * 重置 存储器数据
+     *
+     * @param v 存储器对象
+     * @return 重置后的存储器对象
+     */
+    private AnalysisDatastoreDTO resetAnalysisDatastoreDTO(AnalysisDatastoreDTO v) {
+        v.setAllocated(String.valueOf(v.getAllocatedSpace()));
+        BigDecimal useRate = new BigDecimal(v.getCapacity()).subtract(new BigDecimal(v.getFreeSpace())).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()), 2, RoundingMode.UP);
+        v.setUseRate(String.valueOf(useRate));
+        BigDecimal freeRate = new BigDecimal(v.getFreeSpace()).multiply(new BigDecimal(100)).divide(new BigDecimal(v.getCapacity()), 2, RoundingMode.UP);
+        v.setFreeRate(String.valueOf(freeRate));
+        return v;
     }
 
     @Override
@@ -144,7 +192,7 @@ public class BaseResourceAnalysisServiceImpl implements IBaseResourceAnalysisSer
         return iBaseVmCloudDatastoreService.count(wrapper);
     }
 
-    private MPJLambdaWrapper<VmCloudDatastore> addQueryDatastore(PageDatastoreRequest request) {
+    private MPJLambdaWrapper<VmCloudDatastore> addQueryDatastore(DatastoreRequest request) {
         MPJLambdaWrapper<VmCloudDatastore> wrapper = new MPJLambdaWrapper<>();
         wrapper.selectAll(VmCloudDatastore.class);
         wrapper.like(StringUtils.isNotBlank(request.getDatastoreName()), VmCloudDatastore::getDatastoreName, request.getDatastoreName());

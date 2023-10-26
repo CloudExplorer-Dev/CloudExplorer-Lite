@@ -1,5 +1,6 @@
 package com.fit2cloud.controller;
 
+import com.alibaba.excel.EasyExcelFactory;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.entity.CloudAccount;
 import com.fit2cloud.base.entity.VmCloudDatastore;
@@ -7,7 +8,9 @@ import com.fit2cloud.base.entity.VmCloudHost;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceAnalysisRequest;
 import com.fit2cloud.controller.request.base.resource.analysis.ResourceUsedTrendRequest;
+import com.fit2cloud.controller.request.datastore.DatastoreRequest;
 import com.fit2cloud.controller.request.datastore.PageDatastoreRequest;
+import com.fit2cloud.controller.request.host.HostRequest;
 import com.fit2cloud.controller.request.host.PageHostRequest;
 import com.fit2cloud.controller.response.ChartData;
 import com.fit2cloud.controller.response.ResourceAllocatedInfo;
@@ -15,8 +18,13 @@ import com.fit2cloud.dto.AnalysisDatastoreDTO;
 import com.fit2cloud.dto.AnalysisHostDTO;
 import com.fit2cloud.dto.KeyValue;
 import com.fit2cloud.service.IBaseResourceAnalysisService;
+import com.fit2cloud.utils.CustomCellWriteHeightConfig;
+import com.fit2cloud.utils.CustomCellWriteWidthConfig;
+import com.fit2cloud.utils.EasyExcelUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +58,23 @@ public class BaseResourceAnalysisController {
         return ResultHolder.success(iBaseResourceAnalysisService.pageHost(pageHostRequest));
     }
 
+    @Operation(summary = "宿主机明细下载", description = "宿主机明细下载")
+    @GetMapping("/host/download")
+    @PreAuthorize("@cepc.hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ')")
+    public void hostListDownload(@Validated HostRequest request, HttpServletResponse response) {
+        List<AnalysisHostDTO> list = iBaseResourceAnalysisService.listHost(request);
+        try {
+            EasyExcelFactory.write(response.getOutputStream(), AnalysisHostDTO.class)
+                    .sheet("宿主机明细列表")
+                    .registerWriteHandler(new CustomCellWriteWidthConfig())
+                    .registerWriteHandler(new CustomCellWriteHeightConfig())
+                    .registerWriteHandler(EasyExcelUtils.getStyleStrategy())
+                    .doWrite(list);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Operation(summary = "查询宿主机数量", description = "查询宿主机数量")
     @GetMapping("/host/count")
     @PreAuthorize("@cepc.hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ','OVERVIEW:READ')")
@@ -62,6 +87,23 @@ public class BaseResourceAnalysisController {
     @PreAuthorize("@cepc.hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ')")
     public ResultHolder<IPage<AnalysisDatastoreDTO>> pageDatastoreList(@Validated PageDatastoreRequest pageDatastoreRequest) {
         return ResultHolder.success(iBaseResourceAnalysisService.pageDatastore(pageDatastoreRequest));
+    }
+
+    @Operation(summary = "存储器明细下载", description = "存储器明细下载")
+    @GetMapping("/datastore/download")
+    @PreAuthorize("@cepc.hasAnyCePermission('BASE_RESOURCE_ANALYSIS:READ')")
+    public void datastoreListDownload(@Validated DatastoreRequest request, HttpServletResponse response) {
+        List<AnalysisDatastoreDTO> list = iBaseResourceAnalysisService.listDatastore(request);
+        try {
+            EasyExcelFactory.write(response.getOutputStream(), AnalysisDatastoreDTO.class)
+                    .sheet("存储器明细列表")
+                    .registerWriteHandler(new CustomCellWriteWidthConfig())
+                    .registerWriteHandler(new CustomCellWriteHeightConfig())
+                    .registerWriteHandler(EasyExcelUtils.getStyleStrategy())
+                    .doWrite(list);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Operation(summary = "查询存储器数量", description = "查询存储器数量")

@@ -18,7 +18,7 @@ const table = ref<any>(null);
 const columns = ref([]);
 const tableData = ref<Array<VmCloudHostVO>>([]);
 const tableLoading = ref<boolean>(false);
-
+const loading = ref<boolean>(false);
 /**
  * 查询
  * @param condition
@@ -65,7 +65,11 @@ const tableConfig = ref<TableConfig>({
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([]),
 });
-
+const exportData = () => {
+  const condition = table?.value.getTableSearch();
+  const tableParams = TableSearch.toSearchParams(condition);
+  VmCloudHostApi.exportVmCloudHost(tableParams, loading);
+};
 /**
  * 页面挂载
  */
@@ -282,6 +286,27 @@ onMounted(() => {
         </template>
       </el-table-column>
       <template #buttons>
+        <!-- 导出 -->
+        <el-button
+          :loading="loading"
+          @click="exportData('xlsx')"
+          style="width: 32px"
+        >
+          <ce-icon
+            v-if="!loading"
+            size="16"
+            code="icon_bottom-align_outlined"
+          />
+          <template #loading>
+            <ce-icon
+              class="is-loading"
+              style="margin-left: 6px"
+              size="16"
+              code="Loading"
+            />
+          </template>
+        </el-button>
+
         <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>

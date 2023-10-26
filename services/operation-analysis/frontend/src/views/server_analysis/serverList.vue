@@ -21,7 +21,7 @@ const columns = ref([]);
 const tableData = ref<Array<VmCloudServerVO>>([]);
 const tableLoading = ref<boolean>(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
-
+const loading = ref<boolean>(false);
 import InstanceStatusUtils from "@commons/utils/vm_cloud_server/InstanceStatusUtils";
 
 /**
@@ -89,6 +89,11 @@ const tableConfig = ref<TableConfig>({
   paginationConfig: new PaginationConfig(),
   tableOperations: new TableOperations([]),
 });
+const exportData = () => {
+  const condition = table?.value.getTableSearch();
+  const tableParams = TableSearch.toSearchParams(condition);
+  ResourceSpreadViewApi.exportData(tableParams, loading);
+};
 </script>
 <template>
   <div class="log-table">
@@ -235,6 +240,26 @@ const tableConfig = ref<TableConfig>({
         </template>
       </el-table-column>
       <template #buttons>
+        <!-- 导出 -->
+        <el-button
+          :loading="loading"
+          @click="exportData('xlsx')"
+          style="width: 32px"
+        >
+          <ce-icon
+            v-if="!loading"
+            size="16"
+            code="icon_bottom-align_outlined"
+          />
+          <template #loading>
+            <ce-icon
+              class="is-loading"
+              style="margin-left: 6px"
+              size="16"
+              code="Loading"
+            />
+          </template>
+        </el-button>
         <CeTableColumnSelect :columns="columns" />
       </template>
     </ce-table>
