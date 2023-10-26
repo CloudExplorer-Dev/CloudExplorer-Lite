@@ -34,8 +34,7 @@ const multipleSelectedRowData = ref<Array<VmCloudDiskVO>>([]);
 const isBatchAttach = ref(false);
 const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 const tableLoading = ref<boolean>(false);
-
-import { platformIcon } from "@commons/utils/platform";
+const loading = ref<boolean>(false);
 
 /**
  * 表头：组织树筛选
@@ -544,6 +543,11 @@ const disableBatchAuthorize = computed(() => {
 const showDiskDetail = (row: VmCloudDiskVO) => {
   router.push({ name: "disk_detail", params: { id: row.id } });
 };
+const exportData = () => {
+  const condition = table?.value.getTableSearch();
+  const tableParams = TableSearch.toSearchParams(condition);
+  VmCloudDiskApi.exportData(tableParams, loading);
+};
 
 /**
  * 操作按钮
@@ -890,6 +894,22 @@ const buttons = ref([
       fixed="right"
     />
     <template #buttons>
+      <!-- 导出 -->
+      <el-button
+        :loading="loading"
+        @click="exportData('xlsx')"
+        style="width: 32px"
+      >
+        <ce-icon v-if="!loading" size="16" code="icon_bottom-align_outlined" />
+        <template #loading>
+          <ce-icon
+            class="is-loading"
+            style="margin-left: 6px"
+            size="16"
+            code="Loading"
+          />
+        </template>
+      </el-button>
       <CeTableColumnSelect :columns="columns" />
     </template>
   </ce-table>

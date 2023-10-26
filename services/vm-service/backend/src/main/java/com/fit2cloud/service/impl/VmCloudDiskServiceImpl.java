@@ -36,6 +36,7 @@ import com.fit2cloud.controller.request.ResourceState;
 import com.fit2cloud.controller.request.disk.CreateVmCloudDiskRequest;
 import com.fit2cloud.controller.request.disk.ListVmRequest;
 import com.fit2cloud.controller.request.disk.PageVmCloudDiskRequest;
+import com.fit2cloud.controller.request.disk.VmCloudDiskRequest;
 import com.fit2cloud.dao.mapper.VmCloudDiskMapper;
 import com.fit2cloud.dao.mapper.VmCloudServerMapper;
 import com.fit2cloud.dto.VmCloudDiskDTO;
@@ -97,14 +98,22 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
         QueryWrapper<VmCloudDiskDTO> wrapper = addQuery(request);
 
         IPage<VmCloudDiskDTO> result = diskMapper.pageList(page, wrapper);
-        result.getRecords().forEach(v -> {
-            if (v.getBootable()) {
-                v.setBootableText("系统盘");
-            } else {
-                v.setBootableText("数据盘");
-            }
-        });
+        result.convert(this::resetVmCloudServerDTO);
         return result;
+    }
+
+    @Override
+    public List<VmCloudDiskDTO> listVMCloudDisk(VmCloudDiskRequest request) {
+        return listVmCloudDisk(request.toPageVmCloudDiskRequest());
+    }
+
+    private VmCloudDiskDTO resetVmCloudServerDTO(VmCloudDiskDTO vmCloudDiskDTO) {
+        if (vmCloudDiskDTO.getBootable()) {
+            vmCloudDiskDTO.setBootableText("系统盘");
+        } else {
+            vmCloudDiskDTO.setBootableText("数据盘");
+        }
+        return vmCloudDiskDTO;
     }
 
     public List<VmCloudDiskDTO> listVmCloudDisk(PageVmCloudDiskRequest request) {
@@ -113,7 +122,7 @@ public class VmCloudDiskServiceImpl extends ServiceImpl<BaseVmCloudDiskMapper, V
             request.setSourceIds(sourceIds);
         }
         QueryWrapper<VmCloudDiskDTO> wrapper = addQuery(request);
-        return diskMapper.pageList(wrapper);
+        return diskMapper.pageList(wrapper).stream().map(this::resetVmCloudServerDTO).toList();
     }
 
     @Override

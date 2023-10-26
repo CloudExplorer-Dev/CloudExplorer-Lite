@@ -42,6 +42,7 @@ const cloudAccount = ref<Array<SimpleMap<string>>>([]);
 const addDiskRef = ref<InstanceType<typeof AddDisk>>();
 const changeConfigRef = ref<InstanceType<typeof ChangeConfig>>();
 const renewRef = ref<InstanceType<typeof Renew>>();
+const loading = ref<boolean>(false);
 /**
  * 表头：组织树筛选
  */
@@ -847,6 +848,11 @@ const buttons = ref([
     },
   },
 ]);
+const exportData = () => {
+  const condition = table?.value.getTableSearch();
+  const tableParams = TableSearch.toSearchParams(condition);
+  VmCloudServerApi.exportData(tableParams, loading);
+};
 </script>
 <template>
   <ce-table
@@ -1162,6 +1168,22 @@ const buttons = ref([
     />
 
     <template #buttons>
+      <!-- 导出 -->
+      <el-button
+        :loading="loading"
+        @click="exportData('xlsx')"
+        style="width: 32px"
+      >
+        <ce-icon v-if="!loading" size="16" code="icon_bottom-align_outlined" />
+        <template #loading>
+          <ce-icon
+            class="is-loading"
+            style="margin-left: 6px"
+            size="16"
+            code="Loading"
+          />
+        </template>
+      </el-button>
       <CeTableColumnSelect :columns="columns" />
     </template>
   </ce-table>

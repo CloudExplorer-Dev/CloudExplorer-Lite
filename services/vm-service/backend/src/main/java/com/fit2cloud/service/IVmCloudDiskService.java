@@ -8,6 +8,7 @@ import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.controller.request.disk.CreateVmCloudDiskRequest;
 import com.fit2cloud.controller.request.disk.ListVmRequest;
 import com.fit2cloud.controller.request.disk.PageVmCloudDiskRequest;
+import com.fit2cloud.controller.request.disk.VmCloudDiskRequest;
 import com.fit2cloud.dto.VmCloudDiskDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
 
@@ -24,6 +25,14 @@ import java.util.List;
 public interface IVmCloudDiskService extends IService<VmCloudDisk> {
 
     IPage<VmCloudDiskDTO> pageVmCloudDisk(PageVmCloudDiskRequest request);
+
+    /**
+     * 获取 云磁盘列表
+     *
+     * @param request 请求参数
+     * @return 云磁盘列表
+     */
+    List<VmCloudDiskDTO> listVMCloudDisk(VmCloudDiskRequest request);
 
     /**
      * 根据云账号ID获取云主机列表

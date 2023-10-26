@@ -1,4 +1,4 @@
-import { get, post, put } from "@commons/request";
+import { exportExcel, get, post, put } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type {
@@ -288,6 +288,16 @@ const renewInstance: (
 ) => Promise<Result<boolean>> = (request, loading) => {
   return post("/api/server/renew_instance", undefined, request, loading);
 };
+/**
+ * 导出
+ * @param req 请求参数
+ * @param loading 加载器
+ * @returns void
+ */
+const exportData = (req: any, loading: Ref<boolean>) => {
+  return exportExcel("云主机明细", "/api/server/download", req, loading);
+};
+
 const VmCloudServerApi = {
   listVmCloudServer,
   shutdownInstance,
@@ -311,6 +321,7 @@ const VmCloudServerApi = {
   renewPrice,
   renewExpiresTime,
   renewInstance,
+  exportData,
 };
 
 export default VmCloudServerApi;

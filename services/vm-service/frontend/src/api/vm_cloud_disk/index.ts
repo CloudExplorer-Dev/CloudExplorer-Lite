@@ -1,4 +1,4 @@
-import { get, put, del, post } from "@commons/request";
+import { exportExcel, get, put, del, post } from "@commons/request";
 import type Result from "@commons/request/Result";
 import type { Page } from "@commons/request/Result";
 import type {
@@ -187,6 +187,16 @@ export function grantVmCloudDisk(req: GrantRequest, loading?: Ref<boolean>) {
   return post("/api/disk/grant", null, req, loading);
 }
 
+/**
+ * 导出
+ * @param req 请求参数
+ * @param loading 加载器
+ * @returns void
+ */
+const exportData = (req: any, loading: Ref<boolean>) => {
+  return exportExcel("磁盘明细", "/api/disk/download", req, loading);
+};
+
 const VmCloudDiskApi = {
   listVmCloudDisk,
   getCreateDiskForm,
@@ -203,5 +213,6 @@ const VmCloudDiskApi = {
   grantVmCloudDisk,
   batchRecycleDisks,
   recycleDisk,
+  exportData,
 };
 export default VmCloudDiskApi;

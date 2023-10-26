@@ -40,10 +40,10 @@ public class AnalysisDatastoreDTO extends VmCloudDatastore {
     private String allocated;
 
     @Schema(title = "使用率")
-    @ExcelProperty("使用率")
+    @ExcelProperty("使用率(%)")
     private String useRate;
 
     @Schema(title = "剩余率")
-    @ExcelProperty("剩余率")
+    @ExcelProperty("剩余率(%)")
     private String freeRate;
 }

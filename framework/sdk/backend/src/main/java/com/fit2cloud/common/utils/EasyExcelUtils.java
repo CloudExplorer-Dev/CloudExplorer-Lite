@@ -1,4 +1,4 @@
-package com.fit2cloud.utils;
+package com.fit2cloud.common.utils;
 
 import com.alibaba.excel.write.metadata.style.WriteCellStyle;
 import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;

@@ -139,21 +139,21 @@ public class VmCloudHost implements Serializable {
      * 虚拟化类型
      */
     @TableField("hypervisor_type")
-    @ExcelProperty(value = "虚拟化类型")
+    @ExcelIgnore
     private String hypervisorType;
 
     /**
      * 虚拟化版本
      */
     @TableField("hypervisor_version")
-    @ExcelProperty(value = "虚拟化版本")
+    @ExcelIgnore
     private String hypervisorVersion;
 
     /**
      * 主机提供商
      */
     @TableField("host_vendor")
-    @ExcelProperty(value = "主机提供商")
+    @ExcelIgnore
     private String hostVendor;
 
     /**

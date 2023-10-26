@@ -1,28 +1,35 @@
 package com.fit2cloud.controller;
 
+import com.alibaba.excel.EasyExcelFactory;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.base.mapper.BaseVmCloudDiskMapper;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
+import com.fit2cloud.common.utils.CustomCellWriteHeightConfig;
+import com.fit2cloud.common.utils.CustomCellWriteWidthConfig;
+import com.fit2cloud.common.utils.EasyExcelUtils;
 import com.fit2cloud.common.validator.annnotaion.CustomValidated;
 import com.fit2cloud.common.validator.handler.ExistHandler;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.controller.request.disk.*;
 import com.fit2cloud.dto.VmCloudDiskDTO;
+import com.fit2cloud.dto.VmCloudDiskDownloadDTO;
 import com.fit2cloud.dto.VmCloudServerDTO;
 import com.fit2cloud.service.IVmCloudDiskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
-import jakarta.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -42,6 +49,23 @@ public class VmCloudDiskController {
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:READ')")
     public ResultHolder<IPage<VmCloudDiskDTO>> list(@Validated PageVmCloudDiskRequest pageVmCloudDiskRequest) {
         return ResultHolder.success(diskService.pageVmCloudDisk(pageVmCloudDiskRequest));
+    }
+
+    @Operation(summary = "硬盘明细下载", description = "硬盘明细下载")
+    @GetMapping("/download")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_DISK:READ')")
+    public void hostListDownload(@Validated VmCloudDiskRequest request, HttpServletResponse response) {
+        List<VmCloudDiskDTO> list = diskService.listVMCloudDisk(request);
+        try {
+            EasyExcelFactory.write(response.getOutputStream(), VmCloudDiskDownloadDTO.class)
+                    .sheet("硬盘明细列表")
+                    .registerWriteHandler(new CustomCellWriteWidthConfig())
+                    .registerWriteHandler(new CustomCellWriteHeightConfig())
+                    .registerWriteHandler(EasyExcelUtils.getStyleStrategy())
+                    .doWrite(list.stream().map(VmCloudDiskDownloadDTO::new).toList());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Operation(summary = "查询硬盘数量", description = "查询硬盘数量")

@@ -1,28 +1,32 @@
 package com.fit2cloud.controller;
 
+import com.alibaba.excel.EasyExcelFactory;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fit2cloud.common.form.vo.FormObject;
 import com.fit2cloud.common.log.annotation.OperatedLog;
 import com.fit2cloud.common.log.constants.OperatedTypeEnum;
 import com.fit2cloud.common.log.constants.ResourceTypeEnum;
+import com.fit2cloud.common.utils.CustomCellWriteHeightConfig;
+import com.fit2cloud.common.utils.CustomCellWriteWidthConfig;
+import com.fit2cloud.common.utils.EasyExcelUtils;
 import com.fit2cloud.controller.handler.ResultHolder;
 import com.fit2cloud.controller.request.GrantRequest;
 import com.fit2cloud.controller.request.RenewInstanceRequest;
-import com.fit2cloud.controller.request.vm.BatchOperateVmRequest;
-import com.fit2cloud.controller.request.vm.ChangeServerConfigRequest;
-import com.fit2cloud.controller.request.vm.CreateServerRequest;
-import com.fit2cloud.controller.request.vm.PageVmCloudServerRequest;
+import com.fit2cloud.controller.request.vm.*;
 import com.fit2cloud.dto.VmCloudServerDTO;
+import com.fit2cloud.dto.VmCloudServerDownloadDTO;
 import com.fit2cloud.response.JobRecordResourceResponse;
 import com.fit2cloud.service.IVmCloudServerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +57,23 @@ public class VmCloudServerController {
     @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_SERVER:READ')")
     public ResultHolder<List<VmCloudServerDTO>> list(PageVmCloudServerRequest pageVmCloudServerRequest) {
         return ResultHolder.success(iVmCloudServerService.listVmCloudServer(pageVmCloudServerRequest));
+    }
+
+    @Operation(summary = "云主机明细下载", description = "云主机明细下载")
+    @GetMapping("/download")
+    @PreAuthorize("@cepc.hasAnyCePermission('CLOUD_SERVER:READ')")
+    public void hostListDownload(@Validated VmCloudServerRequest request, HttpServletResponse response) {
+        List<VmCloudServerDTO> list = iVmCloudServerService.listVmCloudServer(request.toPageVmCloudServerRequest());
+        try {
+            EasyExcelFactory.write(response.getOutputStream(), VmCloudServerDownloadDTO.class)
+                    .sheet("宿主机明细列表")
+                    .registerWriteHandler(new CustomCellWriteWidthConfig())
+                    .registerWriteHandler(new CustomCellWriteHeightConfig())
+                    .registerWriteHandler(EasyExcelUtils.getStyleStrategy())
+                    .doWrite(list.stream().map(VmCloudServerDownloadDTO::new).toList());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Operation(summary = "查询云主机数量", description = "查询云主机数量")

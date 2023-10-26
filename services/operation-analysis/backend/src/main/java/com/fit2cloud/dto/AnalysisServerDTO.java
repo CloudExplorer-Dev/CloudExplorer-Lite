@@ -44,15 +44,15 @@ public class AnalysisServerDTO extends VmCloudServer {
     private String deleteMonth;
     @ExcelIgnore
     private BigDecimal cpuMinimum;
-    @ExcelProperty("CPU最大使用率")
+    @ExcelProperty("CPU最大使用率(%)")
     private BigDecimal cpuMaximum;
-    @ExcelProperty("CPU平均使用率")
+    @ExcelProperty("CPU平均使用率(%)")
     private BigDecimal cpuAverage;
     @ExcelIgnore
     private BigDecimal memoryMinimum;
-    @ExcelProperty("内存最大使用率")
+    @ExcelProperty("内存最大使用率(%)")
     private BigDecimal memoryMaximum;
-    @ExcelProperty("内存平均使用率")
+    @ExcelProperty("内存平均使用率(%)")
     private BigDecimal memoryAverage;
     @ExcelIgnore
     private BigDecimal diskAverage;

@@ -48,7 +48,14 @@
             v-bind="{ ...JSON.parse(item.attrs) }"
             @change="change(item)"
           ></component>
-          <span v-if="item.unit && props.groupId != '0'" class="unit">
+          <span
+            v-if="
+              item.unit &&
+              props.groupId != '0' &&
+              item.inputType !== 'LineNumber'
+            "
+            class="unit"
+          >
             {{ item.unit }}
           </span>
         </el-form-item>
