@@ -14,7 +14,7 @@ CloudExplorer Lite 脱胎于飞致云创始软件产品 CloudExplorer 多云管�
 
 - **多云对接**
   
-CloudExplorer Lite 支持对接纳管市场上主流的公有云和私有云基础设施，包括阿里云、腾讯云、华为云、VMware、OpenStack等。
+CloudExplorer Lite 支持对接纳管市场上主流的公有云和私有云基础设施，包括阿里云、腾讯云、华为云、VMware、OpenStack、Proxmox VE 等。
 
 - **开箱即用**
 
@@ -36,16 +36,6 @@ CloudExplorer Lite 提供了强大的多租户体系和模块化能力，可以�
 -   用户名：demo
 -   密码：cloudexplorer
 
-**一键安装**
-
-仅需两步快速安装 CloudExplorer Lite：
-
-1. 准备一台不小于 8C16G 的 Linux 主机；
-2. 以 root 用户执行如下命令一键安装 CloudExplorer Lite。
-
-``` 
-/bin/bash -c "$(curl -fsSL https://resource.fit2cloud.com/cloudexplorer-lite/installer/releases/latest/quick_start.sh)"
-```
 
 **学习资料**
 
@@ -54,9 +44,9 @@ CloudExplorer Lite 提供了强大的多租户体系和模块化能力，可以�
 
 ## 社区
 
-如果您在使用过程中有任何疑问或建议，欢迎提交 GitHub Issue 或加入到我们微信交流群进行交流沟通。扫码加入交流群：
+如果您在使用过程中有任何疑问或建议，欢迎提交 GitHub Issue 或到我们官方论坛进行交流沟通：
 
-<img src="https://fit2cloud.com/cloudexplorer-lite/images/wechat-group.png" width="156" height="156"/>
+-   [论坛](https://bbs.fit2cloud.com/)
 
 ## 技术栈
 
@@ -72,7 +62,7 @@ CloudExplorer Lite 提供了强大的多租户体系和模块化能力，可以�
 
 ## License
 
-Copyright (c) 2014-2023 飞致云 FIT2CLOUD, All rights reserved.
+Copyright (c) 2014-2024 飞致云 FIT2CLOUD, All rights reserved.
 
 Licensed under The GNU General Public License version 3 (GPLv3)  (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
