@@ -36,16 +36,6 @@ CloudExplorer Lite 提供了强大的多租户体系和模块化能力，可以�
 -   用户名：demo
 -   密码：cloudexplorer
 
-**一键安装**
-
-仅需两步快速安装 CloudExplorer Lite：
-
-1. 准备一台不小于 8C16G 的 Linux 主机；
-2. 以 root 用户执行如下命令一键安装 CloudExplorer Lite。
-
-``` 
-/bin/bash -c "$(curl -fsSL https://resource.fit2cloud.com/cloudexplorer-lite/installer/releases/latest/quick_start.sh)"
-```
 
 **学习资料**
 
