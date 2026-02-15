@@ -154,15 +154,22 @@ public class BaseUserServiceImpl extends ServiceImpl<BaseUserMapper, User> imple
             throw new RuntimeException("非云管本地创建的用户无法修改密码");
         }
         if (StringUtils.equals(request.getOldPassword(), request.getNewPassword())) {
+        if (StringUtils.equals(request.getOldPassword(), request.getNewPassword())) {
             throw new RuntimeException("新旧密码相同");
+            throw new RuntimeException("新旧密码相同");
+        }
         }
         if (!MD5Util.md5(request.getOldPassword()).equalsIgnoreCase(user.getPassword())) {
             throw new RuntimeException("旧密码错误");
         }
 
         if (!request.getNewPassword().matches("^(?!.*\\s)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\\W_]).{8,30}$")) {
+        if (!request.getNewPassword().matches("^(?!.*\\s)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\\W_]).{8,30}$")) {
+            throw new RuntimeException("有效密码：8-30位，英文大小写字母+数字+特殊字符");
             throw new RuntimeException("有效密码：8-30位，英文大小写字母+数字+特殊字符");
         }
+        }
+
 
         user.setPassword(MD5Util.md5(request.getNewPassword()));
         user.setUpdateTime(null);
