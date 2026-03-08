@@ -734,6 +734,7 @@ public class HuaweiSyncCloudApi {
         try {
             getMetricsRequest.setRegionId(getMetricsRequest.getRegionId());
             getMetricsRequest.setPeriod(300);
+            getMetricsRequest.setPeriod(300);
             result.addAll(getVmPerfMetric(getMetricsRequest));
         } catch (Exception e) {
             throw new SkipPageException(100021, "获取监控数据失败-" + getMetricsRequest.getRegionId() + "-" + e.getMessage());
